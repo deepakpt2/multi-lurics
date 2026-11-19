@@ -20,6 +20,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/trust-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_trust_policy"];
+        put: operations["set_trust_policy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/albums": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_albums"];
+        put?: never;
+        post: operations["create_album"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/albums/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_album"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["update_album"];
+        trace?: never;
+    };
+    "/api/v1/aliases/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reject_alias"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/aliases/{id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verify_alias"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/artists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_artists"];
+        put?: never;
+        post: operations["create_artist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/artists/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_artist"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["update_artist"];
+        trace?: never;
+    };
     "/api/v1/auth/login": {
         parameters: {
             query?: never;
@@ -120,6 +232,246 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/compositions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_compositions"];
+        put?: never;
+        post: operations["create_composition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compositions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_composition"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["update_composition"];
+        trace?: never;
+    };
+    "/api/v1/contributions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_contribution"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/contributions/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["approve_contribution"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/contributions/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["publish_contribution"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/contributions/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reject_contribution"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/contributions/{id}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_revisions"];
+        put?: never;
+        post: operations["create_revision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/entities/{entity_type}/{entity_id}/aliases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_aliases"];
+        put?: never;
+        post: operations["create_alias"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/entities/{entity_type}/{entity_id}/default-language": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["set_default_language"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/entities/{entity_type}/{entity_id}/localizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_entity_localizations"];
+        put?: never;
+        post: operations["create_localization"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/languages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_languages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/localizations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_localization"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["update_localization"];
+        trace?: never;
+    };
+    "/api/v1/localizations/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reject_localization"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/localizations/{id}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_revisions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/localizations/{id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verify_localization"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -128,6 +480,182 @@ export interface paths {
             cookie?: never;
         };
         get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/contributions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["my_contributions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/contributions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["contribution_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/localizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["moderation_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recordings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_recordings"];
+        put?: never;
+        post: operations["create_recording"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recordings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_recording"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["update_recording"];
+        trace?: never;
+    };
+    "/api/v1/recordings/{id}/contributions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_contributions"];
+        put?: never;
+        post: operations["create_contribution"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/revisions/{a}/diff/{b}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["diff_revisions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/revisions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_revision"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scripts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_scripts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/taxonomy/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_taxonomy"];
+        put?: never;
+        post: operations["create_taxonomy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/taxonomy/{kind}/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_taxonomy"];
         put?: never;
         post?: never;
         delete?: never;
@@ -174,6 +702,159 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Album: {
+            barcode?: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            /** @description Name resolved for the requested `lang` (see `fallback`). */
+            display: components["schemas"]["Display"];
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["AlbumKind"];
+            /** Format: int32 */
+            release_year?: number | null;
+            title: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int32 */
+            version: number;
+        };
+        AlbumAppearance: {
+            /** Format: uuid */
+            album_id: string;
+            display: components["schemas"]["Display"];
+            /** Format: int32 */
+            position: number;
+            title: string;
+        };
+        AlbumCreate: {
+            /** @description UPC/EAN (GTIN-8/12/13/14); check digit verified. */
+            barcode?: string | null;
+            /** @description Album credits (primary_artist, producer). */
+            credits?: components["schemas"]["CreditInput"][] | null;
+            kind?: components["schemas"]["AlbumKind"];
+            /** Format: int32 */
+            release_year?: number | null;
+            title?: string;
+            /** @description Recording ids in track order (positions 1..n). */
+            tracks?: string[] | null;
+        };
+        AlbumDetail: components["schemas"]["Album"] & {
+            credits: components["schemas"]["Credit"][];
+            tracks: components["schemas"]["Track"][];
+        };
+        /** @enum {string} */
+        AlbumKind: "album" | "single" | "ep" | "compilation" | "soundtrack" | "other";
+        AlbumPage: {
+            items: components["schemas"]["Album"][];
+            next_cursor?: string | null;
+        };
+        /** @description Absent fields are left unchanged; `null` clears; `credits`/`tracks`, when present, replace the list. */
+        AlbumPatch: {
+            barcode?: string | null;
+            credits?: components["schemas"]["CreditInput"][] | null;
+            /** Format: int32 */
+            expected_version?: number | null;
+            kind?: null | components["schemas"]["AlbumKind"];
+            /** Format: int32 */
+            release_year?: number | null;
+            title?: string | null;
+            tracks?: string[] | null;
+        };
+        /** @description A verified alternate spelling or name. Always carries its source. */
+        Alias: {
+            alias: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            dir: components["schemas"]["Dir"];
+            /** Format: uuid */
+            entity_id: string;
+            entity_type: string;
+            /** Format: uuid */
+            id: string;
+            language?: string | null;
+            script?: string | null;
+            source: string;
+            verification_state: components["schemas"]["VerificationState"];
+            /** Format: uuid */
+            verified_by?: string | null;
+        };
+        AliasCreate: {
+            alias?: string;
+            language?: string | null;
+            script?: string | null;
+            /** @description Required: where this alternate name is attested. */
+            source?: string;
+        };
+        AliasPage: {
+            items: components["schemas"]["Alias"][];
+            next_cursor?: string | null;
+        };
+        Artist: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            disambiguation?: string | null;
+            /** @description Name resolved for the requested `lang` (see `fallback`). */
+            display: components["schemas"]["Display"];
+            /** Format: uuid */
+            id: string;
+            isni?: string | null;
+            kind: components["schemas"]["ArtistKind"];
+            /** @description As written, in any script. Never translated. */
+            name: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int32 */
+            version: number;
+        };
+        ArtistCreate: {
+            disambiguation?: string | null;
+            /** @description ISNI; spaces and hyphens allowed, check digit verified. */
+            isni?: string | null;
+            kind?: components["schemas"]["ArtistKind"];
+            name?: string;
+        };
+        ArtistCredit: {
+            role: components["schemas"]["CreditRole"];
+            role_category: components["schemas"]["RoleCategory"];
+            role_display: components["schemas"]["Display"];
+            /** Format: uuid */
+            role_id: string;
+            /** Format: uuid */
+            target_id: string;
+            /** @description `composition`, `recording` or `album`. */
+            target_type: string;
+            title: string;
+            title_display: components["schemas"]["Display"];
+        };
+        ArtistDetail: components["schemas"]["Artist"] & {
+            /** @description Most recent 100 credits. */
+            credits: components["schemas"]["ArtistCredit"][];
+        };
+        /** @enum {string} */
+        ArtistKind: "person" | "group" | "other";
+        ArtistPage: {
+            items: components["schemas"]["Artist"][];
+            next_cursor?: string | null;
+        };
+        /** @description Absent fields are left unchanged; `null` clears an optional field. */
+        ArtistPatch: {
+            disambiguation?: string | null;
+            /**
+             * Format: int32
+             * @description The `version` the client last read. Stale → `409 version_conflict`.
+             */
+            expected_version?: number | null;
+            isni?: string | null;
+            kind?: null | components["schemas"]["ArtistKind"];
+            name?: string | null;
+        };
         AuditEvent: {
             action: string;
             /** Format: uuid */
@@ -193,6 +874,193 @@ export interface components {
             /** @description `null` on the last page. */
             next_cursor?: string | null;
         };
+        Composition: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            /** @description Name resolved for the requested `lang` (see `fallback`). */
+            display: components["schemas"]["Display"];
+            /** Format: uuid */
+            id: string;
+            iswc?: string | null;
+            title: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int32 */
+            version: number;
+            /** Format: int32 */
+            year?: number | null;
+        };
+        CompositionCreate: {
+            /** @description Work-level credits only (composer, lyricist). */
+            credits?: components["schemas"]["CreditInput"][] | null;
+            /** @description ISWC, e.g. `T-034.524.680-1`; check digit verified. */
+            iswc?: string | null;
+            title?: string;
+            /** Format: int32 */
+            year?: number | null;
+        };
+        CompositionDetail: components["schemas"]["Composition"] & {
+            credits: components["schemas"]["Credit"][];
+            /** Format: int64 */
+            recording_count: number;
+            /** @description Newest 100 recordings; page through `GET /recordings?composition_id=` for all. */
+            recordings: components["schemas"]["RecordingSummary"][];
+        };
+        CompositionPage: {
+            items: components["schemas"]["Composition"][];
+            next_cursor?: string | null;
+        };
+        /** @description Absent fields are left unchanged; `null` clears; `credits`, when present, replaces the list. */
+        CompositionPatch: {
+            credits?: components["schemas"]["CreditInput"][] | null;
+            /** Format: int32 */
+            expected_version?: number | null;
+            iswc?: string | null;
+            title?: string | null;
+            /** Format: int32 */
+            year?: number | null;
+        };
+        CompositionRef: {
+            display: components["schemas"]["Display"];
+            /** Format: uuid */
+            id: string;
+            title: string;
+        };
+        ContributionCreate: {
+            body?: string;
+            language?: string;
+            note?: string | null;
+            script?: string;
+            /**
+             * Format: uuid
+             * @description Optional pointer to the original (or other version) this one was made from.
+             */
+            source_contribution_id?: string | null;
+            type?: string;
+        };
+        ContributionDecision: {
+            /**
+             * Format: uuid
+             * @description The head revision that was reviewed. A mismatch returns 409 with `current_revision_id`.
+             */
+            expected_parent_revision_id?: string | null;
+            note?: string | null;
+        };
+        ContributionDetail: components["schemas"]["ContributionSummary"] & {
+            /**
+             * Format: uuid
+             * @description Send this as `expected_parent_revision_id` when editing or deciding. Author and moderators only.
+             */
+            current_revision_id?: string | null;
+            /** @description The head differs from what is public. Author and moderators only. */
+            has_unpublished_changes: boolean;
+            head?: null | components["schemas"]["Revision"];
+            published?: null | components["schemas"]["Revision"];
+            review_note?: string | null;
+        };
+        ContributionPage: {
+            items: components["schemas"]["ContributionSummary"][];
+            next_cursor?: string | null;
+        };
+        /** @enum {string} */
+        ContributionStatus: "pending" | "approved" | "published" | "rejected";
+        /**
+         * @description One lyric version in a slot (recording + type + language + script). Several contributions
+         *     may share a slot as alternatives; at most one is the primary.
+         */
+        ContributionSummary: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            /** @description Text direction of the script; set it on the element that renders the body. */
+            dir: components["schemas"]["Dir"];
+            /** Format: uuid */
+            id: string;
+            is_primary: boolean;
+            /** @description Language tag of the lyrics (`ml`, `ar`). */
+            language: string;
+            /** Format: uuid */
+            recording_id: string;
+            /** @description ISO 15924 script code (`Mlym`, `Arab`). Language and script are separate on purpose. */
+            script: string;
+            /**
+             * Format: uuid
+             * @description The translated or transliterated original, when it is public.
+             */
+            source_contribution_id?: string | null;
+            /** @description Review state of the newest revision. The public always sees `published`. */
+            status: components["schemas"]["ContributionStatus"];
+            type: components["schemas"]["ContributionType"];
+            /** Format: date-time */
+            updated_at: string;
+        };
+        /** @enum {string} */
+        ContributionType: "original" | "translation" | "transliteration";
+        /** @description One artist in one role. Artist names are shown verbatim, never translated. */
+        Credit: {
+            artist_display: components["schemas"]["Display"];
+            /** Format: uuid */
+            artist_id: string;
+            /** @description Base (original) name; use `artist_display` for the localized one. */
+            artist_name: string;
+            role: components["schemas"]["CreditRole"];
+            /** @description Original songwriters, translators and adapters are distinct categories; group by this. */
+            role_category: components["schemas"]["RoleCategory"];
+            role_display: components["schemas"]["Display"];
+            /**
+             * Format: uuid
+             * @description Id of the credit role entity, which can be localized like any other.
+             */
+            role_id: string;
+        };
+        CreditInput: {
+            /** Format: uuid */
+            artist_id: string;
+            role: components["schemas"]["CreditRole"];
+        };
+        /**
+         * @description Composition: composer, lyricist. Recording: performer, featured_performer, arranger, producer,
+         *     conductor. Album: primary_artist, producer.
+         * @enum {string}
+         */
+        CreditRole: "composer" | "lyricist" | "performer" | "featured_performer" | "arranger" | "producer" | "conductor" | "primary_artist";
+        Decision: {
+            /** Format: uuid */
+            expected_parent_revision_id?: string | null;
+        };
+        DefaultLanguageBody: {
+            /** Format: int32 */
+            expected_version?: number | null;
+            /** @description ISO 639-1/639-3 code of the language the entity was originally written in. */
+            language?: string;
+        };
+        DiffHunk: {
+            lines: string[];
+            op: components["schemas"]["DiffOp"];
+        };
+        /** @enum {string} */
+        DiffOp: "equal" | "insert" | "delete";
+        /** @enum {string} */
+        Dir: "ltr" | "rtl" | "auto";
+        /**
+         * @description How to show an entity's name. When `fallback` is true the text is **not** in the requested
+         *     language and the UI must say so. Set `lang` and `dir` on the element that renders `text`.
+         */
+        Display: {
+            description?: string | null;
+            dir: components["schemas"]["Dir"];
+            fallback: boolean;
+            /** @description Language of `text` (`ml`, `sr-Latn`); null for a base name of unknown language. */
+            language?: string | null;
+            resolution: components["schemas"]["DisplayResolution"];
+            script?: string | null;
+            text: string;
+        };
+        /** @enum {string} */
+        DisplayResolution: "requested" | "default_language" | "fallback" | "base";
         FieldError: {
             /**
              * @description Stable violation code, e.g. `required`, `too_short`, `invalid_email`.
@@ -209,6 +1077,94 @@ export interface components {
             /** Format: int64 */
             migration_version?: number | null;
             status: string;
+        };
+        Language: {
+            /** @description ISO 15924 code of the usual script. */
+            default_script?: string | null;
+            /** @description The language's own name for itself. */
+            endonym: string;
+            /** Format: uuid */
+            id: string;
+            /** @description Governed private-use extension (ISO 639-3 qaa–qtz). */
+            is_extension: boolean;
+            is_rtl: boolean;
+            iso639_1?: string | null;
+            iso639_2?: string | null;
+            /** @description Primary key for clients: ISO 639-3. */
+            iso639_3: string;
+            name_en: string;
+        };
+        LanguagePage: {
+            items: components["schemas"]["Language"][];
+            next_cursor?: string | null;
+        };
+        /** @description One name of an entity in one language (and optionally script). Personal names are never machine-made. */
+        Localization: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            /**
+             * Format: uuid
+             * @description Send as `expected_parent_revision_id` on the next write.
+             */
+            current_revision_id?: string | null;
+            description?: string | null;
+            dir: components["schemas"]["Dir"];
+            /** Format: uuid */
+            entity_id: string;
+            /** @description `composition`, `recording`, `artist`, `album`, `label`, `publisher`, `genre` or `credit_role`. */
+            entity_type: string;
+            /** Format: uuid */
+            id: string;
+            is_preferred: boolean;
+            language: string;
+            name: string;
+            provenance: components["schemas"]["Provenance"];
+            script?: string | null;
+            source?: string | null;
+            /** Format: date-time */
+            updated_at: string;
+            verification_state: components["schemas"]["VerificationState"];
+            /** Format: date-time */
+            verified_at?: string | null;
+            /** Format: uuid */
+            verified_by?: string | null;
+        };
+        LocalizationCreate: {
+            description?: string | null;
+            /**
+             * @description Omitted: preferred iff it is the first name in that language. `true` when another preferred
+             *     name exists is `409 preferred_slot_taken`; names are never swapped silently.
+             */
+            is_preferred?: boolean | null;
+            /** @description ISO 639-1 or 639-3 code, e.g. `ml`. */
+            language?: string;
+            name?: string;
+            provenance?: components["schemas"]["Provenance"];
+            /** @description ISO 15924 code, e.g. `Mlym`. Optional. */
+            script?: string | null;
+            /** @description Required for artist names (where the name comes from). */
+            source?: string | null;
+        };
+        LocalizationPage: {
+            items: components["schemas"]["Localization"][];
+            next_cursor?: string | null;
+        };
+        /** @description Absent fields are left unchanged; `null` clears an optional field. */
+        LocalizationPatch: {
+            description?: string | null;
+            /**
+             * Format: uuid
+             * @description The `current_revision_id` the client last read. Stale → `409 stale_revision` carrying the current one.
+             */
+            expected_parent_revision_id?: string | null;
+            is_preferred?: boolean | null;
+            language?: string | null;
+            name?: string | null;
+            provenance?: null | components["schemas"]["Provenance"];
+            script?: string | null;
+            source?: string | null;
         };
         LoginRequest: {
             email?: string;
@@ -233,15 +1189,106 @@ export interface components {
              * @description Present on `409` revision conflicts: the revision the client must rebase onto.
              */
             current_revision_id?: string | null;
+            /**
+             * Format: int32
+             * @description Present on `409 version_conflict`: the record's current `version`; reload, then reapply.
+             */
+            current_version?: number | null;
             detail?: string | null;
             /** @description Present for `validation_failed`. */
             errors?: components["schemas"]["FieldError"][];
+            /**
+             * Format: uuid
+             * @description Present on `409 duplicate_identifier` when known: the record already holding the identifier.
+             */
+            existing_id?: string | null;
             request_id?: string | null;
             /** Format: int32 */
             status: number;
             title: string;
             /** @example /problems/validation_failed */
             type: string;
+        };
+        /** @enum {string} */
+        Provenance: "original" | "human_translation" | "transliteration" | "community" | "imported" | "machine";
+        Recording: {
+            /** Format: uuid */
+            composition_id: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            /** @description Name resolved for the requested `lang` (see `fallback`). */
+            display: components["schemas"]["Display"];
+            /** Format: int32 */
+            duration_ms?: number | null;
+            /** Format: uuid */
+            id: string;
+            isrc?: string | null;
+            title: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int32 */
+            version: number;
+            /** Format: int32 */
+            year?: number | null;
+        };
+        RecordingCreate: {
+            /**
+             * Format: uuid
+             * @description The existing composition this is a recording of (covers reuse the original's composition).
+             */
+            composition_id?: string | null;
+            /** @description Performance-level credits (performer, featured_performer, arranger, producer, conductor). */
+            credits?: components["schemas"]["CreditInput"][] | null;
+            /** Format: int64 */
+            duration_ms?: number | null;
+            /** @description ISRC, e.g. `US-RC1-76-07839`. */
+            isrc?: string | null;
+            /** @description Links from this recording to others (e.g. this is a `cover` of `related_recording_id`). */
+            relationships?: components["schemas"]["RelationshipInput"][] | null;
+            title?: string;
+            /** Format: int32 */
+            year?: number | null;
+        };
+        RecordingDetail: components["schemas"]["Recording"] & {
+            albums: components["schemas"]["AlbumAppearance"][];
+            composition: components["schemas"]["CompositionRef"];
+            credits: components["schemas"]["Credit"][];
+            /** @description Others → this recording (e.g. … is a `cover` of it). */
+            related_from: components["schemas"]["RelatedRecording"][];
+            /** @description This recording → others (e.g. it is a `cover` of …). */
+            relationships: components["schemas"]["RelatedRecording"][];
+        };
+        RecordingPage: {
+            items: components["schemas"]["Recording"][];
+            next_cursor?: string | null;
+        };
+        /** @description Absent fields are left unchanged; `null` clears; `credits`/`relationships`, when present, replace the list. */
+        RecordingPatch: {
+            /** Format: uuid */
+            composition_id?: string | null;
+            credits?: components["schemas"]["CreditInput"][] | null;
+            /** Format: int64 */
+            duration_ms?: number | null;
+            /** Format: int32 */
+            expected_version?: number | null;
+            isrc?: string | null;
+            relationships?: components["schemas"]["RelationshipInput"][] | null;
+            title?: string | null;
+            /** Format: int32 */
+            year?: number | null;
+        };
+        RecordingSummary: {
+            /** Format: uuid */
+            composition_id: string;
+            display: components["schemas"]["Display"];
+            /** Format: int32 */
+            duration_ms?: number | null;
+            /** Format: uuid */
+            id: string;
+            isrc?: string | null;
+            title: string;
         };
         RegisterRequest: {
             display_name?: string;
@@ -250,10 +1297,156 @@ export interface components {
             locale?: string | null;
             password?: string;
         };
+        RelatedRecording: {
+            /** Format: uuid */
+            composition_id: string;
+            display: components["schemas"]["Display"];
+            kind: components["schemas"]["RelationshipKind"];
+            /** Format: uuid */
+            recording_id: string;
+            title: string;
+        };
+        RelationshipInput: {
+            kind: components["schemas"]["RelationshipKind"];
+            /** Format: uuid */
+            related_recording_id: string;
+        };
+        /**
+         * @description All kinds except `related_performance` require both recordings to share a composition.
+         * @enum {string}
+         */
+        RelationshipKind: "cover" | "remake" | "live" | "alternate_arrangement" | "related_performance";
+        Revision: {
+            body: string;
+            /** Format: uuid */
+            contribution_id: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            /** Format: uuid */
+            id: string;
+            note?: string | null;
+            /** Format: uuid */
+            parent_revision_id?: string | null;
+            /** @description Was this revision ever public? */
+            published: boolean;
+            /**
+             * Format: uuid
+             * @description Set when this revision restored an older one.
+             */
+            restored_from_revision_id?: string | null;
+            /** Format: int32 */
+            revision_no: number;
+        };
+        RevisionCreate: {
+            /** @description New text. Give either `body` or `restore_from_revision_id`. */
+            body?: string | null;
+            /**
+             * Format: uuid
+             * @description The head revision you based this on. Required; a mismatch returns 409 with `current_revision_id`.
+             */
+            expected_parent_revision_id?: string | null;
+            note?: string | null;
+            /**
+             * Format: uuid
+             * @description Restore an older revision of this contribution as a new revision.
+             */
+            restore_from_revision_id?: string | null;
+        };
+        RevisionDiff: {
+            from: components["schemas"]["RevisionSummary"];
+            hunks: components["schemas"]["DiffHunk"][];
+            to: components["schemas"]["RevisionSummary"];
+        };
+        RevisionPage: {
+            items: components["schemas"]["RevisionSummary"][];
+            next_cursor?: string | null;
+        };
+        /** @description A revision without its body, for history lists. */
+        RevisionSummary: {
+            /** Format: uuid */
+            contribution_id: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            /** Format: uuid */
+            id: string;
+            note?: string | null;
+            /** Format: uuid */
+            parent_revision_id?: string | null;
+            published: boolean;
+            /** Format: uuid */
+            restored_from_revision_id?: string | null;
+            /** Format: int32 */
+            revision_no: number;
+            /** @description Length of the body in characters. */
+            size: number;
+        };
+        /**
+         * @description Credit categories. Original songwriters, translators and adapters are always separate groups.
+         * @enum {string}
+         */
+        RoleCategory: "original_songwriter" | "translator" | "adapter" | "performance" | "production" | "other";
         /** @enum {string} */
         RoleDto: "moderator" | "admin";
+        Script: {
+            /** Format: uuid */
+            id: string;
+            is_extension: boolean;
+            is_rtl: boolean;
+            iso15924: string;
+            name_en: string;
+            /** Format: int32 */
+            numeric_code?: number | null;
+        };
+        ScriptPage: {
+            items: components["schemas"]["Script"][];
+            next_cursor?: string | null;
+        };
+        TaxonomyCreate: {
+            name?: string;
+        };
+        TaxonomyItem: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            display: components["schemas"]["Display"];
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: int32 */
+            version: number;
+        };
+        TaxonomyPage: {
+            items: components["schemas"]["TaxonomyItem"][];
+            next_cursor?: string | null;
+        };
         TokenRequest: {
             token?: string;
+        };
+        Track: {
+            /** Format: uuid */
+            composition_id: string;
+            display: components["schemas"]["Display"];
+            /** Format: int32 */
+            duration_ms?: number | null;
+            /** Format: int32 */
+            position: number;
+            /** Format: uuid */
+            recording_id: string;
+            title: string;
+        };
+        TrustPolicyBody: {
+            /**
+             * Format: int64
+             * @description Members with at least this many published contributions publish without review; null disables it.
+             */
+            auto_publish_min_published?: number | null;
+            /** @description Role names (`moderator`, `admin`) whose submissions publish without review. */
+            auto_publish_roles: string[];
         };
         User: {
             /** Format: date-time */
@@ -264,6 +1457,12 @@ export interface components {
             /** Format: uuid */
             id: string;
             roles: components["schemas"]["RoleDto"][];
+        };
+        /** @enum {string} */
+        VerificationState: "pending" | "verified" | "rejected";
+        VersionBody: {
+            /** Format: int32 */
+            version: number;
         };
     };
     responses: never;
@@ -313,6 +1512,544 @@ export interface operations {
                 };
             };
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_trust_policy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrustPolicyBody"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    set_trust_policy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrustPolicyBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrustPolicyBody"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_albums: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+                /** @description Albums crediting this artist. */
+                artist_id?: string;
+                kind?: components["schemas"]["AlbumKind"];
+                barcode?: string;
+                /** @description Case-insensitive title prefix. */
+                prefix?: string;
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlbumPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_album: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlbumCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlbumDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_album: {
+        parameters: {
+            query?: {
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlbumDetail"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    update_album: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlbumPatch"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlbumDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reject_alias: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Alias"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    verify_alias: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Alias"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_artists: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+                kind?: components["schemas"]["ArtistKind"];
+                isni?: string;
+                /** @description Case-insensitive name prefix. */
+                prefix?: string;
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArtistPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_artist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArtistCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArtistDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_artist: {
+        parameters: {
+            query?: {
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArtistDetail"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    update_artist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArtistPatch"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArtistDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -531,6 +2268,1022 @@ export interface operations {
             };
         };
     };
+    list_compositions: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+                /** @description Compositions crediting this artist. */
+                artist_id?: string;
+                iswc?: string;
+                /** @description Case-insensitive title prefix. */
+                prefix?: string;
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompositionPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_composition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompositionCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompositionDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_composition: {
+        parameters: {
+            query?: {
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompositionDetail"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    update_composition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompositionPatch"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompositionDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_contribution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Public: the published revision. Author and moderators: also the head and review state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionDetail"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    approve_contribution: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 8–128 chars; a retry returns the first result */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContributionDecision"];
+            };
+        };
+        responses: {
+            /** @description Accepted for publication; not yet public */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    publish_contribution: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 8–128 chars; a retry returns the first result */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContributionDecision"];
+            };
+        };
+        responses: {
+            /** @description The reviewed revision is now public; becomes the primary if the slot has none */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reject_contribution: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 8–128 chars; a retry returns the first result */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContributionDecision"];
+            };
+        };
+        responses: {
+            /** @description Rejected; whatever was public stays public */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_revisions: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Public: revisions that were published. Author and moderators: all */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionPage"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_revision: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 8–128 chars; a retry returns the first result */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevisionCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description stale_revision, with current_revision_id */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_aliases: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+                /** @description `pending`, `verified` or `rejected`. Only moderators may ask for anything but `verified`. */
+                state?: string;
+            };
+            header?: never;
+            path: {
+                entity_type: string;
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AliasPage"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_alias: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_type: string;
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AliasCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Alias"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    set_default_language: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_type: string;
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefaultLanguageBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionBody"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_entity_localizations: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+                /** @description `pending`, `verified` or `rejected`. Only moderators may ask for anything but `verified`. */
+                state?: string;
+            };
+            header?: never;
+            path: {
+                entity_type: string;
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalizationPage"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_localization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_type: string;
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocalizationCreate"];
+            };
+        };
+        responses: {
+            /** @description Pending review, or published when the author is a moderator */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Localization"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_languages: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LanguagePage"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_localization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Localization"];
+                };
+            };
+            /** @description Also for pending/rejected rows the caller may not see */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    update_localization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocalizationPatch"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Localization"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reject_localization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Decision"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Localization"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_revisions: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionPage"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    verify_localization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Decision"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Localization"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     me: {
         parameters: {
             query?: never;
@@ -549,6 +3302,633 @@ export interface operations {
                 };
             };
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    my_contributions: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Your own contributions in any state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionPage"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    contribution_queue: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionPage"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    moderation_queue: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+                /** @description `pending`, `verified` or `rejected`. Only moderators may ask for anything but `verified`. */
+                state?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalizationPage"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_recordings: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+                composition_id?: string;
+                /** @description Recordings crediting this artist. */
+                artist_id?: string;
+                /** @description Recordings on this album. */
+                album_id?: string;
+                isrc?: string;
+                /** @description Case-insensitive title prefix. */
+                prefix?: string;
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordingPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_recording: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordingCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordingDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_recording: {
+        parameters: {
+            query?: {
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordingDetail"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    update_recording: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordingPatch"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordingDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_contributions: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+                /** @description `original`, `translation` or `transliteration`. */
+                type?: string;
+                language?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published contributions only */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionPage"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_contribution: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 8–128 chars; a retry returns the first result */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContributionCreate"];
+            };
+        };
+        responses: {
+            /** @description Published at once when the trust policy allows, otherwise queued for review */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionDetail"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    diff_revisions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                a: string;
+                b: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionDiff"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Revisions of different contributions */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_revision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Revision"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_scripts: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScriptPage"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_taxonomy: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path: {
+                /** @description labels, publishers or genres */
+                kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxonomyPage"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_taxonomy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxonomyCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxonomyItem"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_taxonomy: {
+        parameters: {
+            query?: {
+                /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
+                lang?: string;
+            };
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxonomyItem"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

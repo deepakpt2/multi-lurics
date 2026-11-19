@@ -1,6 +1,9 @@
 //! Pure domain model: value objects, entities and invariants. No I/O.
 
+pub mod catalogue;
 pub mod identity;
+pub mod localization;
+pub mod lyrics;
 
 pub use identity::{DisplayName, Email, Password, Principal, Role, UserStatus};
 

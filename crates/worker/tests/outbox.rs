@@ -71,6 +71,19 @@ async fn unknown_topic_is_not_silently_dropped(pool: PgPool) {
 }
 
 #[sqlx::test(migrator = "infrastructure::MIGRATOR")]
+async fn lyrics_events_are_acknowledged_until_a_consumer_exists(pool: PgPool) {
+    let id = enqueue(&pool, "lyrics.published").await;
+    let dir = std::env::temp_dir().join(format!("lyrics-mailbox-{}", Uuid::new_v4()));
+    run_once(&pool, &DevMailbox { dir }).await.unwrap();
+    let done: bool = sqlx::query_scalar("SELECT processed_at IS NOT NULL FROM outbox WHERE id = $1")
+        .bind(id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert!(done);
+}
+
+#[sqlx::test(migrator = "infrastructure::MIGRATOR")]
 async fn concurrent_claims_never_overlap(pool: PgPool) {
     for _ in 0..30 {
         enqueue(&pool, "email.verify_requested").await;

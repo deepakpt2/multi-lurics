@@ -4,7 +4,10 @@
 pub mod admin;
 pub mod auth;
 pub mod authz;
+pub mod catalogue;
 pub mod error;
+pub mod localization;
+pub mod lyrics;
 pub mod pagination;
 
 pub use error::AppError;

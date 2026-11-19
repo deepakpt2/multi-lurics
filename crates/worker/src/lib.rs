@@ -22,6 +22,12 @@ pub struct DevMailbox {
 #[async_trait::async_trait]
 impl Handler for DevMailbox {
     async fn handle(&self, e: &OutboxEvent) -> anyhow::Result<()> {
+        // Published-lyrics events have no consumer yet (search indexing and cache purging come
+        // later); acknowledge them rather than retrying forever.
+        if e.topic.starts_with("lyrics.") {
+            tracing::info!(id = %e.id, topic = %e.topic, aggregate_id = %e.aggregate_id, "event acknowledged (no consumer yet)");
+            return Ok(());
+        }
         if !e.topic.starts_with("email.") {
             anyhow::bail!("no handler for topic '{}'", e.topic);
         }

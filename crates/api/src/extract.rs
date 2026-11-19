@@ -24,6 +24,11 @@ pub struct ApiJson<T>(pub T);
 #[from_request(via(axum::extract::Query), rejection(ApiError))]
 pub struct ApiQuery<T>(pub T);
 
+/// Path parameters whose rejections become problem+json.
+#[derive(FromRequestParts)]
+#[from_request(via(axum::extract::Path), rejection(ApiError))]
+pub struct ApiPath<T>(pub T);
+
 /// Audit/trace metadata for the current request.
 pub struct Meta(pub RequestMeta);
 
@@ -60,6 +65,21 @@ impl FromRequestParts<App> for RequireUser {
             .ok_or(AppError::Unauthenticated)?;
         parts.extensions.insert(principal.clone());
         Ok(Self(principal))
+    }
+}
+
+/// A signed-in user if there is a valid session, otherwise `None`. A bad or missing cookie is
+/// just "anonymous"; only real failures (database down) are errors.
+pub struct MaybeUser(pub Option<Principal>);
+
+impl FromRequestParts<App> for MaybeUser {
+    type Rejection = ApiError;
+    async fn from_request_parts(parts: &mut Parts, app: &App) -> Result<Self, ApiError> {
+        match RequireUser::from_request_parts(parts, app).await {
+            Ok(RequireUser(p)) => Ok(Self(Some(p))),
+            Err(e) if e.0.status == 401 => Ok(Self(None)),
+            Err(e) => Err(e),
+        }
     }
 }
 

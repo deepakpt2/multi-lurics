@@ -57,6 +57,16 @@ pub async fn csrf(req: Request, next: Next) -> Response {
     }
 }
 
+/// Marks a response as private to the caller so no shared cache or CDN stores it.
+pub async fn no_store(req: Request, next: Next) -> Response {
+    let mut res = next.run(req).await;
+    res.headers_mut().insert(
+        axum::http::header::CACHE_CONTROL,
+        axum::http::HeaderValue::from_static("private, no-store"),
+    );
+    res
+}
+
 #[cfg(test)]
 mod tests {
     use super::acceptable;

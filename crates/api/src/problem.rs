@@ -3,7 +3,7 @@
 
 use crate::middleware::current_request_id;
 use application::AppError;
-use axum::extract::rejection::{JsonRejection, QueryRejection};
+use axum::extract::rejection::{JsonRejection, PathRejection, QueryRejection};
 use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 use domain::FieldViolation;
@@ -43,6 +43,12 @@ pub struct Problem {
     /// Present on `409` revision conflicts: the revision the client must rebase onto.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub current_revision_id: Option<Uuid>,
+    /// Present on `409 version_conflict`: the record's current `version`; reload, then reapply.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub current_version: Option<i32>,
+    /// Present on `409 duplicate_identifier` when known: the record already holding the identifier.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub existing_id: Option<Uuid>,
 }
 
 #[derive(Debug)]
@@ -59,6 +65,8 @@ impl ApiError {
             request_id: None,
             errors: Vec::new(),
             current_revision_id: None,
+            current_version: None,
+            existing_id: None,
         }))
     }
 
@@ -102,6 +110,26 @@ impl From<AppError> for ApiError {
                 p.0.current_revision_id = current_revision_id;
                 p
             }
+            AppError::StaleVersion { current_version } => {
+                let mut p = Self::new(S::CONFLICT, "version_conflict", "Conflict");
+                p.0.current_version = Some(current_version);
+                p
+            }
+            AppError::Duplicate { field, existing_id } => {
+                let mut p = Self::new(S::CONFLICT, "duplicate_identifier", "Duplicate identifier").with_errors(vec![
+                    FieldViolation {
+                        field,
+                        code: "duplicate",
+                    },
+                ]);
+                p.0.existing_id = existing_id;
+                p
+            }
+            AppError::Taken { code, existing_id } => {
+                let mut p = Self::new(S::CONFLICT, code, "Conflict");
+                p.0.existing_id = existing_id;
+                p
+            }
             AppError::Unavailable => Self::new(S::SERVICE_UNAVAILABLE, "unavailable", "Service unavailable"),
             AppError::Internal(err) => {
                 // Full error goes to logs (correlated by request id), never to the client.
@@ -133,6 +161,13 @@ impl From<JsonRejection> for ApiError {
 impl From<QueryRejection> for ApiError {
     fn from(_: QueryRejection) -> Self {
         Self::new(StatusCode::BAD_REQUEST, "invalid_query", "Invalid query parameters")
+    }
+}
+
+/// A malformed id in the path cannot name an existing resource.
+impl From<PathRejection> for ApiError {
+    fn from(_: PathRejection) -> Self {
+        Self::new(StatusCode::NOT_FOUND, "not_found", "Not found")
     }
 }
 

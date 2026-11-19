@@ -80,3 +80,37 @@ form { display: grid; gap: 1rem; }
 .details { display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1.5rem; }
 .details dt { font-weight: 600; }
 .details dd { margin: 0; }
+.filters { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; }
+.field select, .ref-items select, .picker input {
+  font: inherit; padding-block: 0.4rem; padding-inline: 0.6rem;
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: inherit;
+}
+.entity-list, .credits { padding-inline-start: 1.25rem; }
+.entity-list li, .credits li { margin-block: 0.25rem; }
+.ref-list { border: 1px solid var(--border); border-radius: var(--radius); padding-block: 0.75rem; padding-inline: 1rem; display: grid; gap: 0.75rem; }
+.ref-list[aria-invalid="true"] { border-color: var(--error-fg); }
+.ref-items { margin: 0; padding-inline-start: 1.25rem; display: grid; gap: 0.5rem; }
+.ref-items li > * { margin-inline-end: 0.5rem; }
+.picker { display: grid; gap: 0.25rem; }
+.picker-row { display: flex; gap: 0.5rem; }
+.picker-row input { flex: 1; min-inline-size: 0; }
+.picker-results { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tracks { padding-inline-start: 1.5rem; }
+.badge { margin-inline-start: 0.4rem; padding-block: 0.05rem; padding-inline: 0.45rem; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); white-space: nowrap; }
+.queue { list-style: none; padding: 0; display: grid; gap: 1rem; }
+.queue-item { border: 1px solid var(--border); border-radius: var(--radius); padding-block: 0.75rem; padding-inline: 1rem; }
+.queue-item p { margin-block: 0.25rem; }
+.field textarea, .field select { font: inherit; }
+/* Names keep their own script's font; Malayalam/Arabic/Hebrew shaping must not fall back to a Latin face. */
+[lang="ml"], [lang^="ml-"] { font-family: "Noto Sans Malayalam", system-ui, sans-serif; }
+[lang="ar"], [lang^="ar-"], [lang="ur"], [lang="fa"] { font-family: "Noto Sans Arabic", system-ui, sans-serif; }
+[lang="he"], [lang^="he-"] { font-family: "Noto Sans Hebrew", system-ui, sans-serif; }
+
+/* Lyrics: bodies keep their line breaks and take direction/language from the contribution. */
+.lyrics { white-space: pre-wrap; font: inherit; line-height: 1.7; margin-block: 1rem; unicode-bidi: plaintext; }
+.lyrics-input { width: 100%; font: inherit; line-height: 1.6; }
+.history { list-style: none; padding: 0; display: grid; gap: 1rem; }
+.diff { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.5rem 1rem; }
+.diff-line { margin-block: 0; white-space: pre-wrap; }
+.diff-line ins { text-decoration: none; background: color-mix(in srgb, var(--ok, #2e7d32) 22%, transparent); }
+.diff-line del { background: color-mix(in srgb, var(--danger, #c62828) 22%, transparent); }

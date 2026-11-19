@@ -17,6 +17,12 @@ export function SiteHeader() {
         {t("app.name")}
       </Link>
       <nav aria-label={t("nav.primary")}>
+        <Link href="/compositions">{t("nav.compositions")}</Link>
+        <Link href="/recordings">{t("nav.recordings")}</Link>
+        <Link href="/artists">{t("nav.artists")}</Link>
+        <Link href="/albums">{t("nav.albums")}</Link>
+        <Link href="/moderation">{t("nav.moderation")}</Link>
+        <Link href="/contributions">{t("nav.myLyrics")}</Link>
         <Link href="/login">{t("nav.signIn")}</Link>
         <Link href="/register">{t("nav.register")}</Link>
         <Link href="/account">{t("nav.account")}</Link>

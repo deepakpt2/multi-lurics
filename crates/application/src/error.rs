@@ -26,6 +26,21 @@ pub enum AppError {
         code: &'static str,
         current_revision_id: Option<Uuid>,
     },
+    /// Optimistic-concurrency failure on a versioned catalogue record.
+    #[error("stale version (current {current_version})")]
+    StaleVersion { current_version: i32 },
+    /// A strong identifier already belongs to another record. Never merged silently.
+    #[error("duplicate {field}")]
+    Duplicate {
+        field: &'static str,
+        existing_id: Option<Uuid>,
+    },
+    /// A unique slot (language slot, preferred name, alias) already holds this content. Never merged.
+    #[error("{code}")]
+    Taken {
+        code: &'static str,
+        existing_id: Option<Uuid>,
+    },
     #[error("service unavailable")]
     Unavailable,
     #[error(transparent)]

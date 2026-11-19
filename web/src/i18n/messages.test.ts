@@ -27,9 +27,18 @@ describe("message catalogs", () => {
       "validation_failed", "unauthenticated", "invalid_credentials", "email_not_verified", "forbidden",
       "invalid_token", "not_found", "unavailable", "internal", "csrf_header_missing", "malformed_json",
       "invalid_body", "unsupported_media_type", "invalid_cursor", "invalid_query",
+      "version_conflict", "duplicate_identifier", "recording_has_relationships", "referential_conflict",
+      "concurrent_update", "stale_revision", "localization_slot_taken", "preferred_slot_taken", "alias_exists",
+      "invalid_state_transition",
     ];
     for (const c of errorCodes) expect(en.errors).toHaveProperty(c);
-    for (const c of ["required", "invalid_email", "too_short", "too_long", "invalid_characters", "unsupported_locale", "out_of_range"])
+    for (const c of [
+      "required", "invalid_email", "too_short", "too_long", "invalid_characters", "unsupported_locale", "out_of_range",
+      "invalid_identifier", "invalid_choice", "not_found", "invalid_role", "role_not_applicable", "duplicate_credit",
+      "unknown_artist", "too_many", "invalid_kind", "self_reference", "duplicate_relationship", "unknown_recording",
+      "composition_mismatch", "duplicate_track", "duplicate", "machine_not_allowed", "unknown_language", "unknown_script",
+      "invalid_language_tag",
+    ])
       expect(en.validation).toHaveProperty(c);
   });
 });

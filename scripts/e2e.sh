@@ -41,4 +41,4 @@ wait_for() {
 wait_for "http://127.0.0.1:$API_PORT/readyz" '"migration_version"'
 wait_for "http://127.0.0.1:$WEB_PORT/en" 'lang="en"'
 
-(cd web && E2E_BASE_URL="http://127.0.0.1:$WEB_PORT" E2E_MAILBOX="$MAILBOX" npm run -s test:e2e)
+(cd web && E2E_BASE_URL="http://127.0.0.1:$WEB_PORT" E2E_MAILBOX="$MAILBOX" E2E_DB_URL="$E2E_DB_URL" npm run -s test:e2e)

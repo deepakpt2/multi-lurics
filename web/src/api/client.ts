@@ -10,6 +10,8 @@ export type FieldError = components["schemas"]["FieldError"];
  * a response that is not problem+json (proxy down, HTML error page) is normalized
  * so components never branch on transport details.
  */
+const STALE_CODES: ReadonlySet<string> = new Set(["version_conflict", "stale_revision"]);
+
 export class ApiProblem extends Error {
   constructor(public readonly problem: Problem) {
     super(problem.code);
@@ -24,8 +26,14 @@ export class ApiProblem extends Error {
   get fieldErrors(): FieldError[] {
     return this.problem.errors ?? [];
   }
+  /** The client's copy is stale (someone saved first). Other 409s (duplicates, blocked moves) are plain errors. */
   get isConflict() {
-    return this.problem.status === 409;
+    const p = this.problem;
+    return p.status === 409 && (STALE_CODES.has(p.code) || p.current_revision_id != null || p.current_version != null);
+  }
+  /** On `duplicate_identifier`: the record that already holds the identifier. */
+  get existingId() {
+    return this.problem.existing_id ?? undefined;
   }
 }
 
@@ -39,6 +47,13 @@ export function toProblem(error: unknown, status: number): ApiProblem {
   return new ApiProblem({ type: "about:blank", title: code, status, code });
 }
 
+let displayLanguage: string | undefined;
+
+/** The reader's UI language; sent as `lang` on API reads so the server resolves names for them. */
+export function setDisplayLanguage(lang: string | undefined) {
+  displayLanguage = lang;
+}
+
 /** Same-origin in the browser (Next rewrites /api/v1 to the API); `Request` needs an absolute URL. */
 const defaultBase = () => (typeof window === "undefined" ? "" : window.location.origin);
 
@@ -47,7 +62,15 @@ export function createApi(baseUrl = defaultBase(), fetchImpl: typeof fetch = (..
   const client = createClient<paths>({
     baseUrl,
     credentials: "same-origin",
-    fetch: async (req: Request) => {
+    fetch: async (input: Request) => {
+      let req = input;
+      if (req.method === "GET" && displayLanguage) {
+        const url = new URL(req.url);
+        if (url.pathname.startsWith("/api/v1/") && !url.searchParams.has("lang")) {
+          url.searchParams.set("lang", displayLanguage);
+          req = new Request(url, req);
+        }
+      }
       // Required by the API's CSRF guard on state-changing requests; harmless on GET.
       req.headers.set("x-requested-with", "fetch");
       try {

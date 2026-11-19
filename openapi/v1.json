@@ -95,6 +95,840 @@
         ]
       }
     },
+    "/api/v1/admin/trust-policy": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "get_trust_policy",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustPolicyBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "set_trust_policy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrustPolicyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustPolicyBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/albums": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "list_albums",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "artist_id",
+            "in": "query",
+            "description": "Albums crediting this artist.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/AlbumKind"
+            }
+          },
+          {
+            "name": "barcode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "description": "Case-insensitive title prefix.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "create_album",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/albums/{id}": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "get_album",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "update_album",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/aliases/{id}/reject": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "reject_alias",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Alias"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/aliases/{id}/verify": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "verify_alias",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Alias"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/artists": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "list_artists",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ArtistKind"
+            }
+          },
+          {
+            "name": "isni",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "description": "Case-insensitive name prefix.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtistPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "create_artist",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtistCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtistDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/artists/{id}": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "get_artist",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtistDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "update_artist",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtistPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtistDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "tags": [
@@ -329,6 +1163,1641 @@
         }
       }
     },
+    "/api/v1/compositions": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "list_compositions",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "artist_id",
+            "in": "query",
+            "description": "Compositions crediting this artist.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "iswc",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "description": "Case-insensitive title prefix.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompositionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "create_composition",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompositionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompositionDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/compositions/{id}": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "get_composition",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompositionDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "update_composition",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompositionPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompositionDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/contributions/{id}": {
+      "get": {
+        "tags": [
+          "lyrics"
+        ],
+        "operationId": "get_contribution",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public: the published revision. Author and moderators: also the head and review state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contributions/{id}/approve": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "approve_contribution",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "8–128 chars; a retry returns the first result",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContributionDecision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted for publication; not yet public",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/contributions/{id}/publish": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "publish_contribution",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "8–128 chars; a retry returns the first result",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContributionDecision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The reviewed revision is now public; becomes the primary if the slot has none",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/contributions/{id}/reject": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "reject_contribution",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "8–128 chars; a retry returns the first result",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContributionDecision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected; whatever was public stays public",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/contributions/{id}/revisions": {
+      "get": {
+        "tags": [
+          "lyrics"
+        ],
+        "operationId": "list_revisions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public: revisions that were published. Author and moderators: all",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionPage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "lyrics"
+        ],
+        "operationId": "create_revision",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "8–128 chars; a retry returns the first result",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "stale_revision, with current_revision_id",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/entities/{entity_type}/{entity_id}/aliases": {
+      "get": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "list_aliases",
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "`pending`, `verified` or `rejected`. Only moderators may ask for anything but `verified`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AliasPage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "create_alias",
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AliasCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Alias"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/entities/{entity_type}/{entity_id}/default-language": {
+      "put": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "set_default_language",
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DefaultLanguageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/entities/{entity_type}/{entity_id}/localizations": {
+      "get": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "list_entity_localizations",
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "`pending`, `verified` or `rejected`. Only moderators may ask for anything but `verified`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalizationPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "create_localization",
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalizationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Pending review, or published when the author is a moderator",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Localization"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/languages": {
+      "get": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "list_languages",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LanguagePage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/localizations/{id}": {
+      "get": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "get_localization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Localization"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Also for pending/rejected rows the caller may not see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "update_localization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalizationPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Localization"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/localizations/{id}/reject": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "reject_localization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Decision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Localization"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/localizations/{id}/revisions": {
+      "get": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "list_revisions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionPage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/localizations/{id}/verify": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "verify_localization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Decision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Localization"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
     "/api/v1/me": {
       "get": {
         "tags": [
@@ -362,6 +2831,1051 @@
             "session": []
           }
         ]
+      }
+    },
+    "/api/v1/me/contributions": {
+      "get": {
+        "tags": [
+          "lyrics"
+        ],
+        "operationId": "my_contributions",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Your own contributions in any state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/moderation/contributions": {
+      "get": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "contribution_queue",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/moderation/localizations": {
+      "get": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "moderation_queue",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "`pending`, `verified` or `rejected`. Only moderators may ask for anything but `verified`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalizationPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/recordings": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "list_recordings",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "composition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "artist_id",
+            "in": "query",
+            "description": "Recordings crediting this artist.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "album_id",
+            "in": "query",
+            "description": "Recordings on this album.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "isrc",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "description": "Case-insensitive title prefix.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordingPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "create_recording",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordingCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordingDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/recordings/{id}": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "get_recording",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordingDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "catalogue"
+        ],
+        "operationId": "update_recording",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordingPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordingDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/recordings/{id}/contributions": {
+      "get": {
+        "tags": [
+          "lyrics"
+        ],
+        "operationId": "list_contributions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "`original`, `translation` or `transliteration`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published contributions only",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionPage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "lyrics"
+        ],
+        "operationId": "create_contribution",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "8–128 chars; a retry returns the first result",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContributionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Published at once when the trust policy allows, otherwise queued for review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/revisions/{a}/diff/{b}": {
+      "get": {
+        "tags": [
+          "lyrics"
+        ],
+        "operationId": "diff_revisions",
+        "parameters": [
+          {
+            "name": "a",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "b",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionDiff"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Revisions of different contributions",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/revisions/{id}": {
+      "get": {
+        "tags": [
+          "lyrics"
+        ],
+        "operationId": "get_revision",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scripts": {
+      "get": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "list_scripts",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScriptPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/taxonomy/{kind}": {
+      "get": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "list_taxonomy",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "description": "labels, publishers or genres",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyPage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "create_taxonomy",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxonomyCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyItem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/taxonomy/{kind}/{id}": {
+      "get": {
+        "tags": [
+          "localization"
+        ],
+        "operationId": "get_taxonomy",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyItem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/healthz": {
@@ -419,6 +3933,582 @@
   },
   "components": {
     "schemas": {
+      "Album": {
+        "type": "object",
+        "required": [
+          "id",
+          "display",
+          "title",
+          "kind",
+          "version",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display",
+            "description": "Name resolved for the requested `lang` (see `fallback`)."
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AlbumKind"
+          },
+          "release_year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AlbumAppearance": {
+        "type": "object",
+        "required": [
+          "display",
+          "album_id",
+          "title",
+          "position"
+        ],
+        "properties": {
+          "album_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "AlbumCreate": {
+        "type": "object",
+        "properties": {
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "UPC/EAN (GTIN-8/12/13/14); check digit verified."
+          },
+          "credits": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CreditInput"
+            },
+            "description": "Album credits (primary_artist, producer)."
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AlbumKind"
+          },
+          "release_year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "tracks": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Recording ids in track order (positions 1..n)."
+          }
+        }
+      },
+      "AlbumDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Album"
+          },
+          {
+            "type": "object",
+            "required": [
+              "credits",
+              "tracks"
+            ],
+            "properties": {
+              "credits": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Credit"
+                }
+              },
+              "tracks": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Track"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "AlbumKind": {
+        "type": "string",
+        "enum": [
+          "album",
+          "single",
+          "ep",
+          "compilation",
+          "soundtrack",
+          "other"
+        ]
+      },
+      "AlbumPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Album"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AlbumPatch": {
+        "type": "object",
+        "description": "Absent fields are left unchanged; `null` clears; `credits`/`tracks`, when present, replace the list.",
+        "properties": {
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "credits": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CreditInput"
+            }
+          },
+          "expected_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "kind": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AlbumKind"
+              }
+            ]
+          },
+          "release_year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tracks": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "Alias": {
+        "type": "object",
+        "description": "A verified alternate spelling or name. Always carries its source.",
+        "required": [
+          "id",
+          "entity_type",
+          "entity_id",
+          "alias",
+          "dir",
+          "source",
+          "verification_state",
+          "created_by",
+          "created_at"
+        ],
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dir": {
+            "$ref": "#/components/schemas/Dir"
+          },
+          "entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "script": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "verification_state": {
+            "$ref": "#/components/schemas/VerificationState"
+          },
+          "verified_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "AliasCreate": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "script": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "description": "Required: where this alternate name is attested."
+          }
+        }
+      },
+      "AliasPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Alias"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Artist": {
+        "type": "object",
+        "required": [
+          "id",
+          "display",
+          "name",
+          "kind",
+          "version",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "disambiguation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display",
+            "description": "Name resolved for the requested `lang` (see `fallback`)."
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isni": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ArtistKind"
+          },
+          "name": {
+            "type": "string",
+            "description": "As written, in any script. Never translated."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ArtistCreate": {
+        "type": "object",
+        "properties": {
+          "disambiguation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isni": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "ISNI; spaces and hyphens allowed, check digit verified."
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ArtistKind"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ArtistCredit": {
+        "type": "object",
+        "required": [
+          "target_type",
+          "target_id",
+          "title",
+          "title_display",
+          "role_id",
+          "role_category",
+          "role_display",
+          "role"
+        ],
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/CreditRole"
+          },
+          "role_category": {
+            "$ref": "#/components/schemas/RoleCategory"
+          },
+          "role_display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "role_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "target_type": {
+            "type": "string",
+            "description": "`composition`, `recording` or `album`."
+          },
+          "title": {
+            "type": "string"
+          },
+          "title_display": {
+            "$ref": "#/components/schemas/Display"
+          }
+        }
+      },
+      "ArtistDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Artist"
+          },
+          {
+            "type": "object",
+            "required": [
+              "credits"
+            ],
+            "properties": {
+              "credits": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ArtistCredit"
+                },
+                "description": "Most recent 100 credits."
+              }
+            }
+          }
+        ]
+      },
+      "ArtistKind": {
+        "type": "string",
+        "enum": [
+          "person",
+          "group",
+          "other"
+        ]
+      },
+      "ArtistPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Artist"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ArtistPatch": {
+        "type": "object",
+        "description": "Absent fields are left unchanged; `null` clears an optional field.",
+        "properties": {
+          "disambiguation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expected_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "The `version` the client last read. Stale → `409 version_conflict`."
+          },
+          "isni": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ArtistKind"
+              }
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
       "AuditEvent": {
         "type": "object",
         "required": [
@@ -486,6 +4576,603 @@
           }
         }
       },
+      "Composition": {
+        "type": "object",
+        "required": [
+          "id",
+          "display",
+          "title",
+          "version",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display",
+            "description": "Name resolved for the requested `lang` (see `fallback`)."
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "iswc": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "CompositionCreate": {
+        "type": "object",
+        "properties": {
+          "credits": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CreditInput"
+            },
+            "description": "Work-level credits only (composer, lyricist)."
+          },
+          "iswc": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "ISWC, e.g. `T-034.524.680-1`; check digit verified."
+          },
+          "title": {
+            "type": "string"
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "CompositionDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Composition"
+          },
+          {
+            "type": "object",
+            "required": [
+              "credits",
+              "recordings",
+              "recording_count"
+            ],
+            "properties": {
+              "credits": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Credit"
+                }
+              },
+              "recording_count": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "recordings": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RecordingSummary"
+                },
+                "description": "Newest 100 recordings; page through `GET /recordings?composition_id=` for all."
+              }
+            }
+          }
+        ]
+      },
+      "CompositionPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Composition"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "CompositionPatch": {
+        "type": "object",
+        "description": "Absent fields are left unchanged; `null` clears; `credits`, when present, replaces the list.",
+        "properties": {
+          "credits": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CreditInput"
+            }
+          },
+          "expected_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "iswc": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "CompositionRef": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "display"
+        ],
+        "properties": {
+          "display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "ContributionCreate": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "script": {
+            "type": "string"
+          },
+          "source_contribution_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Optional pointer to the original (or other version) this one was made from."
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "ContributionDecision": {
+        "type": "object",
+        "properties": {
+          "expected_parent_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The head revision that was reviewed. A mismatch returns 409 with `current_revision_id`."
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ContributionDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContributionSummary"
+          },
+          {
+            "type": "object",
+            "required": [
+              "has_unpublished_changes"
+            ],
+            "properties": {
+              "current_revision_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "uuid",
+                "description": "Send this as `expected_parent_revision_id` when editing or deciding. Author and moderators only."
+              },
+              "has_unpublished_changes": {
+                "type": "boolean",
+                "description": "The head differs from what is public. Author and moderators only."
+              },
+              "head": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Revision",
+                    "description": "Newest revision, which may be unpublished. Author and moderators only."
+                  }
+                ]
+              },
+              "published": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Revision",
+                    "description": "The public revision: what everyone reads. Null until something is published."
+                  }
+                ]
+              },
+              "review_note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "ContributionPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContributionSummary"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ContributionStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "published",
+          "rejected"
+        ]
+      },
+      "ContributionSummary": {
+        "type": "object",
+        "description": "One lyric version in a slot (recording + type + language + script). Several contributions\nmay share a slot as alternatives; at most one is the primary.",
+        "required": [
+          "id",
+          "recording_id",
+          "type",
+          "language",
+          "script",
+          "dir",
+          "is_primary",
+          "status",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dir": {
+            "$ref": "#/components/schemas/Dir",
+            "description": "Text direction of the script; set it on the element that renders the body."
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "is_primary": {
+            "type": "boolean"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language tag of the lyrics (`ml`, `ar`)."
+          },
+          "recording_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "script": {
+            "type": "string",
+            "description": "ISO 15924 script code (`Mlym`, `Arab`). Language and script are separate on purpose."
+          },
+          "source_contribution_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The translated or transliterated original, when it is public."
+          },
+          "status": {
+            "$ref": "#/components/schemas/ContributionStatus",
+            "description": "Review state of the newest revision. The public always sees `published`."
+          },
+          "type": {
+            "$ref": "#/components/schemas/ContributionType"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ContributionType": {
+        "type": "string",
+        "enum": [
+          "original",
+          "translation",
+          "transliteration"
+        ]
+      },
+      "Credit": {
+        "type": "object",
+        "description": "One artist in one role. Artist names are shown verbatim, never translated.",
+        "required": [
+          "artist_id",
+          "artist_name",
+          "artist_display",
+          "role",
+          "role_id",
+          "role_category",
+          "role_display"
+        ],
+        "properties": {
+          "artist_display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "artist_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "artist_name": {
+            "type": "string",
+            "description": "Base (original) name; use `artist_display` for the localized one."
+          },
+          "role": {
+            "$ref": "#/components/schemas/CreditRole"
+          },
+          "role_category": {
+            "$ref": "#/components/schemas/RoleCategory",
+            "description": "Original songwriters, translators and adapters are distinct categories; group by this."
+          },
+          "role_display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "role_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Id of the credit role entity, which can be localized like any other."
+          }
+        }
+      },
+      "CreditInput": {
+        "type": "object",
+        "required": [
+          "artist_id",
+          "role"
+        ],
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "$ref": "#/components/schemas/CreditRole"
+          }
+        }
+      },
+      "CreditRole": {
+        "type": "string",
+        "description": "Composition: composer, lyricist. Recording: performer, featured_performer, arranger, producer,\nconductor. Album: primary_artist, producer.",
+        "enum": [
+          "composer",
+          "lyricist",
+          "performer",
+          "featured_performer",
+          "arranger",
+          "producer",
+          "conductor",
+          "primary_artist"
+        ]
+      },
+      "Decision": {
+        "type": "object",
+        "properties": {
+          "expected_parent_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "DefaultLanguageBody": {
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "language": {
+            "type": "string",
+            "description": "ISO 639-1/639-3 code of the language the entity was originally written in."
+          }
+        }
+      },
+      "DiffHunk": {
+        "type": "object",
+        "required": [
+          "op",
+          "lines"
+        ],
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "op": {
+            "$ref": "#/components/schemas/DiffOp"
+          }
+        }
+      },
+      "DiffOp": {
+        "type": "string",
+        "enum": [
+          "equal",
+          "insert",
+          "delete"
+        ]
+      },
+      "Dir": {
+        "type": "string",
+        "enum": [
+          "ltr",
+          "rtl",
+          "auto"
+        ]
+      },
+      "Display": {
+        "type": "object",
+        "description": "How to show an entity's name. When `fallback` is true the text is **not** in the requested\nlanguage and the UI must say so. Set `lang` and `dir` on the element that renders `text`.",
+        "required": [
+          "text",
+          "dir",
+          "fallback",
+          "resolution"
+        ],
+        "properties": {
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dir": {
+            "$ref": "#/components/schemas/Dir"
+          },
+          "fallback": {
+            "type": "boolean"
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Language of `text` (`ml`, `sr-Latn`); null for a base name of unknown language."
+          },
+          "resolution": {
+            "$ref": "#/components/schemas/DisplayResolution"
+          },
+          "script": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "DisplayResolution": {
+        "type": "string",
+        "enum": [
+          "requested",
+          "default_language",
+          "fallback",
+          "base"
+        ]
+      },
       "FieldError": {
         "type": "object",
         "required": [
@@ -520,6 +5207,304 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "Language": {
+        "type": "object",
+        "required": [
+          "id",
+          "iso639_3",
+          "name_en",
+          "endonym",
+          "is_rtl",
+          "is_extension"
+        ],
+        "properties": {
+          "default_script": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "ISO 15924 code of the usual script."
+          },
+          "endonym": {
+            "type": "string",
+            "description": "The language's own name for itself."
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "is_extension": {
+            "type": "boolean",
+            "description": "Governed private-use extension (ISO 639-3 qaa–qtz)."
+          },
+          "is_rtl": {
+            "type": "boolean"
+          },
+          "iso639_1": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "iso639_2": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "iso639_3": {
+            "type": "string",
+            "description": "Primary key for clients: ISO 639-3."
+          },
+          "name_en": {
+            "type": "string"
+          }
+        }
+      },
+      "LanguagePage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Language"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Localization": {
+        "type": "object",
+        "description": "One name of an entity in one language (and optionally script). Personal names are never machine-made.",
+        "required": [
+          "id",
+          "entity_type",
+          "entity_id",
+          "language",
+          "dir",
+          "name",
+          "is_preferred",
+          "provenance",
+          "verification_state",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "current_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Send as `expected_parent_revision_id` on the next write."
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dir": {
+            "$ref": "#/components/schemas/Dir"
+          },
+          "entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entity_type": {
+            "type": "string",
+            "description": "`composition`, `recording`, `artist`, `album`, `label`, `publisher`, `genre` or `credit_role`."
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "is_preferred": {
+            "type": "boolean"
+          },
+          "language": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "script": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "verification_state": {
+            "$ref": "#/components/schemas/VerificationState"
+          },
+          "verified_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "verified_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "LocalizationCreate": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_preferred": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "Omitted: preferred iff it is the first name in that language. `true` when another preferred\nname exists is `409 preferred_slot_taken`; names are never swapped silently."
+          },
+          "language": {
+            "type": "string",
+            "description": "ISO 639-1 or 639-3 code, e.g. `ml`."
+          },
+          "name": {
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "script": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "ISO 15924 code, e.g. `Mlym`. Optional."
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Required for artist names (where the name comes from)."
+          }
+        }
+      },
+      "LocalizationPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Localization"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "LocalizationPatch": {
+        "type": "object",
+        "description": "Absent fields are left unchanged; `null` clears an optional field.",
+        "properties": {
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expected_parent_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The `current_revision_id` the client last read. Stale → `409 stale_revision` carrying the current one."
+          },
+          "is_preferred": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Provenance"
+              }
+            ]
+          },
+          "script": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
@@ -581,6 +5566,14 @@
             "format": "uuid",
             "description": "Present on `409` revision conflicts: the revision the client must rebase onto."
           },
+          "current_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "Present on `409 version_conflict`: the record's current `version`; reload, then reapply."
+          },
           "detail": {
             "type": [
               "string",
@@ -593,6 +5586,14 @@
               "$ref": "#/components/schemas/FieldError"
             },
             "description": "Present for `validation_failed`."
+          },
+          "existing_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Present on `409 duplicate_identifier` when known: the record already holding the identifier."
           },
           "request_id": {
             "type": [
@@ -611,6 +5612,310 @@
           "type": {
             "type": "string",
             "example": "/problems/validation_failed"
+          }
+        }
+      },
+      "Provenance": {
+        "type": "string",
+        "enum": [
+          "original",
+          "human_translation",
+          "transliteration",
+          "community",
+          "imported",
+          "machine"
+        ]
+      },
+      "Recording": {
+        "type": "object",
+        "required": [
+          "id",
+          "display",
+          "composition_id",
+          "title",
+          "version",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "composition_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display",
+            "description": "Name resolved for the requested `lang` (see `fallback`)."
+          },
+          "duration_ms": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isrc": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "RecordingCreate": {
+        "type": "object",
+        "properties": {
+          "composition_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The existing composition this is a recording of (covers reuse the original's composition)."
+          },
+          "credits": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CreditInput"
+            },
+            "description": "Performance-level credits (performer, featured_performer, arranger, producer, conductor)."
+          },
+          "duration_ms": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "isrc": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "ISRC, e.g. `US-RC1-76-07839`."
+          },
+          "relationships": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/RelationshipInput"
+            },
+            "description": "Links from this recording to others (e.g. this is a `cover` of `related_recording_id`)."
+          },
+          "title": {
+            "type": "string"
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "RecordingDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Recording"
+          },
+          {
+            "type": "object",
+            "required": [
+              "composition",
+              "credits",
+              "relationships",
+              "related_from",
+              "albums"
+            ],
+            "properties": {
+              "albums": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AlbumAppearance"
+                }
+              },
+              "composition": {
+                "$ref": "#/components/schemas/CompositionRef"
+              },
+              "credits": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Credit"
+                }
+              },
+              "related_from": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RelatedRecording"
+                },
+                "description": "Others → this recording (e.g. … is a `cover` of it)."
+              },
+              "relationships": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RelatedRecording"
+                },
+                "description": "This recording → others (e.g. it is a `cover` of …)."
+              }
+            }
+          }
+        ]
+      },
+      "RecordingPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recording"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "RecordingPatch": {
+        "type": "object",
+        "description": "Absent fields are left unchanged; `null` clears; `credits`/`relationships`, when present, replace the list.",
+        "properties": {
+          "composition_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "credits": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CreditInput"
+            }
+          },
+          "duration_ms": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "expected_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "isrc": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "relationships": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/RelationshipInput"
+            }
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "RecordingSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "display",
+          "composition_id"
+        ],
+        "properties": {
+          "composition_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "duration_ms": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isrc": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
           }
         }
       },
@@ -635,6 +5940,275 @@
           }
         }
       },
+      "RelatedRecording": {
+        "type": "object",
+        "required": [
+          "display",
+          "kind",
+          "recording_id",
+          "title",
+          "composition_id"
+        ],
+        "properties": {
+          "composition_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/RelationshipKind"
+          },
+          "recording_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "RelationshipInput": {
+        "type": "object",
+        "required": [
+          "kind",
+          "related_recording_id"
+        ],
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/RelationshipKind"
+          },
+          "related_recording_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "RelationshipKind": {
+        "type": "string",
+        "description": "All kinds except `related_performance` require both recordings to share a composition.",
+        "enum": [
+          "cover",
+          "remake",
+          "live",
+          "alternate_arrangement",
+          "related_performance"
+        ]
+      },
+      "Revision": {
+        "type": "object",
+        "required": [
+          "id",
+          "contribution_id",
+          "revision_no",
+          "body",
+          "created_by",
+          "created_at",
+          "published"
+        ],
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "contribution_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "parent_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "published": {
+            "type": "boolean",
+            "description": "Was this revision ever public?"
+          },
+          "restored_from_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Set when this revision restored an older one."
+          },
+          "revision_no": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "RevisionCreate": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "New text. Give either `body` or `restore_from_revision_id`."
+          },
+          "expected_parent_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The head revision you based this on. Required; a mismatch returns 409 with `current_revision_id`."
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "restore_from_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Restore an older revision of this contribution as a new revision."
+          }
+        }
+      },
+      "RevisionDiff": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "hunks"
+        ],
+        "properties": {
+          "from": {
+            "$ref": "#/components/schemas/RevisionSummary"
+          },
+          "hunks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiffHunk"
+            }
+          },
+          "to": {
+            "$ref": "#/components/schemas/RevisionSummary"
+          }
+        }
+      },
+      "RevisionPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RevisionSummary"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "RevisionSummary": {
+        "type": "object",
+        "description": "A revision without its body, for history lists.",
+        "required": [
+          "id",
+          "contribution_id",
+          "revision_no",
+          "created_by",
+          "created_at",
+          "published",
+          "size"
+        ],
+        "properties": {
+          "contribution_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "parent_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "restored_from_revision_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "revision_no": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Length of the body in characters.",
+            "minimum": 0
+          }
+        }
+      },
+      "RoleCategory": {
+        "type": "string",
+        "description": "Credit categories. Original songwriters, translators and adapters are always separate groups.",
+        "enum": [
+          "original_songwriter",
+          "translator",
+          "adapter",
+          "performance",
+          "production",
+          "other"
+        ]
+      },
       "RoleDto": {
         "type": "string",
         "enum": [
@@ -642,11 +6216,189 @@
           "admin"
         ]
       },
+      "Script": {
+        "type": "object",
+        "required": [
+          "id",
+          "iso15924",
+          "name_en",
+          "is_rtl",
+          "is_extension"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "is_extension": {
+            "type": "boolean"
+          },
+          "is_rtl": {
+            "type": "boolean"
+          },
+          "iso15924": {
+            "type": "string"
+          },
+          "name_en": {
+            "type": "string"
+          },
+          "numeric_code": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ScriptPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Script"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TaxonomyCreate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "TaxonomyItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "display",
+          "version",
+          "created_by",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "TaxonomyPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyItem"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
       "TokenRequest": {
         "type": "object",
         "properties": {
           "token": {
             "type": "string"
+          }
+        }
+      },
+      "Track": {
+        "type": "object",
+        "required": [
+          "display",
+          "position",
+          "recording_id",
+          "title",
+          "composition_id"
+        ],
+        "properties": {
+          "composition_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "duration_ms": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "recording_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "TrustPolicyBody": {
+        "type": "object",
+        "required": [
+          "auto_publish_roles"
+        ],
+        "properties": {
+          "auto_publish_min_published": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Members with at least this many published contributions publish without review; null disables it."
+          },
+          "auto_publish_roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Role names (`moderator`, `admin`) whose submissions publish without review."
           }
         }
       },
@@ -680,6 +6432,26 @@
             "items": {
               "$ref": "#/components/schemas/RoleDto"
             }
+          }
+        }
+      },
+      "VerificationState": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "verified",
+          "rejected"
+        ]
+      },
+      "VersionBody": {
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       }
