@@ -1,0 +1,82 @@
+/* Logical properties only (inline/block, start/end) so layouts mirror correctly in RTL. */
+:root {
+  --bg: #fbfaf7;
+  --fg: #1d1b18;
+  --muted: #6b6560;
+  --border: #ddd7cf;
+  --accent: #8a3b12;
+  --accent-fg: #ffffff;
+  --error-bg: #fdecea;
+  --error-fg: #8c1d18;
+  --warn-bg: #fff4dc;
+  --ok-bg: #e7f5ea;
+  --radius: 8px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171513;
+    --fg: #ece8e2;
+    --muted: #a39d95;
+    --border: #3a3631;
+    --accent: #e08a5a;
+    --accent-fg: #171513;
+    --error-bg: #3b1715;
+    --error-fg: #f6b3ad;
+    --warn-bg: #3a2c10;
+    --ok-bg: #16301d;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Arabic", "Noto Sans Tamil", sans-serif;
+  line-height: 1.6;
+}
+a { color: var(--accent); }
+.container { max-inline-size: 40rem; margin-inline: auto; padding-inline: 1rem; padding-block: 2rem; }
+.site-header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
+  padding-block: 0.75rem; padding-inline: 1rem; border-block-end: 1px solid var(--border);
+}
+.site-header nav { display: flex; gap: 1rem; }
+.brand { font-weight: 700; text-decoration: none; color: var(--fg); margin-inline-end: auto; }
+.locale-switcher a[aria-current="true"] { font-weight: 700; text-decoration: none; color: var(--fg); }
+.skip-link { position: absolute; inset-inline-start: -999px; }
+.skip-link:focus { inset-inline-start: 1rem; background: var(--bg); padding: 0.5rem; }
+.lead { font-size: 1.15rem; color: var(--muted); }
+.actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+form { display: grid; gap: 1rem; }
+.field { display: grid; gap: 0.25rem; }
+.field label { font-weight: 600; }
+.field input {
+  font: inherit; padding-block: 0.5rem; padding-inline: 0.75rem;
+  border: 1px solid var(--border); border-radius: var(--radius); background: transparent; color: inherit;
+}
+.field input[aria-invalid="true"] { border-color: var(--error-fg); }
+.field-error { color: var(--error-fg); margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; margin: 0; }
+.button {
+  display: inline-block; font: inherit; cursor: pointer; text-decoration: none; text-align: center;
+  padding-block: 0.5rem; padding-inline: 1rem; border-radius: var(--radius);
+  border: 1px solid var(--border); background: transparent; color: var(--fg);
+}
+.button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.button:disabled { opacity: 0.6; cursor: progress; }
+.alert { padding-block: 0.75rem; padding-inline: 1rem; border-radius: var(--radius); border-inline-start: 4px solid; }
+.alert p { margin-block: 0.25rem; }
+.alert-error { background: var(--error-bg); color: var(--error-fg); }
+.alert-warning { background: var(--warn-bg); }
+.alert-success { background: var(--ok-bg); }
+.state { padding-block: 2rem; text-align: center; }
+.state-loading { display: flex; gap: 0.5rem; align-items: center; justify-content: center; }
+.spinner {
+  inline-size: 1rem; block-size: 1rem; border-radius: 50%;
+  border: 2px solid var(--border); border-block-start-color: var(--accent); animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+.details { display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1.5rem; }
+.details dt { font-weight: 600; }
+.details dd { margin: 0; }

@@ -1,0 +1,4 @@
+/target
+.env
+.mailbox/
+node_modules/

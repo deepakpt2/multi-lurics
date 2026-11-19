@@ -1,0 +1,109 @@
+{
+  "app": { "name": "Community Lyrics", "tagline": "Lyrics, translations and transliterations, written together." },
+  "nav": {
+    "home": "Home",
+    "signIn": "Sign in",
+    "register": "Create account",
+    "account": "Account",
+    "language": "Language",
+    "skipToContent": "Skip to content",
+    "primary": "Main"
+  },
+  "localeNames": { "en": "English", "ar": "العربية" },
+  "home": { "title": "Welcome", "intro": "Sign in or create an account to get started." },
+  "common": { "loading": "Loading…", "retry": "Try again", "submitting": "Please wait…", "empty": "Nothing here yet." },
+  "fields": {
+    "email": "Email",
+    "display_name": "Display name",
+    "password": "Password",
+    "new_password": "New password"
+  },
+  "hints": {
+    "password": "At least {min} characters.",
+    "display_name": "Shown exactly as you type it, in any script."
+  },
+  "validation": {
+    "required": "This field is required.",
+    "invalid_email": "Enter a valid email address.",
+    "too_short": "This is too short.",
+    "too_long": "This is too long.",
+    "invalid_characters": "This contains characters that are not allowed.",
+    "unsupported_locale": "This language is not supported.",
+    "out_of_range": "This value is out of range.",
+    "generic": "This value is not valid."
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "generic": "Something went wrong. Please try again.",
+    "network_error": "Could not reach the server. Check your connection and try again.",
+    "unexpected_response": "The server sent an unexpected response. Please try again.",
+    "unauthenticated": "Please sign in to continue.",
+    "invalid_credentials": "Email or password is incorrect.",
+    "email_not_verified": "Please verify your email address first. Check your inbox for the link.",
+    "forbidden": "You do not have permission to do this.",
+    "invalid_token": "This link is invalid or has expired.",
+    "not_found": "We could not find what you were looking for.",
+    "unavailable": "The service is temporarily unavailable. Please try again shortly.",
+    "internal": "Something went wrong on our side. Please try again.",
+    "csrf_header_missing": "Your request could not be verified. Reload the page and try again.",
+    "validation_failed": "Please correct the highlighted fields.",
+    "malformed_json": "The request could not be read.",
+    "invalid_body": "The request could not be read.",
+    "unsupported_media_type": "The request could not be read.",
+    "invalid_cursor": "This page link is no longer valid.",
+    "invalid_query": "This address contains invalid parameters.",
+    "requestId": "Reference: {id}"
+  },
+  "conflict": {
+    "title": "Someone else changed this",
+    "body": "Your changes were not saved because a newer version exists. Reload to see the latest version, then reapply your changes.",
+    "reload": "Load latest version"
+  },
+  "register": {
+    "title": "Create an account",
+    "submit": "Create account",
+    "successTitle": "Check your email",
+    "success": "If this address can be registered, we have sent a verification link to it.",
+    "haveAccount": "Already have an account? Sign in"
+  },
+  "login": {
+    "title": "Sign in",
+    "submit": "Sign in",
+    "forgot": "Forgot your password?",
+    "noAccount": "New here? Create an account"
+  },
+  "verify": {
+    "title": "Verify your email",
+    "verifying": "Verifying your email…",
+    "success": "Your email is verified. You can now sign in.",
+    "missingToken": "This verification link is incomplete. Open the link from your email again.",
+    "continue": "Continue to sign in"
+  },
+  "forgot": {
+    "title": "Reset your password",
+    "intro": "Enter your email and we will send you a link to choose a new password.",
+    "submit": "Send reset link",
+    "successTitle": "Check your email",
+    "success": "If an account exists for this address, a reset link is on its way. The link expires in one hour."
+  },
+  "reset": {
+    "title": "Choose a new password",
+    "submit": "Save new password",
+    "success": "Your password has been changed and you have been signed out everywhere. Sign in with your new password.",
+    "missingToken": "This reset link is incomplete. Request a new one."
+  },
+  "account": {
+    "title": "Your account",
+    "signedOutTitle": "You are signed out",
+    "signedOutBody": "Sign in to see your account.",
+    "display_name": "Display name",
+    "email": "Email",
+    "roles": "Roles",
+    "memberSince": "Member since",
+    "noRoles": "Member",
+    "role_admin": "Administrator",
+    "role_moderator": "Moderator",
+    "signOut": "Sign out"
+  },
+  "notFound": { "title": "Page not found", "body": "The page you are looking for does not exist.", "home": "Go to the home page" }
+}
