@@ -11,6 +11,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       <h1>{t("queueTitle")}</h1>
       <p>
         <Link href="/moderation/lyrics">{t("lyricsQueueLink")}</Link>
+        {" "}
+        <Link href="/moderation/entities">{t("proposalsQueueLink")}</Link>
       </p>
       <ModerationQueue />
     </>

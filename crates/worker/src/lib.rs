@@ -52,6 +52,38 @@ impl Handler for LogOnly {
     }
 }
 
+/// Keeps `search_documents` current: `search.reindex` events rebuild one entity from the source
+/// tables (idempotent, so redelivery is harmless); every other topic goes to `inner`.
+pub struct SearchIndexer<H> {
+    pub pool: PgPool,
+    pub inner: H,
+}
+
+#[async_trait::async_trait]
+impl<H: Handler> Handler for SearchIndexer<H> {
+    async fn handle(&self, e: &OutboxEvent) -> anyhow::Result<()> {
+        if e.topic != "search.reindex" {
+            return self.inner.handle(e).await;
+        }
+        if !matches!(
+            e.aggregate_type.as_str(),
+            "composition" | "recording" | "artist" | "album"
+        ) {
+            anyhow::bail!("cannot index aggregate type '{}'", e.aggregate_type);
+        }
+        let mut conn = self.pool.acquire().await?;
+        infrastructure::search::reindex(&mut conn, &e.aggregate_type, e.aggregate_id).await?;
+        Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl Handler for Box<dyn Handler> {
+    async fn handle(&self, e: &OutboxEvent) -> anyhow::Result<()> {
+        (**self).handle(e).await
+    }
+}
+
 /// Processes one batch. Returns how many events were leased.
 pub async fn run_once(pool: &PgPool, handler: &dyn Handler) -> anyhow::Result<usize> {
     let events = outbox::claim(pool, BATCH_SIZE, LEASE_SECS).await?;

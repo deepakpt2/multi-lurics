@@ -41,6 +41,9 @@ pub enum AppError {
         code: &'static str,
         existing_id: Option<Uuid>,
     },
+    /// Likely duplicates exist; the caller must look at them and confirm. Never decided silently.
+    #[error("{code}")]
+    Ambiguous { code: &'static str, candidates: Vec<Uuid> },
     #[error("service unavailable")]
     Unavailable,
     #[error(transparent)]

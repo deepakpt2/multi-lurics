@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/search/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_metrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/trust-policy": {
         parameters: {
             query?: never;
@@ -344,6 +360,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/entities/merges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merge_entities"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/entities/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["create_proposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/entities/proposals/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["approve_proposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/entities/proposals/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reject_proposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/entities/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["suggest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/entities/{entity_type}/{entity_id}/aliases": {
         parameters: {
             query?: never;
@@ -447,7 +543,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_revisions"];
+        get: operations["list_localization_revisions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -512,6 +608,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["contribution_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/entity-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["proposal_queue"];
         put?: never;
         post?: never;
         delete?: never;
@@ -626,6 +738,54 @@ export interface paths {
         get: operations["list_scripts"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/search/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_suggest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/search/suggest/accepted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["search_suggestion_accepted"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1061,6 +1221,30 @@ export interface components {
         };
         /** @enum {string} */
         DisplayResolution: "requested" | "default_language" | "fallback" | "base";
+        /** @description One candidate. Store `id`, never the name. */
+        EntitySuggestion: {
+            /** @description ISO code for languages and scripts. */
+            code?: string | null;
+            /** @description Artist disambiguation, or a language's endonym. */
+            detail?: string | null;
+            display: components["schemas"]["Display"];
+            /** Format: uuid */
+            id: string;
+            localized_names: components["schemas"]["LocalizedName"][];
+            /** @description Which of the entity's names matched what was typed. */
+            matched_via: components["schemas"]["MatchedVia"];
+            related: components["schemas"]["RelatedWork"][];
+            /**
+             * Format: float
+             * @description 1 = exact ignoring case/spacing/punctuation/diacritics, 0.9 = prefix, otherwise similarity.
+             */
+            score: number;
+            /** @description Artist kind or album kind. */
+            sub_kind?: string | null;
+            type: string;
+            /** Format: int32 */
+            year?: number | null;
+        };
         FieldError: {
             /**
              * @description Stable violation code, e.g. `required`, `too_short`, `invalid_email`.
@@ -1166,9 +1350,102 @@ export interface components {
             script?: string | null;
             source?: string | null;
         };
+        LocalizedName: {
+            language: string;
+            name: string;
+        };
         LoginRequest: {
             email?: string;
             password?: string;
+        };
+        /** @enum {string} */
+        MatchKind: "exact" | "normalized" | "prefix" | "fuzzy";
+        /** @enum {string} */
+        MatchVia: "name" | "localization" | "transliteration" | "alias";
+        Matched: {
+            kind: components["schemas"]["MatchKind"];
+            /** @description The name that matched, as written. May differ from `display` (an alias or another script). */
+            text: string;
+            via: components["schemas"]["MatchVia"];
+        };
+        /** @enum {string} */
+        MatchedVia: "name" | "localization" | "alias";
+        MergeCreate: {
+            /** @description `artist`, `album`, `label`, `publisher` or `genre`. Languages and scripts are never merged. */
+            entity_type?: string;
+            /**
+             * Format: int32
+             * @description Both versions are required, so a merge is never decided on a stale view.
+             */
+            expected_from_version?: number | null;
+            /** Format: int32 */
+            expected_into_version?: number | null;
+            /**
+             * Format: uuid
+             * @description The duplicate; it disappears and its id redirects to `into_id`.
+             */
+            from_id: string;
+            /**
+             * Format: uuid
+             * @description The survivor.
+             */
+            into_id: string;
+            note?: string | null;
+        };
+        MergeMoved: {
+            /** Format: int64 */
+            aliases: number;
+            /** Format: int64 */
+            credits: number;
+            /** Format: int64 */
+            duplicate_aliases_dropped: number;
+            /** Format: int64 */
+            duplicate_credits_dropped: number;
+            /** Format: int64 */
+            localizations: number;
+            /** Format: int64 */
+            localizations_retired: number;
+            /** Format: int64 */
+            names_kept_as_aliases: number;
+            /** Format: int64 */
+            tracks: number;
+        };
+        MergeOutcome: {
+            entity_type: string;
+            /** Format: uuid */
+            from_id: string;
+            /** Format: uuid */
+            into_id: string;
+            moved: components["schemas"]["MergeMoved"];
+        };
+        MetricsDay: {
+            /** Format: double */
+            acceptance_rate: number;
+            /**
+             * Format: int64
+             * @description Suggestions the client reported as chosen (suggest only).
+             */
+            accepted: number;
+            /** Format: double */
+            avg_latency_ms: number;
+            /** Format: date */
+            day: string;
+            /** Format: double */
+            empty_rate: number;
+            /** Format: int64 */
+            empty_results: number;
+            /** @description `search` or `suggest`. */
+            endpoint: string;
+            /** Format: int64 */
+            requests: number;
+        };
+        MetricsResponse: {
+            items: components["schemas"]["MetricsDay"][];
+        };
+        ParentRef: {
+            /** Format: uuid */
+            id: string;
+            title: string;
         };
         PasswordResetConfirm: {
             new_password?: string;
@@ -1179,6 +1456,8 @@ export interface components {
             locale?: string | null;
         };
         Problem: {
+            /** @description Present on `409 likely_duplicates`: entities that probably are the one being proposed. */
+            candidate_ids?: string[];
             /**
              * @description Stable machine-readable error code.
              * @example validation_failed
@@ -1209,6 +1488,65 @@ export interface components {
             /** @example /problems/validation_failed */
             type: string;
         };
+        Proposal: {
+            aliases: string[];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by: string;
+            /** Format: date-time */
+            decided_at?: string | null;
+            decision_note?: string | null;
+            disambiguation?: string | null;
+            /**
+             * Format: uuid
+             * @description The existing entity a rejection pointed to.
+             */
+            duplicate_of_id?: string | null;
+            /**
+             * Format: uuid
+             * @description The canonical entity an approval created.
+             */
+            entity_id?: string | null;
+            entity_type: string;
+            /** Format: uuid */
+            id: string;
+            kind?: string | null;
+            name: string;
+            note?: string | null;
+            /** @description The likely matches the proposer was shown and set aside. */
+            shown_matches: string[];
+            status: components["schemas"]["ProposalStatus"];
+        };
+        ProposalCreate: {
+            /** @description Other spellings; verified as aliases when the proposal is approved. */
+            aliases?: string[];
+            /** @description Set after looking at the `409 likely_duplicates` candidates and deciding this is a different entity. */
+            confirm_distinct?: boolean;
+            disambiguation?: string | null;
+            /** @description `artist`, `album`, `label`, `publisher` or `genre`. */
+            entity_type?: string;
+            /** @description Required for artists (`person`, `group`, `other`) and albums (`album`, `single`, …). */
+            kind?: string | null;
+            name?: string;
+            note?: string | null;
+        };
+        ProposalDecision: {
+            /** @description Approve only: approve although likely duplicates exist. */
+            confirm_distinct?: boolean;
+            /**
+             * Format: uuid
+             * @description Reject only: the existing entity that should have been used.
+             */
+            duplicate_of_id?: string | null;
+            note?: string | null;
+        };
+        ProposalPage: {
+            items: components["schemas"]["Proposal"][];
+            next_cursor?: string | null;
+        };
+        /** @enum {string} */
+        ProposalStatus: "pending" | "approved" | "rejected";
         /** @enum {string} */
         Provenance: "original" | "human_translation" | "transliteration" | "community" | "imported" | "machine";
         Recording: {
@@ -1304,6 +1642,13 @@ export interface components {
             kind: components["schemas"]["RelationshipKind"];
             /** Format: uuid */
             recording_id: string;
+            title: string;
+        };
+        RelatedWork: {
+            /** Format: uuid */
+            id: string;
+            /** @description `composition`, `recording`, `album` or `artist`. */
+            kind: string;
             title: string;
         };
         RelationshipInput: {
@@ -1404,6 +1749,40 @@ export interface components {
         ScriptPage: {
             items: components["schemas"]["Script"][];
             next_cursor?: string | null;
+        };
+        SearchGroup: {
+            /** @description Best first. */
+            items: components["schemas"]["SearchItem"][];
+            /** @description Pass with `type` to get the next page of this group. */
+            next_cursor?: string | null;
+            /** @description `compositions`, `recordings`, `artists`, `albums` or `contributors`. */
+            type: string;
+        };
+        SearchItem: {
+            /** @description Artist disambiguation or composition ISWC. */
+            detail?: string | null;
+            display: components["schemas"]["Display"];
+            /** Format: uuid */
+            id: string;
+            match: components["schemas"]["Matched"];
+            parent?: null | components["schemas"]["ParentRef"];
+            /** @description Artist kind or album kind. */
+            sub_kind?: string | null;
+            /** @description `composition`, `recording`, `artist` or `album`. */
+            type: string;
+            /** Format: int32 */
+            year?: number | null;
+        };
+        SearchResponse: {
+            /** @description Always every requested group, in a fixed order; a group with no hits is empty. */
+            groups: components["schemas"]["SearchGroup"][];
+        };
+        SuggestResponse: {
+            /** @description Mixed types, best first. */
+            items: components["schemas"]["SearchItem"][];
+        };
+        SuggestionList: {
+            items: components["schemas"]["EntitySuggestion"][];
         };
         TaxonomyCreate: {
             name?: string;
@@ -1525,6 +1904,44 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    search_metrics: {
+        parameters: {
+            query?: {
+                /** @description 1-90 (default 7). */
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetricsResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -1727,6 +2144,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AlbumDetail"];
                 };
+            };
+            /** @description Merged into another record; follow `Location` */
+            301: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             404: {
                 headers: {
@@ -1991,6 +2415,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ArtistDetail"];
                 };
+            };
+            /** @description Merged into another record; follow `Location` */
+            301: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             404: {
                 headers: {
@@ -2752,6 +3183,274 @@ export interface operations {
             };
         };
     };
+    merge_entities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MergeCreate"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MergeOutcome"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `version_conflict`, `already_merged`, or an ambiguity that is never merged: `identifier_mismatch`, `kind_mismatch`, `track_conflict` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposalCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Proposal"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `likely_duplicates` (see `candidate_ids`; resubmit with `confirm_distinct`) or `proposal_pending` (see `existing_id`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    approve_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposalDecision"];
+            };
+        };
+        responses: {
+            /** @description The canonical entity and its aliases were created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Proposal"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reject_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposalDecision"];
+            };
+        };
+        responses: {
+            /** @description Rejected, optionally pointing at the existing entity */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Proposal"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    suggest: {
+        parameters: {
+            query?: {
+                /**
+                 * @description `artist`, `album`, `label`, `publisher`, `genre`, `language` or `script`. Songwriters and
+                 *     translators are artists.
+                 */
+                type?: string;
+                /** @description Typed text. Case, spacing, punctuation and diacritics do not matter. */
+                q?: string;
+                /** @description 1–20, default 8. */
+                limit?: number;
+                /** @description Display language tag for the returned names. */
+                lang?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Best matches first. Only canonical names and verified localizations or aliases are searched. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionList"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     list_aliases: {
         parameters: {
             query?: {
@@ -3201,7 +3900,7 @@ export interface operations {
             };
         };
     };
-    list_revisions: {
+    list_localization_revisions: {
         parameters: {
             query?: {
                 /** @description Opaque cursor from a previous page's `next_cursor`. */
@@ -3364,6 +4063,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContributionPage"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    proposal_queue: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pending proposals, oldest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalPage"];
                 };
             };
             401: {
@@ -3819,6 +4559,120 @@ export interface operations {
             };
         };
     };
+    search: {
+        parameters: {
+            query?: {
+                /** @description What to look for. Case, spacing, punctuation and diacritics are ignored, and small typos are tolerated. */
+                q?: string;
+                /** @description `compositions`, `recordings`, `artists`, `albums` or `contributors`. Required to use `cursor`. */
+                type?: string;
+                /** @description Preferred display language, e.g. `ml`, `ar-EG`. Names in this language rank slightly higher. */
+                lang?: string;
+                /** @description Hits per group, 1-50 (default 10). */
+                limit?: number;
+                /** @description From a group's `next_cursor`; requires `type`. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published content only. Cacheable for a short time; revalidate with `ETag`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResponse"];
+                };
+            };
+            /** @description Unchanged since `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    search_suggest: {
+        parameters: {
+            query?: {
+                /** @description At least 2 characters. */
+                q?: string;
+                lang?: string;
+                /** @description 1-20 (default 8). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rate limited per client; cacheable for a short time. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestResponse"];
+                };
+            };
+            /** @description Unchanged since `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Slow down; see `Retry-After`. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    search_suggestion_accepted: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Counted. Carries no query, user or address. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     list_taxonomy: {
         parameters: {
             query?: {
@@ -3927,6 +4781,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TaxonomyItem"];
                 };
+            };
+            /** @description Merged into another record; follow `Location` */
+            301: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             404: {
                 headers: {

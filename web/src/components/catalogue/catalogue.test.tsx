@@ -18,6 +18,10 @@ const artist = (over: Record<string, unknown> = {}) => {
   };
   return { display: disp(String(a.name)), ...a };
 };
+const suggestion = (id: string, name: string, over: Record<string, unknown> = {}) => ({
+  id, type: "artist", display: disp(name), matched_via: "name", score: 1, sub_kind: "person", detail: null, year: null, code: null,
+  localized_names: [], related: [], ...over,
+});
 const composition = { id: "c1", title: "Kaatrin Mozhi", iswc: null, year: null, version: 1, created_by: "u1", created_at: T, updated_at: T, credits: [], recordings: [], recording_count: 0 };
 const recording = {
   id: "r1", composition_id: "c1", title: "Original take", isrc: "USRC17607839", duration_ms: 245000, year: null, version: 1,
@@ -77,20 +81,20 @@ describe("recording create", () => {
 describe("composition form", () => {
   it("records composer and lyricist as two distinct credits for one artist", async () => {
     const { calls } = mockFetch({
-      "GET /api/v1/artists": () => json(200, { items: [artist({ name: "Ilaiyaraaja" })], next_cursor: null }),
+      "GET /api/v1/entities/suggest": () => json(200, { items: [suggestion("a1", "Ilaiyaraaja")] }),
       "POST /api/v1/compositions": () => json(201, { ...composition, id: "c2" }),
     });
     renderIntl(<CompositionForm />);
     await userEvent.type(screen.getByLabelText("Title"), "Work");
     for (const role of ["composer", "lyricist"]) {
-      await userEvent.type(screen.getByLabelText("Find an artist"), "Ila");
-      await userEvent.click(screen.getByRole("button", { name: "Find" }));
-      await userEvent.click(await screen.findByRole("button", { name: "Ilaiyaraaja" }));
+      await userEvent.type(screen.getByRole("combobox", { name: "Find an artist" }), "Ila");
+      await userEvent.click(await screen.findByRole("option", { name: /Ilaiyaraaja/ }));
       const selects = screen.getAllByRole("combobox", { name: "Choice for Ilaiyaraaja" });
       await userEvent.selectOptions(selects.at(-1)!, role);
     }
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/compositions/c2"));
+    // The stored value is the id; the typed text is never sent.
     expect((await body(calls.at(-1)!)).credits).toEqual([
       { artist_id: "a1", role: "composer" },
       { artist_id: "a1", role: "lyricist" },

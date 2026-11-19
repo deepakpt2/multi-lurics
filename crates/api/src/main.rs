@@ -48,10 +48,7 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let addr = config.bind_addr;
-    let app = App {
-        pool,
-        config: Arc::new(config),
-    };
+    let app = App::new(pool, Arc::new(config));
     let listener = tokio::net::TcpListener::bind(addr).await?;
     tracing::info!(%addr, "listening");
     axum::serve(listener, api::router(app))

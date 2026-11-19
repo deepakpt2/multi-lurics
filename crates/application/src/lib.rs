@@ -5,10 +5,12 @@ pub mod admin;
 pub mod auth;
 pub mod authz;
 pub mod catalogue;
+pub mod entities;
 pub mod error;
 pub mod localization;
 pub mod lyrics;
 pub mod pagination;
+pub mod search;
 
 pub use error::AppError;
 
@@ -27,4 +29,18 @@ pub struct RequestMeta {
 pub struct App {
     pub pool: PgPool,
     pub config: Arc<Config>,
+    /// The search engine behind the public search API; swappable (see `search::SearchService`).
+    pub search: Arc<dyn search::SearchService>,
+}
+
+impl App {
+    pub fn new(pool: PgPool, config: Arc<Config>) -> Self {
+        let search = Arc::new(search::PgSearch::new(pool.clone()));
+        Self { pool, config, search }
+    }
+
+    pub fn with_search(mut self, search: Arc<dyn search::SearchService>) -> Self {
+        self.search = search;
+        self
+    }
 }

@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { locales } from "@/i18n/routing";
+import { SearchBox } from "./search/search";
 
 export function SiteHeader() {
   const t = useTranslations();
@@ -16,6 +17,7 @@ export function SiteHeader() {
       <Link href="/" className="brand">
         {t("app.name")}
       </Link>
+      <SearchBox />
       <nav aria-label={t("nav.primary")}>
         <Link href="/compositions">{t("nav.compositions")}</Link>
         <Link href="/recordings">{t("nav.recordings")}</Link>

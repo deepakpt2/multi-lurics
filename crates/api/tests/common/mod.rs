@@ -24,11 +24,9 @@ pub fn app(pool: PgPool) -> App {
         cookie_secure: true,
         db_max_connections: 5,
         dev_mailbox_dir: None,
+        search_rate_per_min: 600,
     };
-    App {
-        pool,
-        config: Arc::new(config),
-    }
+    App::new(pool, Arc::new(config))
 }
 
 pub fn router(pool: &PgPool) -> Router {

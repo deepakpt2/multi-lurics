@@ -106,7 +106,12 @@
     "conflicts_with_body": "قدّم نصًا جديدًا أو مراجعة للاستعادة، وليس كليهما.",
     "different_contribution": "هاتان المراجعتان تخصان نسختين مختلفتين ولا يمكن مقارنتهما.",
     "reused_with_different_request": "سبق استخدام مفتاح إعادة المحاولة هذا في طلب مختلف.",
-    "invalid": "هذه القيمة غير صالحة."
+    "invalid": "هذه القيمة غير صالحة.",
+    "not_proposable": "لا يمكن اقتراح هذا النوع هنا.",
+    "no_letters": "أدخل اسمًا يحتوي على حرف أو رقم واحد على الأقل.",
+    "not_applicable": "هذا لا ينطبق على هذا النوع.",
+    "same_entity": "اختر سجلين مختلفين.",
+    "unknown_entity": "هذا السجل غير موجود."
   },
   "errors": {
     "title": "حدث خطأ",
@@ -139,7 +144,15 @@
     "preferred_slot_taken": "هناك اسم آخر مفضّل بالفعل لهذه اللغة.",
     "alias_exists": "هذا الاسم البديل موجود بالفعل لهذا السجل.",
     "invalid_state_transition": "سبق اتخاذ قرار بشأن هذا.",
-    "primary_slot_taken": "أصبحت نسخة أخرى هي الأساسية للتو. أعد التحميل وحاول مرة أخرى."
+    "primary_slot_taken": "أصبحت نسخة أخرى هي الأساسية للتو. أعد التحميل وحاول مرة أخرى.",
+    "likely_duplicates": "يوجد بالفعل ما يشبه هذا. تحقق من النتائج أولًا.",
+    "proposal_pending": "يوجد اقتراح بهذا الاسم بانتظار المراجعة.",
+    "already_merged": "تم دمج هذا السجل بالفعل في سجل آخر.",
+    "identifier_mismatch": "لهذه السجلات معرّفات مختلفة، لذلك لا تُدمج.",
+    "kind_mismatch": "هذه السجلات من أنواع مختلفة، لذلك لا تُدمج.",
+    "track_conflict": "تحتوي هذه الألبومات على مقطوعات مختلفة في المواضع نفسها، لذلك لا تُدمج.",
+    "rate_limited": "أنت تبحث بسرعة كبيرة. انتظر لحظة ثم حاول مرة أخرى.",
+    "cursor_requires_type": "اختر نوع النتائج للتنقل بينها."
   },
   "conflict": {
     "title": "قام شخص آخر بتعديل هذا",
@@ -365,7 +378,8 @@
     "loadMore": "عرض المزيد",
     "separator": "، ",
     "preferredSuffix": "، مفضّل",
-    "lyricsQueueLink": "كلمات بانتظار المراجعة"
+    "lyricsQueueLink": "كلمات بانتظار المراجعة",
+    "proposalsQueueLink": "الكيانات المقترحة"
   },
   "lyrics": {
     "title": "كلمات الأغنية",
@@ -423,5 +437,82 @@
     "publish": "نشر",
     "reject": "رفض",
     "separator": " · "
+  },
+  "entities": {
+    "types": {
+      "artist": "فنان",
+      "album": "ألبوم",
+      "label": "علامة تسجيل",
+      "publisher": "ناشر",
+      "genre": "نوع موسيقي",
+      "language": "لغة",
+      "script": "نظام كتابة"
+    },
+    "separator": "، ",
+    "searching": "جارٍ البحث…",
+    "retry": "حاول مرة أخرى",
+    "results": "النتائج",
+    "resultCount": "{count, plural, zero {لا نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}",
+    "noResults": "لا توجد نتيجة لـ «{query}».",
+    "matched": {
+      "alias": "طابق اسمًا بديلًا",
+      "localization": "طابق اسمًا مترجمًا"
+    },
+    "related": "أعمال مرتبطة: {titles}",
+    "propose": "اقتراح {type} جديد",
+    "proposeTitle": "اقتراح {type} جديد",
+    "proposeName": "الاسم",
+    "proposeKind": "النوع",
+    "proposeDisambiguation": "توضيح (اختياري)",
+    "submitProposal": "إرسال الاقتراح",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "likelyTitle": "قد يكون أحد هؤلاء ما تقصده.",
+    "likelyBody": "تحقق منهم قبل اقتراح جديد.",
+    "useThis": "استخدم هذا",
+    "noneOfThese": "لا أحد منهم: أرسل اقتراحي",
+    "sent": "أُرسل الاقتراح للمراجعة. يمكنك استخدامه بعد موافقة المشرف.",
+    "queueTitle": "الكيانات المقترحة",
+    "queueEmpty": "لا توجد اقتراحات بانتظار المراجعة.",
+    "loadMore": "عرض المزيد",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "approveAnyway": "وافق على أي حال",
+    "moderatorLikely": "هذه السجلات الموجودة مشابهة. وافق فقط إذا كان هذا كيانًا مختلفًا."
+  },
+  "search": {
+    "title": "بحث",
+    "label": "ابحث عن كلمات الأغاني والفنانين والألبومات",
+    "placeholder": "بحث",
+    "submit": "بحث",
+    "prompt": "اكتب عنوانًا أو اسمًا أو تهجئة للبحث.",
+    "searching": "جارٍ البحث…",
+    "retry": "حاول مرة أخرى",
+    "results": "الاقتراحات",
+    "searchAll": "عرض كل النتائج",
+    "loadMore": "عرض المزيد",
+    "separator": "، ",
+    "resultCount": "{count, plural, zero {لا اقتراحات} one {اقتراح واحد} two {اقتراحان} few {# اقتراحات} many {# اقتراحًا} other {# اقتراح}}",
+    "noResults": "لا شيء لـ «{query}».",
+    "matchedText": "المطابق:",
+    "recordingOf": "تسجيل لـ {title}",
+    "types": {
+      "composition": "أغنية",
+      "recording": "تسجيل",
+      "artist": "فنان",
+      "album": "ألبوم"
+    },
+    "matched": {
+      "localization": "لغة أخرى",
+      "transliteration": "كتابة صوتية",
+      "alias": "يُعرف أيضًا بـ"
+    },
+    "groups": {
+      "compositions": "الأغاني",
+      "recordings": "التسجيلات",
+      "artists": "الفنانون",
+      "albums": "الألبومات",
+      "contributors": "الكتّاب والمترجمون"
+    }
   }
 }

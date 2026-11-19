@@ -27,7 +27,7 @@ import {
   usePaged,
   type S,
 } from "./common";
-import { searchArtists, searchCompositions, searchRecordings } from "./search";
+import { searchCompositions, searchRecordings } from "./search";
 
 type Query = Record<string, string>;
 type Ref<C> = { id: string; label: string; choice?: C };
@@ -269,7 +269,7 @@ export function RecordingForm({
         choices={CREDIT_ROLES.recordings}
         choiceLabels="catalogue.roles"
         pickerLabel={t("catalogue.findArtist")}
-        search={searchArtists}
+        entity="artist"
         fieldErrors={fieldErrors}
       />
       <RefListEditor

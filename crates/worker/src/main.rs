@@ -1,7 +1,7 @@
 use infrastructure::{db, Config};
 use std::time::Duration;
 use tracing_subscriber::EnvFilter;
-use worker::{DevMailbox, Handler, LogOnly};
+use worker::{DevMailbox, Handler, LogOnly, SearchIndexer};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -24,8 +24,12 @@ async fn main() -> anyhow::Result<()> {
         None => Box::new(LogOnly),
     };
 
+    let handler = SearchIndexer {
+        pool: pool.clone(),
+        inner: handler,
+    };
     loop {
-        let n = worker::run_once(&pool, handler.as_ref()).await?;
+        let n = worker::run_once(&pool, &handler).await?;
         if once {
             tracing::info!(processed = n, "single pass complete");
             return Ok(());

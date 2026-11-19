@@ -3,11 +3,6 @@ import type { PickOption } from "./common";
 
 const LIMIT = 10;
 
-export async function searchArtists(prefix: string): Promise<PickOption[]> {
-  const page = await call(api.GET("/api/v1/artists", { params: { query: { prefix, limit: LIMIT } } }));
-  return page.items.map((a) => ({ id: a.id, label: a.name, note: a.disambiguation ?? undefined }));
-}
-
 export async function searchCompositions(prefix: string): Promise<PickOption[]> {
   const page = await call(api.GET("/api/v1/compositions", { params: { query: { prefix, limit: LIMIT } } }));
   return page.items.map((c) => ({ id: c.id, label: c.title, note: c.year != null ? String(c.year) : undefined }));

@@ -38,6 +38,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "application",
+ "async-trait",
  "axum",
  "axum-extra",
  "chrono",
@@ -47,6 +48,7 @@ dependencies = [
  "infrastructure",
  "serde",
  "serde_json",
+ "sha2",
  "sqlx",
  "time",
  "tokio",
@@ -56,6 +58,7 @@ dependencies = [
  "tracing-subscriber",
  "utoipa",
  "uuid",
+ "worker",
 ]
 
 [[package]]
@@ -63,6 +66,7 @@ name = "application"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "base64",
  "chrono",
  "domain",

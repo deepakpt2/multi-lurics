@@ -1,19 +1,24 @@
 //! HTTP adapter: routing, extractors, problem+json, OpenAPI. No business rules here.
 
 pub mod catalogue;
+pub mod entities;
 pub mod extract;
 pub mod localization;
 pub mod lyrics;
 pub mod middleware;
 pub mod problem;
+pub mod ratelimit;
 pub mod routes;
+pub mod search;
 
 use application::App;
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use catalogue as cat;
+use entities as ent;
 use localization as loc;
 use lyrics as lyr;
+use search as srch;
 use tower_http::trace::TraceLayer;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
 use utoipa::{Modify, OpenApi};
@@ -40,6 +45,9 @@ use utoipa::{Modify, OpenApi};
         lyr::list_revisions, lyr::get_revision, lyr::diff_revisions, lyr::approve_contribution,
         lyr::publish_contribution, lyr::reject_contribution, lyr::contribution_queue, lyr::my_contributions,
         lyr::get_trust_policy, lyr::set_trust_policy,
+        ent::suggest, ent::create_proposal, ent::proposal_queue, ent::approve_proposal, ent::reject_proposal,
+        ent::merge_entities,
+        srch::search, srch::suggest, srch::suggestion_accepted, srch::metrics,
     ),
     modifiers(&SessionCookie),
 )]
@@ -83,6 +91,13 @@ pub fn router(app: App) -> Router {
             get(lyr::get_trust_policy).put(lyr::set_trust_policy),
         )
         .layer(axum::middleware::from_fn(middleware::no_store));
+
+    // Typeahead is public and cheap to abuse: a per-client bucket sits in front of it.
+    let limiter = std::sync::Arc::new(ratelimit::RateLimiter::new(app.config.search_rate_per_min));
+    let typeahead = Router::new()
+        .route("/search/suggest", get(srch::suggest))
+        .route("/search/suggest/accepted", post(srch::suggestion_accepted))
+        .route_layer(axum::middleware::from_fn_with_state(limiter, ratelimit::limit));
 
     let v1 = Router::new()
         .route("/auth/register", post(routes::register))
@@ -133,7 +148,16 @@ pub fn router(app: App) -> Router {
         .route("/moderation/localizations", get(loc::moderation_queue))
         .route("/taxonomy/{kind}", get(loc::list_taxonomy).post(loc::create_taxonomy))
         .route("/taxonomy/{kind}/{id}", get(loc::get_taxonomy))
+        .route("/entities/suggest", get(ent::suggest))
+        .route("/entities/proposals", post(ent::create_proposal))
+        .route("/entities/proposals/{id}/approve", post(ent::approve_proposal))
+        .route("/entities/proposals/{id}/reject", post(ent::reject_proposal))
+        .route("/entities/merges", post(ent::merge_entities))
+        .route("/moderation/entity-proposals", get(ent::proposal_queue))
+        .route("/search", get(srch::search))
+        .route("/admin/search/metrics", get(srch::metrics))
         .route("/openapi.json", get(|| async { Json(ApiDoc::openapi()) }))
+        .merge(typeahead)
         .merge(lyrics);
 
     Router::new()

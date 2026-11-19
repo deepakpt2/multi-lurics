@@ -504,7 +504,7 @@ pub struct RevisionPage {
     pub next_cursor: Option<String>,
 }
 
-#[utoipa::path(get, path = "/api/v1/localizations/{id}/revisions", tag = "localization",
+#[utoipa::path(get, path = "/api/v1/localizations/{id}/revisions", operation_id = "list_localization_revisions", tag = "localization",
     params(("id" = Uuid, Path), PageQuery), responses(
     (status = 200, body = RevisionPage),
     (status = 404, body = Problem, content_type = "application/problem+json")))]
@@ -822,14 +822,17 @@ pub async fn create_taxonomy(
 #[utoipa::path(get, path = "/api/v1/taxonomy/{kind}/{id}", tag = "localization",
     params(("kind" = String, Path), ("id" = Uuid, Path), LangQuery), responses(
     (status = 200, body = TaxonomyItem),
+    (status = 301, description = "Merged into another record; follow `Location`"),
     (status = 404, body = Problem, content_type = "application/problem+json")))]
 pub async fn get_taxonomy(
     State(app): State<App>,
     ApiPath((kind, id)): ApiPath<(String, Uuid)>,
     ApiQuery(l): ApiQuery<LangQuery>,
-) -> ApiResult<Json<TaxonomyItem>> {
+) -> ApiResult<axum::response::Response> {
     let k = kind_of(&kind);
     let et = domain::localization::EntityType::parse(k).unwrap_or(domain::localization::EntityType::Label);
-    let (row, names) = uc::get_taxonomy(&app, k, id, l.lang.as_deref()).await?;
-    Ok(Json(taxonomy_item(et, row, &names)))
+    let found = uc::get_taxonomy(&app, k, id, l.lang.as_deref())
+        .await
+        .map(|(row, names)| taxonomy_item(et, row, &names));
+    crate::entities::or_redirect(&app, k, &format!("taxonomy/{kind}"), id, l.lang.as_deref(), found).await
 }

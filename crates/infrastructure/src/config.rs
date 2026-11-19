@@ -11,6 +11,8 @@ pub struct Config {
     pub cookie_secure: bool,
     pub db_max_connections: u32,
     pub dev_mailbox_dir: Option<String>,
+    /// Requests per minute per client for typeahead endpoints.
+    pub search_rate_per_min: u32,
 }
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -90,6 +92,17 @@ impl Config {
             errs.push("LYRICS_DB_MAX_CONNECTIONS must be at least 1".into());
         }
 
+        let search_rate_per_min: u32 = parse_or(
+            &mut errs,
+            get("LYRICS_SEARCH_RATE_PER_MIN"),
+            "LYRICS_SEARCH_RATE_PER_MIN",
+            "120",
+        )
+        .unwrap_or(0);
+        if search_rate_per_min == 0 {
+            errs.push("LYRICS_SEARCH_RATE_PER_MIN must be at least 1".into());
+        }
+
         if !errs.is_empty() {
             return Err(ConfigError(errs));
         }
@@ -101,6 +114,7 @@ impl Config {
             cookie_secure,
             db_max_connections,
             dev_mailbox_dir: get("LYRICS_DEV_MAILBOX_DIR"),
+            search_rate_per_min,
         })
     }
 }

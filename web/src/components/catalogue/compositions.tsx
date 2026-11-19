@@ -8,7 +8,6 @@ import { Name } from "../localization/localized";
 import { NamesLink } from "../localization/names";
 import { Field, formValues, useSubmit } from "../form";
 import { CREDIT_ROLES, CreditList, FormActions, ListShell, Loaded, RefListEditor, SaveProblem, int, str, text, useLoad, usePaged, type S } from "./common";
-import { searchArtists } from "./search";
 
 type Query = Record<string, string>;
 type Role = S["CreditRole"];
@@ -135,7 +134,7 @@ export function CompositionForm({ initial, onReload }: { initial?: S["Compositio
         choices={CREDIT_ROLES.compositions}
         choiceLabels="catalogue.roles"
         pickerLabel={t("catalogue.findArtist")}
-        search={searchArtists}
+        entity="artist"
         fieldErrors={s.fieldErrors}
       />
       <FormActions submitting={s.submitting} cancelHref={initial ? `/compositions/${initial.id}` : "/compositions"} />

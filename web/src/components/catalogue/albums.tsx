@@ -25,7 +25,7 @@ import {
   usePaged,
   type S,
 } from "./common";
-import { searchArtists, searchRecordings } from "./search";
+import { searchRecordings } from "./search";
 
 type Query = Record<string, string>;
 type Role = S["CreditRole"];
@@ -168,7 +168,7 @@ export function AlbumForm({ initial, onReload }: { initial?: S["AlbumDetail"]; o
         choices={CREDIT_ROLES.albums}
         choiceLabels="catalogue.roles"
         pickerLabel={t("catalogue.findArtist")}
-        search={searchArtists}
+        entity="artist"
         fieldErrors={s.fieldErrors}
       />
       <RefListEditor

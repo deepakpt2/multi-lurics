@@ -106,7 +106,12 @@
     "conflicts_with_body": "Give new text or a revision to restore, not both.",
     "different_contribution": "These revisions belong to different versions and cannot be compared.",
     "reused_with_different_request": "This retry key was already used for a different request.",
-    "invalid": "This value is not valid."
+    "invalid": "This value is not valid.",
+    "not_proposable": "This type cannot be proposed here.",
+    "no_letters": "Enter a name with at least one letter or digit.",
+    "not_applicable": "This does not apply to this type.",
+    "same_entity": "Choose two different records.",
+    "unknown_entity": "This record does not exist."
   },
   "errors": {
     "title": "Something went wrong",
@@ -139,7 +144,15 @@
     "preferred_slot_taken": "Another name is already the preferred one for this language.",
     "alias_exists": "This alias already exists for this record.",
     "invalid_state_transition": "This was already decided.",
-    "primary_slot_taken": "Another version just became the primary one. Reload and try again."
+    "primary_slot_taken": "Another version just became the primary one. Reload and try again.",
+    "likely_duplicates": "Something that looks like this already exists. Check the matches first.",
+    "proposal_pending": "A proposal for this name is already waiting for review.",
+    "already_merged": "This record was already merged into another one.",
+    "identifier_mismatch": "These records have different identifiers, so they are not merged.",
+    "kind_mismatch": "These records are of different kinds, so they are not merged.",
+    "track_conflict": "These albums list different tracks in the same places, so they are not merged.",
+    "rate_limited": "You are searching too quickly. Please wait a moment and try again.",
+    "cursor_requires_type": "Choose a result type to page through it."
   },
   "conflict": {
     "title": "Someone else changed this",
@@ -365,7 +378,8 @@
     "loadMore": "Load more",
     "separator": ", ",
     "preferredSuffix": ", preferred",
-    "lyricsQueueLink": "Lyrics awaiting review"
+    "lyricsQueueLink": "Lyrics awaiting review",
+    "proposalsQueueLink": "Proposed entities"
   },
   "lyrics": {
     "title": "Lyrics",
@@ -423,5 +437,82 @@
     "publish": "Publish",
     "reject": "Reject",
     "separator": " · "
+  },
+  "entities": {
+    "types": {
+      "artist": "artist",
+      "album": "album",
+      "label": "label",
+      "publisher": "publisher",
+      "genre": "genre",
+      "language": "language",
+      "script": "script"
+    },
+    "separator": ", ",
+    "searching": "Searching…",
+    "retry": "Try again",
+    "results": "Matches",
+    "resultCount": "{count, plural, one {# match} other {# matches}}",
+    "noResults": "No match for “{query}”.",
+    "matched": {
+      "alias": "matched an alias",
+      "localization": "matched a translated name"
+    },
+    "related": "Related: {titles}",
+    "propose": "Propose a new {type}",
+    "proposeTitle": "Propose a new {type}",
+    "proposeName": "Name",
+    "proposeKind": "Type",
+    "proposeDisambiguation": "Disambiguation (optional)",
+    "submitProposal": "Send proposal",
+    "cancel": "Cancel",
+    "close": "Close",
+    "likelyTitle": "These may be what you mean.",
+    "likelyBody": "Check them before proposing a new one.",
+    "useThis": "Use this one",
+    "noneOfThese": "None of these: send my proposal",
+    "sent": "Proposal sent for review. You can use it once a moderator approves it.",
+    "queueTitle": "Proposed entities",
+    "queueEmpty": "No proposals are waiting.",
+    "loadMore": "Load more",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approveAnyway": "Approve anyway",
+    "moderatorLikely": "These existing records look similar. Approve only if this is a different one."
+  },
+  "search": {
+    "title": "Search",
+    "label": "Search lyrics, songs, artists and albums",
+    "placeholder": "Search",
+    "submit": "Search",
+    "prompt": "Type a title, name or spelling to search.",
+    "searching": "Searching…",
+    "retry": "Try again",
+    "results": "Suggestions",
+    "searchAll": "See all results",
+    "loadMore": "Load more",
+    "separator": " · ",
+    "resultCount": "{count, plural, one {# suggestion} other {# suggestions}}",
+    "noResults": "Nothing found for “{query}”.",
+    "matchedText": "Matched:",
+    "recordingOf": "Recording of {title}",
+    "types": {
+      "composition": "Song",
+      "recording": "Recording",
+      "artist": "Artist",
+      "album": "Album"
+    },
+    "matched": {
+      "localization": "Other language",
+      "transliteration": "Transliteration",
+      "alias": "Also known as"
+    },
+    "groups": {
+      "compositions": "Songs",
+      "recordings": "Recordings",
+      "artists": "Artists",
+      "albums": "Albums",
+      "contributors": "Writers and translators"
+    }
   }
 }

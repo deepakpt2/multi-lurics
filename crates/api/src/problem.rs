@@ -49,6 +49,9 @@ pub struct Problem {
     /// Present on `409 duplicate_identifier` when known: the record already holding the identifier.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub existing_id: Option<Uuid>,
+    /// Present on `409 likely_duplicates`: entities that probably are the one being proposed.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub candidate_ids: Vec<Uuid>,
 }
 
 #[derive(Debug)]
@@ -67,6 +70,7 @@ impl ApiError {
             current_revision_id: None,
             current_version: None,
             existing_id: None,
+            candidate_ids: Vec::new(),
         }))
     }
 
@@ -128,6 +132,11 @@ impl From<AppError> for ApiError {
             AppError::Taken { code, existing_id } => {
                 let mut p = Self::new(S::CONFLICT, code, "Conflict");
                 p.0.existing_id = existing_id;
+                p
+            }
+            AppError::Ambiguous { code, candidates } => {
+                let mut p = Self::new(S::CONFLICT, code, "Conflict");
+                p.0.candidate_ids = candidates;
                 p
             }
             AppError::Unavailable => Self::new(S::SERVICE_UNAVAILABLE, "unavailable", "Service unavailable"),

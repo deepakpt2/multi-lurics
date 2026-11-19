@@ -95,6 +95,58 @@
         ]
       }
     },
+    "/api/v1/admin/search/metrics": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "operationId": "search_metrics",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "description": "1-90 (default 7).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/trust-policy": {
       "get": {
         "tags": [
@@ -407,6 +459,9 @@
                 }
               }
             }
+          },
+          "301": {
+            "description": "Merged into another record; follow `Location`"
           },
           "404": {
             "description": "",
@@ -821,6 +876,9 @@
                 }
               }
             }
+          },
+          "301": {
+            "description": "Merged into another record; follow `Location`"
           },
           "404": {
             "description": "",
@@ -1938,6 +1996,397 @@
         ]
       }
     },
+    "/api/v1/entities/merges": {
+      "post": {
+        "tags": [
+          "entities"
+        ],
+        "operationId": "merge_entities",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MergeOutcome"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`version_conflict`, `already_merged`, or an ambiguity that is never merged: `identifier_mismatch`, `kind_mismatch`, `track_conflict`",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/entities/proposals": {
+      "post": {
+        "tags": [
+          "entities"
+        ],
+        "operationId": "create_proposal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`likely_duplicates` (see `candidate_ids`; resubmit with `confirm_distinct`) or `proposal_pending` (see `existing_id`)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/entities/proposals/{id}/approve": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "approve_proposal",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalDecision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The canonical entity and its aliases were created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/entities/proposals/{id}/reject": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "reject_proposal",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalDecision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected, optionally pointing at the existing entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/entities/suggest": {
+      "get": {
+        "tags": [
+          "entities"
+        ],
+        "operationId": "suggest",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "`artist`, `album`, `label`, `publisher`, `genre`, `language` or `script`. Songwriters and\ntranslators are artists.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Typed text. Case, spacing, punctuation and diacritics do not matter.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1–20, default 8.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag for the returned names.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Best matches first. Only canonical names and verified localizations or aliases are searched.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestionList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/entities/{entity_type}/{entity_id}/aliases": {
       "get": {
         "tags": [
@@ -2667,7 +3116,7 @@
         "tags": [
           "localization"
         ],
-        "operationId": "list_revisions",
+        "operationId": "list_localization_revisions",
         "parameters": [
           {
             "name": "id",
@@ -2923,6 +3372,72 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ContributionPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/moderation/entity-proposals": {
+      "get": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "proposal_queue",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pending proposals, oldest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalPage"
                 }
               }
             }
@@ -3678,6 +4193,172 @@
         }
       }
     },
+    "/api/v1/search": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "operationId": "search",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "What to look for. Case, spacing, punctuation and diacritics are ignored, and small typos are tolerated.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "`compositions`, `recordings`, `artists`, `albums` or `contributors`. Required to use `cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Preferred display language, e.g. `ml`, `ar-EG`. Names in this language rank slightly higher.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Hits per group, 1-50 (default 10).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "From a group's `next_cursor`; requires `type`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published content only. Cacheable for a short time; revalidate with `ETag`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged since `If-None-Match`."
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search/suggest": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "operationId": "search_suggest",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "At least 2 characters.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1-20 (default 8).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rate limited per client; cacheable for a short time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged since `If-None-Match`."
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Slow down; see `Retry-After`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search/suggest/accepted": {
+      "post": {
+        "tags": [
+          "search"
+        ],
+        "operationId": "search_suggestion_accepted",
+        "responses": {
+          "204": {
+            "description": "Counted. Carries no query, user or address."
+          }
+        }
+      }
+    },
     "/api/v1/taxonomy/{kind}": {
       "get": {
         "tags": [
@@ -3864,6 +4545,9 @@
                 }
               }
             }
+          },
+          "301": {
+            "description": "Merged into another record; follow `Location`"
           },
           "404": {
             "description": "",
@@ -5173,6 +5857,80 @@
           "base"
         ]
       },
+      "EntitySuggestion": {
+        "type": "object",
+        "description": "One candidate. Store `id`, never the name.",
+        "required": [
+          "id",
+          "type",
+          "display",
+          "matched_via",
+          "score",
+          "localized_names",
+          "related"
+        ],
+        "properties": {
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "ISO code for languages and scripts."
+          },
+          "detail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Artist disambiguation, or a language's endonym."
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "localized_names": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocalizedName"
+            }
+          },
+          "matched_via": {
+            "$ref": "#/components/schemas/MatchedVia",
+            "description": "Which of the entity's names matched what was typed."
+          },
+          "related": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedWork"
+            }
+          },
+          "score": {
+            "type": "number",
+            "format": "float",
+            "description": "1 = exact ignoring case/spacing/punctuation/diacritics, 0.9 = prefix, otherwise similarity."
+          },
+          "sub_kind": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Artist kind or album kind."
+          },
+          "type": {
+            "type": "string"
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "FieldError": {
         "type": "object",
         "required": [
@@ -5508,6 +6266,21 @@
           }
         }
       },
+      "LocalizedName": {
+        "type": "object",
+        "required": [
+          "language",
+          "name"
+        ],
+        "properties": {
+          "language": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "LoginRequest": {
         "type": "object",
         "properties": {
@@ -5515,6 +6288,254 @@
             "type": "string"
           },
           "password": {
+            "type": "string"
+          }
+        }
+      },
+      "MatchKind": {
+        "type": "string",
+        "enum": [
+          "exact",
+          "normalized",
+          "prefix",
+          "fuzzy"
+        ]
+      },
+      "MatchVia": {
+        "type": "string",
+        "enum": [
+          "name",
+          "localization",
+          "transliteration",
+          "alias"
+        ]
+      },
+      "Matched": {
+        "type": "object",
+        "required": [
+          "text",
+          "kind",
+          "via"
+        ],
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/MatchKind"
+          },
+          "text": {
+            "type": "string",
+            "description": "The name that matched, as written. May differ from `display` (an alias or another script)."
+          },
+          "via": {
+            "$ref": "#/components/schemas/MatchVia"
+          }
+        }
+      },
+      "MatchedVia": {
+        "type": "string",
+        "enum": [
+          "name",
+          "localization",
+          "alias"
+        ]
+      },
+      "MergeCreate": {
+        "type": "object",
+        "required": [
+          "from_id",
+          "into_id"
+        ],
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "description": "`artist`, `album`, `label`, `publisher` or `genre`. Languages and scripts are never merged."
+          },
+          "expected_from_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "Both versions are required, so a merge is never decided on a stale view."
+          },
+          "expected_into_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "from_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The duplicate; it disappears and its id redirects to `into_id`."
+          },
+          "into_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The survivor."
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "MergeMoved": {
+        "type": "object",
+        "required": [
+          "credits",
+          "duplicate_credits_dropped",
+          "tracks",
+          "localizations",
+          "localizations_retired",
+          "aliases",
+          "duplicate_aliases_dropped",
+          "names_kept_as_aliases"
+        ],
+        "properties": {
+          "aliases": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "credits": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "duplicate_aliases_dropped": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "duplicate_credits_dropped": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "localizations": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "localizations_retired": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "names_kept_as_aliases": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "tracks": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "MergeOutcome": {
+        "type": "object",
+        "required": [
+          "entity_type",
+          "from_id",
+          "into_id",
+          "moved"
+        ],
+        "properties": {
+          "entity_type": {
+            "type": "string"
+          },
+          "from_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "into_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "moved": {
+            "$ref": "#/components/schemas/MergeMoved"
+          }
+        }
+      },
+      "MetricsDay": {
+        "type": "object",
+        "required": [
+          "day",
+          "endpoint",
+          "requests",
+          "empty_results",
+          "empty_rate",
+          "avg_latency_ms",
+          "accepted",
+          "acceptance_rate"
+        ],
+        "properties": {
+          "acceptance_rate": {
+            "type": "number",
+            "format": "double"
+          },
+          "accepted": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Suggestions the client reported as chosen (suggest only)."
+          },
+          "avg_latency_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "empty_rate": {
+            "type": "number",
+            "format": "double"
+          },
+          "empty_results": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "`search` or `suggest`."
+          },
+          "requests": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "MetricsResponse": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetricsDay"
+            }
+          }
+        }
+      },
+      "ParentRef": {
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
             "type": "string"
           }
         }
@@ -5553,6 +6574,14 @@
           "code"
         ],
         "properties": {
+          "candidate_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Present on `409 likely_duplicates`: entities that probably are the one being proposed."
+          },
           "code": {
             "type": "string",
             "description": "Stable machine-readable error code.",
@@ -5614,6 +6643,196 @@
             "example": "/problems/validation_failed"
           }
         }
+      },
+      "Proposal": {
+        "type": "object",
+        "required": [
+          "id",
+          "entity_type",
+          "name",
+          "aliases",
+          "shown_matches",
+          "status",
+          "created_by",
+          "created_at"
+        ],
+        "properties": {
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "decided_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "decision_note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "disambiguation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "duplicate_of_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The existing entity a rejection pointed to."
+          },
+          "entity_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The canonical entity an approval created."
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "shown_matches": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The likely matches the proposer was shown and set aside."
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProposalStatus"
+          }
+        }
+      },
+      "ProposalCreate": {
+        "type": "object",
+        "properties": {
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other spellings; verified as aliases when the proposal is approved."
+          },
+          "confirm_distinct": {
+            "type": "boolean",
+            "description": "Set after looking at the `409 likely_duplicates` candidates and deciding this is a different entity."
+          },
+          "disambiguation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "entity_type": {
+            "type": "string",
+            "description": "`artist`, `album`, `label`, `publisher` or `genre`."
+          },
+          "kind": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Required for artists (`person`, `group`, `other`) and albums (`album`, `single`, …)."
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ProposalDecision": {
+        "type": "object",
+        "properties": {
+          "confirm_distinct": {
+            "type": "boolean",
+            "description": "Approve only: approve although likely duplicates exist."
+          },
+          "duplicate_of_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Reject only: the existing entity that should have been used."
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ProposalPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Proposal"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ProposalStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "rejected"
+        ]
       },
       "Provenance": {
         "type": "string",
@@ -5969,6 +7188,27 @@
           }
         }
       },
+      "RelatedWork": {
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "description": "`composition`, `recording`, `album` or `artist`."
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
       "RelationshipInput": {
         "type": "object",
         "required": [
@@ -6268,6 +7508,134 @@
               "string",
               "null"
             ]
+          }
+        }
+      },
+      "SearchGroup": {
+        "type": "object",
+        "required": [
+          "type",
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchItem"
+            },
+            "description": "Best first."
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Pass with `type` to get the next page of this group."
+          },
+          "type": {
+            "type": "string",
+            "description": "`compositions`, `recordings`, `artists`, `albums` or `contributors`."
+          }
+        }
+      },
+      "SearchItem": {
+        "type": "object",
+        "required": [
+          "type",
+          "id",
+          "display",
+          "match"
+        ],
+        "properties": {
+          "detail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Artist disambiguation or composition ISWC."
+          },
+          "display": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "match": {
+            "$ref": "#/components/schemas/Matched"
+          },
+          "parent": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ParentRef",
+                "description": "A recording's composition."
+              }
+            ]
+          },
+          "sub_kind": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Artist kind or album kind."
+          },
+          "type": {
+            "type": "string",
+            "description": "`composition`, `recording`, `artist` or `album`."
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "SearchResponse": {
+        "type": "object",
+        "required": [
+          "groups"
+        ],
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchGroup"
+            },
+            "description": "Always every requested group, in a fixed order; a group with no hits is empty."
+          }
+        }
+      },
+      "SuggestResponse": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchItem"
+            },
+            "description": "Mixed types, best first."
+          }
+        }
+      },
+      "SuggestionList": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntitySuggestion"
+            }
           }
         }
       },

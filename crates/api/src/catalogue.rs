@@ -335,13 +335,17 @@ pub async fn update_artist(
 
 #[utoipa::path(get, path = "/api/v1/artists/{id}", tag = "catalogue", params(("id" = Uuid, Path), LangQuery), responses(
     (status = 200, body = ArtistDetail),
+    (status = 301, description = "Merged into another record; follow `Location`"),
     (status = 404, body = Problem, content_type = "application/problem+json")))]
 pub async fn get_artist(
     State(app): State<App>,
     ApiPath(id): ApiPath<Uuid>,
     ApiQuery(l): ApiQuery<LangQuery>,
-) -> ApiResult<Json<ArtistDetail>> {
-    Ok(Json(uc::get_artist(&app, id, l.lang.as_deref()).await?.into()))
+) -> ApiResult<axum::response::Response> {
+    let found = uc::get_artist(&app, id, l.lang.as_deref())
+        .await
+        .map(ArtistDetail::from);
+    crate::entities::or_redirect(&app, "artist", "artists", id, l.lang.as_deref(), found).await
 }
 
 #[utoipa::path(get, path = "/api/v1/artists", tag = "catalogue", params(PageQuery, ArtistFilter, LangQuery), responses(
@@ -1048,13 +1052,15 @@ pub async fn update_album(
 
 #[utoipa::path(get, path = "/api/v1/albums/{id}", tag = "catalogue", params(("id" = Uuid, Path), LangQuery), responses(
     (status = 200, body = AlbumDetail),
+    (status = 301, description = "Merged into another record; follow `Location`"),
     (status = 404, body = Problem, content_type = "application/problem+json")))]
 pub async fn get_album(
     State(app): State<App>,
     ApiPath(id): ApiPath<Uuid>,
     ApiQuery(l): ApiQuery<LangQuery>,
-) -> ApiResult<Json<AlbumDetail>> {
-    Ok(Json(uc::get_album(&app, id, l.lang.as_deref()).await?.into()))
+) -> ApiResult<axum::response::Response> {
+    let found = uc::get_album(&app, id, l.lang.as_deref()).await.map(AlbumDetail::from);
+    crate::entities::or_redirect(&app, "album", "albums", id, l.lang.as_deref(), found).await
 }
 
 #[utoipa::path(get, path = "/api/v1/albums", tag = "catalogue", params(PageQuery, AlbumFilter, LangQuery), responses(

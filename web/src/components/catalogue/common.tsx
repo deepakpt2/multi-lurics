@@ -1,5 +1,6 @@
 "use client";
 
+import { EntityPicker, type EntityType } from "../entities/entity-picker";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ApiProblem, type Problem } from "@/api/client";
@@ -273,6 +274,7 @@ export function RefListEditor<R extends string>({
   choiceLabels,
   pickerLabel,
   search,
+  entity,
   fieldErrors,
   ordered,
 }: {
@@ -283,7 +285,10 @@ export function RefListEditor<R extends string>({
   choices?: readonly R[];
   choiceLabels?: string;
   pickerLabel: string;
-  search: (prefix: string) => Promise<PickOption[]>;
+  /** Free-text prefix search, for records that are not shared entities (recordings). */
+  search?: (prefix: string) => Promise<PickOption[]>;
+  /** Shared entity types use the one EntityPicker: the stored value is the id. */
+  entity?: EntityType;
   fieldErrors: FieldErrors;
   ordered?: boolean;
 }) {
@@ -339,7 +344,11 @@ export function RefListEditor<R extends string>({
           ))}
         </ol>
       )}
-      <Picker label={pickerLabel} search={search} onPick={(o) => onChange([...items, { id: o.id, label: o.label, choice: choices?.[0] }])} />
+      {entity ? (
+        <EntityPicker type={entity} label={pickerLabel} onPick={(o) => onChange([...items, { id: o.id, label: o.label, choice: choices?.[0] }])} />
+      ) : (
+        search && <Picker label={pickerLabel} search={search} onPick={(o) => onChange([...items, { id: o.id, label: o.label, choice: choices?.[0] }])} />
+      )}
     </fieldset>
   );
 }
