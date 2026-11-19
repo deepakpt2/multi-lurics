@@ -2,3 +2,4 @@
 .env
 .mailbox/
 node_modules/
+/deploy/.env

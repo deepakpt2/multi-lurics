@@ -1,0 +1,8 @@
+.git
+target
+web
+deploy
+.env
+.env.*
+.mailbox
+**/node_modules

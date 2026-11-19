@@ -5,6 +5,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 const apiOrigin = process.env.API_ORIGIN ?? "http://127.0.0.1:8787";
 
 const nextConfig: NextConfig = {
+  // Self-contained server bundle for the Docker image; plain `next start` locally.
+  output: process.env.NEXT_OUTPUT_STANDALONE === "1" ? "standalone" : undefined,
   // Browser talks to one origin; Next proxies the versioned API. Keeps the
   // session cookie first-party and means the API never needs CORS.
   async rewrites() {

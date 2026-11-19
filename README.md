@@ -33,3 +33,21 @@ make dev-web    # :3000, proxies /api/v1 → API_ORIGIN (build-time, default htt
 `make ci` runs everything. Individually: `make fmt-check clippy test-rust migrate-from-zero`,
 `make api-types-check web-lint web-typecheck web-test web-build`, `make e2e`.
 After changing an endpoint run `make openapi` and commit both generated files.
+
+## Deploy (Docker + Traefik)
+
+Stack: `db` (Postgres) → `migrate` (one-shot) → `api` + `worker` → `web` (only service on the Traefik network).
+TLS is terminated by Cloudflare (cloudflared), so Traefik routes plain HTTP.
+
+```sh
+cp deploy/.env.example deploy/.env    # first time only; set APP_DOMAIN, APP_PUBLIC_URL, POSTGRES_PASSWORD, PROXY_NETWORK…
+docker compose -f deploy/docker-compose.yml up -d --build
+# update
+git pull && docker compose -f deploy/docker-compose.yml up -d --build
+```
+
+All per-server values live in `deploy/.env` (gitignored); `docker-compose.yml` never needs editing.
+Until SMTP exists, verification/reset emails are written to the `mailbox` volume:
+`docker compose -f deploy/docker-compose.yml exec worker sh -c 'cat /data/mailbox/*.json'`.
+To make the first admin:
+`docker compose -f deploy/docker-compose.yml exec db psql -U lyrics -d lyrics_prod -c "INSERT INTO user_roles (user_id, role) SELECT id, 'admin' FROM users WHERE email = 'you@example.com'"`.
