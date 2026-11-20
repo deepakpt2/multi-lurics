@@ -110,29 +110,41 @@ export function ArtistDetail({ id }: { id: string }) {
   );
 }
 
-export function ArtistForm({ initial, onReload }: { initial?: S["ArtistDetail"]; onReload?: () => void }) {
+export function ArtistForm({ initial, onReload, fillOnly }: { initial?: S["ArtistDetail"]; onReload?: () => void; fillOnly?: boolean }) {
   const t = useTranslations("hints");
+  const tc = useTranslations("catalogue");
   const router = useRouter();
+  // "Add missing details": only what is still empty is shown and sent (the server enforces the same rule).
+  const fill = !!fillOnly && !!initial;
+  const showDisambiguation = !fill || !initial?.disambiguation;
+  const showIsni = !fill || !initial?.isni;
   const s = useSubmit(async (v: Record<string, string>) => {
-    const body = { name: v.name, kind: v.kind as S["ArtistKind"], disambiguation: text(v.disambiguation), isni: text(v.isni) };
+    const body = {
+      name: fill ? undefined : v.name,
+      kind: fill ? undefined : (v.kind as S["ArtistKind"]),
+      disambiguation: showDisambiguation ? text(v.disambiguation) : undefined,
+      isni: showIsni ? text(v.isni) : undefined,
+    };
     const saved = initial
       ? await call(api.PATCH("/api/v1/artists/{id}", { params: { path: { id: initial.id } }, body: { ...body, expected_version: initial.version } }))
-      : await call(api.POST("/api/v1/artists", { body }));
-    router.push(`/artists/${saved.id}`);
+      : await call(api.POST("/api/v1/artists", { body: { ...body, name: v.name, kind: v.kind as S["ArtistKind"] } }));
+    if (fill) router.back();
+    else router.push(`/artists/${saved.id}`);
   });
   return (
     <form noValidate onSubmit={(e) => (e.preventDefault(), s.submit(formValues(e.currentTarget)))}>
       {s.error !== undefined && <SaveProblem error={s.error} kind="artists" onReload={onReload} />}
-      <Field name="name" dir="auto" verbatim required defaultValue={initial?.name} hint={t("name")} fieldErrors={s.fieldErrors} />
-      <SelectField name="kind" options={ARTIST_KINDS} labels="catalogue.artistKinds" defaultValue={initial?.kind} fieldErrors={s.fieldErrors} />
-      <Field name="disambiguation" dir="auto" verbatim defaultValue={initial?.disambiguation} hint={t("disambiguation")} fieldErrors={s.fieldErrors} />
-      <Field name="isni" dir="ltr" defaultValue={initial?.isni} hint={t("isni")} fieldErrors={s.fieldErrors} />
-      <FormActions submitting={s.submitting} cancelHref={initial ? `/artists/${initial.id}` : "/artists"} />
+      {fill && <p className="muted">{showDisambiguation || showIsni ? tc("fillHint") : tc("nothingMissing")}</p>}
+      {!fill && <Field name="name" dir="auto" verbatim required defaultValue={initial?.name} hint={t("name")} fieldErrors={s.fieldErrors} />}
+      {!fill && <SelectField name="kind" options={ARTIST_KINDS} labels="catalogue.artistKinds" defaultValue={initial?.kind} fieldErrors={s.fieldErrors} />}
+      {showDisambiguation && <Field name="disambiguation" dir="auto" verbatim defaultValue={initial?.disambiguation} hint={t("disambiguation")} fieldErrors={s.fieldErrors} />}
+      {showIsni && <Field name="isni" dir="ltr" defaultValue={initial?.isni} hint={t("isni")} fieldErrors={s.fieldErrors} />}
+      <FormActions submitting={s.submitting} disabled={fill && !showDisambiguation && !showIsni} cancelHref={initial ? (fill ? "/" : `/artists/${initial.id}`) : "/artists"} />
     </form>
   );
 }
 
-export function ArtistEdit({ id }: { id: string }) {
+export function ArtistEdit({ id, fillOnly }: { id: string; fillOnly?: boolean }) {
   const load = useLoad(id, () => loadArtist(id));
-  return <Loaded load={load}>{(a) => <ArtistForm key={a.version} initial={a} onReload={load.reload} />}</Loaded>;
+  return <Loaded load={load}>{(a) => <ArtistForm key={a.version} initial={a} onReload={load.reload} fillOnly={fillOnly} />}</Loaded>;
 }

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import en from "../../messages/en.json";
 import ar from "../../messages/ar.json";
+import ml from "../../messages/ml.json";
+import { withFallback } from "./messages";
 import { dirFor, locales } from "./routing";
 
 function keys(obj: object, prefix = ""): string[] {
@@ -14,8 +16,18 @@ describe("message catalogs", () => {
     expect(keys(ar).sort()).toEqual(keys(en).sort());
   });
 
+  it("Malayalam translates only keys that exist in English, and the rest reads in English", () => {
+    const english = new Set(keys(en));
+    expect(keys(ml).filter((k) => !english.has(k))).toEqual([]);
+    const merged = withFallback(en, ml);
+    expect(keys(merged).sort()).toEqual(keys(en).sort());
+    expect(merged.nav.signIn).toBe(ml.nav.signIn);
+    expect(merged.admin.usersTitle).toEqual(en.admin.usersTitle);
+    expect(Array.isArray(merged.legal.docs.terms.sections)).toBe(true);
+  });
+
   it("has no empty strings", () => {
-    for (const cat of [en, ar]) {
+    for (const cat of [en, ar, ml]) {
       const flat = keys(cat).map((k) => k.split(".").reduce<unknown>((o, p) => (o as Record<string, unknown>)[p], cat));
       expect(flat.every((v) => typeof v === "string" && v.trim().length > 0)).toBe(true);
     }
@@ -37,7 +49,7 @@ describe("message catalogs", () => {
       "invalid_identifier", "invalid_choice", "not_found", "invalid_role", "role_not_applicable", "duplicate_credit",
       "unknown_artist", "too_many", "invalid_kind", "self_reference", "duplicate_relationship", "unknown_recording",
       "composition_mismatch", "duplicate_track", "duplicate", "machine_not_allowed", "unknown_language", "unknown_script",
-      "invalid_language_tag",
+      "invalid_language_tag", "invalid_video_link",
     ])
       expect(en.validation).toHaveProperty(c);
   });

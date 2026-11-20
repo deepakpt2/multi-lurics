@@ -7,6 +7,7 @@ pub mod entities;
 pub mod extract;
 pub mod home;
 pub mod images;
+pub mod import;
 pub mod legal;
 pub mod localization;
 pub mod lyrics;
@@ -28,6 +29,7 @@ use community as com;
 use entities as ent;
 use home as hm;
 use images as img;
+use import as imp;
 use localization as loc;
 use lyrics as lyr;
 use search as srch;
@@ -64,6 +66,7 @@ use utoipa::{Modify, OpenApi};
         ent::merge_entities,
         brw::songs, brw::facet, brw::suggest,
         hm::home, hm::record_view, hm::pick_state, hm::pick, hm::unpick,
+        imp::import_songs,
         img::limits, img::upload, img::withdraw, img::entity_images, img::media, img::queue, img::approve, img::reject,
         srch::search, srch::suggest, srch::suggestion_accepted, srch::metrics,
         seo_api::get_page, seo_api::sitemap,
@@ -270,6 +273,10 @@ pub fn router(app: App) -> Router {
         .route(
             "/editors-picks/{id}",
             get(hm::pick_state).put(hm::pick).delete(hm::unpick),
+        )
+        .route(
+            "/import/songs",
+            post(imp::import_songs).layer(axum::extract::DefaultBodyLimit::max(16 * 1024 * 1024)),
         )
         .route("/images/limits", get(img::limits))
         .route(

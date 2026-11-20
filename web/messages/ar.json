@@ -30,11 +30,13 @@
     "signOut": "تسجيل الخروج",
     "moderationHub": "قوائم المراجعة",
     "browse": "تصفح",
-    "catalogueTools": "أدوات الفهرس"
+    "catalogueTools": "أدوات الفهرس",
+    "import": "Bulk import"
   },
   "localeNames": {
     "en": "English",
-    "ar": "العربية"
+    "ar": "العربية",
+    "ml": "Malayalam"
   },
   "home": {
     "title": "مرحبًا",
@@ -131,7 +133,11 @@
     "raga": "الراغا",
     "religion": "الدين",
     "deity": "المعبود",
-    "tags": "الوسوم"
+    "tags": "الوسوم",
+    "devotional_form": "Form",
+    "source_work": "Source",
+    "occasions": "Occasions",
+    "youtube": "YouTube video"
   },
   "hints": {
     "password": "{min} حرفًا على الأقل.",
@@ -147,7 +153,11 @@
     "relationships": "يجب أن تنتمي النسخة المعادة أو النسخة الجديدة أو الحية أو التوزيع البديل إلى المؤلَّف نفسه الذي ينتمي إليه التسجيل المرتبط. لا يُنسخ شيء من التسجيل المرتبط.",
     "raga": "اختياري، مثل Mohanam. كما تُكتب، بأي خط.",
     "deity": "اختياري. المعبود أو الشخصية المقدسة التي تُخاطبها الأغنية.",
-    "tags": "اختياري. افصل بينها بفواصل، مثل: ترنيمة، صباح."
+    "tags": "اختياري. افصل بينها بفواصل، مثل: ترنيمة، صباح.",
+    "sourceWork": "Optional. The scripture or text it comes from, e.g. Bhagavad Gita 2.47.",
+    "occasions": "Optional. Separate with commas, e.g. Navratri, Ekadashi, morning.",
+    "youtube": "Optional. Paste any YouTube link; the page shows it as an embedded video.",
+    "youtubeUnrecognised": "That does not look like a YouTube video link, so it will be refused."
   },
   "validation": {
     "required": "هذا الحقل مطلوب.",
@@ -199,7 +209,8 @@
     "dimensions_too_small": "هذه الصورة صغيرة جدًا.",
     "dimensions_too_large": "أبعاد هذه الصورة كبيرة جدًا.",
     "must_confirm": "يرجى تأكيد أن لك حق مشاركة هذه الصورة.",
-    "unknown_image": "لم تعد الصورة المرفوعة متاحة. ارفعها من جديد."
+    "unknown_image": "لم تعد الصورة المرفوعة متاحة. ارفعها من جديد.",
+    "invalid_video_link": "That is not a YouTube video link."
   },
   "errors": {
     "title": "حدث خطأ",
@@ -323,7 +334,8 @@
       "editTitle": "تعديل الفنان",
       "detailTitle": "فنان",
       "new": "إضافة فنان",
-      "empty": "لم يُعثر على فنانين."
+      "empty": "لم يُعثر على فنانين.",
+      "completeTitle": "Add missing details"
     },
     "compositions": {
       "listTitle": "المؤلفات",
@@ -331,7 +343,8 @@
       "editTitle": "تعديل المؤلَّف",
       "detailTitle": "مؤلَّف",
       "new": "إضافة مؤلَّف",
-      "empty": "لم يُعثر على مؤلفات."
+      "empty": "لم يُعثر على مؤلفات.",
+      "completeTitle": "Add missing details"
     },
     "recordings": {
       "listTitle": "التسجيلات",
@@ -339,7 +352,8 @@
       "editTitle": "تعديل التسجيل",
       "detailTitle": "تسجيل",
       "new": "إضافة تسجيل",
-      "empty": "لم يُعثر على تسجيلات."
+      "empty": "لم يُعثر على تسجيلات.",
+      "completeTitle": "Add missing details"
     },
     "albums": {
       "listTitle": "الألبومات",
@@ -347,7 +361,8 @@
       "editTitle": "تعديل الألبوم",
       "detailTitle": "ألبوم",
       "new": "إضافة ألبوم",
-      "empty": "لم يُعثر على ألبومات."
+      "empty": "لم يُعثر على ألبومات.",
+      "completeTitle": "Add missing details"
     },
     "filterPrefix": "يبدأ بـ",
     "applyFilter": "تصفية",
@@ -455,7 +470,36 @@
     "applyFilters": "تطبيق التصفية",
     "match": {
       "linked": "مطابق لما هو موجود:"
-    }
+    },
+    "devotionalForms": {
+      "bhajan": "Bhajan",
+      "kirtan": "Kirtan",
+      "stotra": "Stotra",
+      "stuti": "Stuti",
+      "aarti": "Aarti",
+      "mantra": "Mantra",
+      "shloka": "Shloka",
+      "chalisa": "Chalisa",
+      "ashtakam": "Ashtakam",
+      "sahasranamam": "Sahasranamam",
+      "suprabhatam": "Suprabhatam",
+      "keerthanam": "Keerthanam",
+      "namavali": "Namavali",
+      "abhang": "Abhang",
+      "shabad": "Shabad",
+      "qawwali": "Qawwali",
+      "naat": "Naat",
+      "hamd": "Hamd",
+      "marsiya": "Marsiya",
+      "hymn": "Hymn",
+      "psalm": "Psalm",
+      "carol": "Carol",
+      "gospel": "Gospel",
+      "sutta": "Sutta",
+      "other": "Other"
+    },
+    "fillHint": "Anything already filled in stays as it is. You can add what is missing.",
+    "nothingMissing": "Nothing is missing here. Thank you for checking!"
   },
   "localization": {
     "title": "الأسماء والترجمات",
@@ -637,7 +681,8 @@
       "localization": "لغة أخرى",
       "transliteration": "كتابة صوتية",
       "alias": "يُعرف أيضًا بـ",
-      "metadata": "راغا أو معبود أو وسم"
+      "metadata": "راغا أو معبود أو وسم",
+      "lyrics": "In the lyrics"
     },
     "groups": {
       "compositions": "الأغاني",
@@ -667,7 +712,8 @@
     "otherLanguages": "لغات أخرى",
     "localeNames": {
       "en": "English",
-      "ar": "العربية"
+      "ar": "العربية",
+      "ml": "മലയാളം"
     },
     "stats": {
       "label": "نشاط الصفحة",
@@ -675,6 +721,62 @@
       "rating": "المتوسط {average} من {count, plural, one {# تقييم} two {تقييمين} few {# تقييمات} many {# تقييمًا} other {# تقييم}}",
       "noRatings": "لا تقييمات بعد",
       "comments": "{count, plural, one {# تعليق} two {تعليقان} few {# تعليقات} many {# تعليقًا} other {# تعليق}}"
+    },
+    "video": {
+      "title": "Video",
+      "label": "Video",
+      "frameTitle": "Video: {title}",
+      "openOnYoutube": "Open on YouTube"
+    },
+    "related": {
+      "title": "Related songs",
+      "reasons": {
+        "album": "Same album",
+        "singer": "Same singer",
+        "deity": "Same deity",
+        "raga": "Same raga",
+        "composer": "Same composer",
+        "lyricist": "Same lyricist",
+        "tag": "Shared tag",
+        "form": "Same form"
+      }
+    },
+    "contribute": {
+      "button": "Contribute",
+      "label": "Add to this page",
+      "signIn": "Sign in to contribute",
+      "translation": "Add a translation",
+      "transliteration": "Add a transliteration",
+      "original": "Add lyrics in another language or script",
+      "details": "Add missing details",
+      "photoHint": "Use the camera on the picture to add a photo."
+    },
+    "panes": {
+      "label": "Lyrics columns",
+      "column": "Column {n}",
+      "type": "Type",
+      "language": "Language",
+      "choose": "Choose language…",
+      "add": "Add a column",
+      "close": "Close column {n}",
+      "fullScreen": "Open column {n} full screen",
+      "none": "There is no {type} for this song yet.",
+      "addOne": "Add one",
+      "pick": "Choose a language to read it here.",
+      "position": "Column {current} of {total}",
+      "reading": "Reading mode",
+      "exitReading": "Close",
+      "textSize": "Text size",
+      "smaller": "Smaller text",
+      "larger": "Larger text",
+      "theme": "Colours",
+      "themes": {
+        "light": "Light",
+        "sepia": "Sepia",
+        "dark": "Dark"
+      },
+      "backToSong": "Back to the song",
+      "pageTitle": "{name}: lyrics"
     }
   },
   "compare": {
@@ -934,7 +1036,8 @@
       "category": "نوع",
       "language": "لغة",
       "tag": "وسم",
-      "song": "أغنية"
+      "song": "أغنية",
+      "form": "Form"
     },
     "facets": {
       "album": "الألبومات",
@@ -947,7 +1050,8 @@
       "religion": "الأديان",
       "category": "الأنواع",
       "language": "اللغات",
-      "tag": "الوسوم"
+      "tag": "الوسوم",
+      "form": "Forms"
     },
     "categories": {
       "mainstream": "أفلام ومستقلة",
@@ -1009,7 +1113,13 @@
       "inContext": "يعرض فقط {facets} المناسبة لعوامل التصفية المختارة.",
       "allSongs": "كل الأغاني"
     },
-    "errorTitle": "تعذر تحميل القائمة"
+    "errorTitle": "تعذر تحميل القائمة",
+    "item": {
+      "songs": "{count, plural, one {# song} other {# songs}}",
+      "filter": "Filter songs",
+      "empty": "No songs with a published lyric yet.",
+      "noAlbum": "Not on an album"
+    }
   },
   "images": {
     "placeholder": "لا توجد صورة لـ {name} بعد",
@@ -1052,5 +1162,70 @@
     "confirmReject": "رفض الصورة",
     "loadMore": "عرض المزيد",
     "dimensions": "{width}×{height} بكسل"
+  },
+  "import": {
+    "title": "Bulk import",
+    "intro": "Add many songs at once from a spreadsheet. Imported lyrics are published straight away, so check the file first.",
+    "moderatorsOnly": "Only moderators can import songs.",
+    "progress": "{done} of {total} rows",
+    "step1": {
+      "title": "1. Get the template",
+      "body": "One row per song. Fill in what you have; only the title is required. Use a semicolon between several singers or tags. Lyrics can run over several lines.",
+      "download": "Download CSV template",
+      "columns": "What each column means"
+    },
+    "step2": {
+      "title": "2. Choose your file",
+      "body": "A CSV file saved from Excel, Google Sheets or LibreOffice (UTF-8, so Indian scripts are kept). Columns are matched by their names.",
+      "choose": "Choose a file",
+      "rows": "{count, plural, one {# row} other {# rows}}",
+      "recognised": "Columns found: {columns}",
+      "ignored": "These columns are not used: {columns}",
+      "noTitle": "There is no title column, so nothing can be imported.",
+      "empty": "The file has no rows below the header."
+    },
+    "step3": {
+      "title": "3. Check, then import",
+      "body": "Checking changes nothing. It tells you which rows would be added, which are already in the catalogue, and which have a problem.",
+      "check": "Check the file",
+      "import": "{count, plural, one {Import # song} other {Import # songs}}"
+    },
+    "result": {
+      "checked": "Check result",
+      "imported": "Import finished",
+      "ready": "{count, plural, one {# song is ready to import} other {# songs are ready to import}}",
+      "created": "{count, plural, one {# song imported} other {# songs imported}}",
+      "skipped": "{count, plural, one {# song already in the catalogue (skipped)} other {# songs already in the catalogue (skipped)}}",
+      "failed": "{count, plural, one {# row with a problem} other {# rows with problems}}",
+      "table": "Rows that need attention",
+      "row": "Row",
+      "what": "What happened",
+      "alreadyThere": "Already in the catalogue."
+    },
+    "rowProblems": {
+      "forbidden": "You are not allowed to do this.",
+      "internal": "Something went wrong on our side. Try this row again."
+    },
+    "columns": {
+      "title": "Song title (required)",
+      "language": "Language of the lyrics: ml, hi, ta, … or its English name",
+      "script": "Script of the lyrics; the language's usual script if blank",
+      "lyrics": "The original lyrics. Without them the song has no public page yet",
+      "album": "Album or film. Found by title, otherwise created",
+      "album_kind": "album, soundtrack (a film), single, ep or compilation",
+      "year": "Year",
+      "singers": "Singers, separated by ;",
+      "composers": "Music director or composer, separated by ;",
+      "lyricists": "Lyricist, separated by ;",
+      "category": "mainstream (default) or devotional",
+      "religion": "Devotional only: hindu, sikh, buddhist, jain, christian, muslim, other",
+      "deity": "Devotional only: the deity or revered figure",
+      "raga": "Raga",
+      "devotional_form": "Devotional only: bhajan, kirtan, stotra, aarti, chalisa, shabad, …",
+      "source_work": "Devotional only: the text it comes from",
+      "occasions": "Devotional only: festivals and times, separated by ;",
+      "tags": "Tags, separated by ;",
+      "youtube": "A YouTube link in any form"
+    }
   }
 }

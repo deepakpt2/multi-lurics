@@ -12,6 +12,7 @@ pub mod entities;
 pub mod error;
 pub mod home;
 pub mod images;
+pub mod import;
 pub mod legal;
 pub mod localization;
 pub mod lyrics;

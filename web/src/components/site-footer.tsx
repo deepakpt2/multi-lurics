@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { LocaleSwitcher } from "./locale-switcher";
 
 export function SiteFooter() {
   const t = useTranslations("nav");
@@ -11,6 +12,7 @@ export function SiteFooter() {
         <Link href="/legal/content-policy">{t("contentPolicy")}</Link>
         <Link href="/legal/notice">{t("copyright")}</Link>
       </nav>
+      <LocaleSwitcher />
     </footer>
   );
 }

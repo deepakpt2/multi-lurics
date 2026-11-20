@@ -959,6 +959,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/import/songs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["import_songs"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/languages": {
         parameters: {
             query?: never;
@@ -1960,7 +1976,7 @@ export interface components {
          * @description Every kind of metadata songs can be browsed by. The same words are the filter parameter names.
          * @enum {string}
          */
-        BrowseFacet: "artist" | "singer" | "lyricist" | "composer" | "album" | "raga" | "deity" | "religion" | "category" | "language" | "tag";
+        BrowseFacet: "artist" | "singer" | "lyricist" | "composer" | "album" | "raga" | "deity" | "religion" | "category" | "form" | "language" | "tag";
         BrowseFacetResponse: {
             facet: components["schemas"]["BrowseFacet"];
             filters: components["schemas"]["BrowseFilter"][];
@@ -1995,7 +2011,21 @@ export interface components {
             songs: number;
         };
         BrowseFilter: {
+            /** @description A short line of facts: an artist's disambiguation, an album's release year. */
+            detail?: string | null;
             facet: components["schemas"]["BrowseFacet"];
+            /**
+             * Format: uuid
+             * @description The artist's, album's, raga's or deity's id (absent for plain values such as a religion).
+             */
+            id?: string | null;
+            /**
+             * Format: uuid
+             * @description Its approved picture: `/api/v1/media/{image_id}/{width}`.
+             */
+            image_id?: string | null;
+            /** @description An artist's kind (`person`, `group`, `other`) or an album's (`album`, `soundtrack`…). */
+            kind?: string | null;
             label: components["schemas"]["Display"];
             /** @description False when nothing has this slug: the list is then empty. */
             resolved: boolean;
@@ -2063,7 +2093,7 @@ export interface components {
             via: components["schemas"]["BrowseVia"];
         };
         /** @enum {string} */
-        BrowseSuggestionKind: "song" | "artist" | "singer" | "lyricist" | "composer" | "album" | "raga" | "deity" | "religion" | "category" | "language" | "tag";
+        BrowseSuggestionKind: "song" | "artist" | "singer" | "lyricist" | "composer" | "album" | "raga" | "deity" | "religion" | "category" | "form" | "language" | "tag";
         /** @enum {string} */
         BrowseVia: "name" | "localization" | "transliteration" | "alias";
         Comment: {
@@ -2121,13 +2151,16 @@ export interface components {
             /** Format: uuid */
             created_by: string;
             deity?: string | null;
+            devotional_form?: string | null;
             /** @description Name resolved for the requested `lang` (see `fallback`). */
             display: components["schemas"]["Display"];
             /** Format: uuid */
             id: string;
             iswc?: string | null;
+            occasions: string[];
             raga?: string | null;
             religion?: string | null;
+            source_work?: string | null;
             tags: string[];
             title: string;
             /** Format: date-time */
@@ -2136,6 +2169,8 @@ export interface components {
             version: number;
             /** Format: int32 */
             year?: number | null;
+            /** @description The song's YouTube video id (embed it; never store links). */
+            youtube_id?: string | null;
         };
         CompositionCreate: {
             /** @description `mainstream` (film, album, independent; the default) or `devotional`. */
@@ -2144,17 +2179,28 @@ export interface components {
             credits?: components["schemas"]["CreditInput"][] | null;
             /** @description Deity or revered figure, as written. Devotional songs only. */
             deity?: string | null;
+            /**
+             * @description Devotional songs only: `bhajan`, `kirtan`, `stotra`, `aarti`, `mantra`, `chalisa`, `shabad`, `qawwali`,
+             *     `hymn` and others (see the `devotional_forms` list in the web app).
+             */
+            devotional_form?: string | null;
             /** @description ISWC, e.g. `T-034.524.680-1`; check digit verified. */
             iswc?: string | null;
+            /** @description Devotional songs only: festivals and times it is sung at (at most 10). */
+            occasions?: string[];
             /** @description Raga, as written (any script). */
             raga?: string | null;
             /** @description `hindu`, `sikh`, `buddhist`, `jain`, `christian`, `muslim` or `other`. Devotional songs only. */
             religion?: string | null;
+            /** @description Devotional songs only: the scripture or text it comes from, e.g. `Bhagavad Gita 2.47`. */
+            source_work?: string | null;
             /** @description Free tags (at most 20, 40 characters each). */
             tags?: string[];
             title?: string;
             /** Format: int32 */
             year?: number | null;
+            /** @description A YouTube link in any common form (watch, youtu.be, shorts, embed) or a video id. Stored as the id. */
+            youtube?: string | null;
         };
         CompositionDetail: components["schemas"]["Composition"] & {
             credits: components["schemas"]["Credit"][];
@@ -2172,16 +2218,21 @@ export interface components {
             category?: string | null;
             credits?: components["schemas"]["CreditInput"][] | null;
             deity?: string | null;
+            devotional_form?: string | null;
             /** Format: int32 */
             expected_version?: number | null;
             iswc?: string | null;
+            /** @description When present, replaces all occasions. */
+            occasions?: string[] | null;
             raga?: string | null;
             religion?: string | null;
+            source_work?: string | null;
             /** @description When present, replaces all tags. */
             tags?: string[] | null;
             title?: string | null;
             /** Format: int32 */
             year?: number | null;
+            youtube?: string | null;
         };
         CompositionRef: {
             display: components["schemas"]["Display"];
@@ -2489,6 +2540,106 @@ export interface components {
             file: string;
             rights: boolean;
         };
+        ImportProblem: {
+            /** @description A stable code the web app turns into a message. */
+            code: string;
+            /** @description The column, or `row` for a problem with the row as a whole. */
+            field: string;
+        };
+        ImportRequest: {
+            /** @description Check everything and report, but write nothing. */
+            dry_run?: boolean;
+            /** @description At most 100 rows per request. */
+            rows: components["schemas"]["ImportRow"][];
+        };
+        ImportResponse: {
+            created: number;
+            dry_run: boolean;
+            failed: number;
+            results: components["schemas"]["ImportRowResult"][];
+            skipped: number;
+        };
+        /** @description One song. Everything but `title` is optional; a missing column is the same as an empty one. */
+        ImportRow: {
+            /**
+             * @description The album, or the film. Found by title, otherwise created.
+             * @default
+             */
+            album: string;
+            /**
+             * @description `album` (default), `soundtrack` (a film), `single`, `ep` or `compilation`. Only used when the album is created.
+             * @default
+             */
+            album_kind: string;
+            /**
+             * @description `mainstream` (default) or `devotional`.
+             * @default
+             */
+            category: string;
+            /** @default [] */
+            composers: string[];
+            /** @default  */
+            deity: string;
+            /** @default  */
+            devotional_form: string;
+            /**
+             * @description Language of the lyrics: `ml`, `mal` or `Malayalam`. Needed when there are lyrics.
+             * @default
+             */
+            language: string;
+            /** @default [] */
+            lyricists: string[];
+            /**
+             * @description The original lyrics. Leave blank to import the song without lyrics (it then has no public page).
+             * @default
+             */
+            lyrics: string;
+            /** @default [] */
+            occasions: string[];
+            /** @default  */
+            raga: string;
+            /** @default  */
+            religion: string;
+            /**
+             * @description Script of the lyrics (`Mlym`, `Deva`…); the language's usual script when blank.
+             * @default
+             */
+            script: string;
+            /**
+             * @description People, each found by name or alias, otherwise created.
+             * @default []
+             */
+            singers: string[];
+            /** @default  */
+            source_work: string;
+            /** @default [] */
+            tags: string[];
+            /** @default  */
+            title: string;
+            /**
+             * Format: int32
+             * @default null
+             */
+            year: number | null;
+            /**
+             * @description A YouTube link in any common form, or a video id.
+             * @default
+             */
+            youtube: string;
+        };
+        ImportRowResult: {
+            /** Format: uuid */
+            composition_id?: string | null;
+            problems: components["schemas"]["ImportProblem"][];
+            /** @description For a skipped row: `already_exists`. */
+            reason?: string | null;
+            /** @description Position in the request, from 1. */
+            row: number;
+            status: components["schemas"]["ImportStatus"];
+            title: string;
+        };
+        /** @enum {string} */
+        ImportStatus: "would_create" | "created" | "skipped" | "failed";
         Language: {
             /** @description ISO 15924 code of the usual script. */
             default_script?: string | null;
@@ -2600,7 +2751,7 @@ export interface components {
         /** @enum {string} */
         MatchKind: "exact" | "normalized" | "prefix" | "fuzzy";
         /** @enum {string} */
-        MatchVia: "name" | "localization" | "transliteration" | "alias" | "metadata";
+        MatchVia: "name" | "localization" | "transliteration" | "alias" | "metadata" | "lyrics";
         Matched: {
             kind: components["schemas"]["MatchKind"];
             /** @description The name that matched, as written. May differ from `display` (an alias or another script). */
@@ -2795,6 +2946,11 @@ export interface components {
             locale: string;
             slug: string;
         };
+        PageRelated: {
+            /** @description Why it is related, strongest first: `album`, `singer`, `deity`, `raga`, `composer`, `lyricist`, `tag`, `form`. */
+            reasons: string[];
+            song: components["schemas"]["PageLink"];
+        };
         /** @description The published text of one contribution, with enough context to label a panel. */
         PanelContent: {
             body: string;
@@ -2986,6 +3142,8 @@ export interface components {
             deity?: string | null;
             /** @description Artist disambiguation. */
             detail?: string | null;
+            /** @description Song only, devotional songs: `bhajan`, `stotra`, `aarti`… */
+            devotional_form?: string | null;
             /** Format: int32 */
             duration_ms?: number | null;
             /** Format: uuid */
@@ -2995,17 +3153,23 @@ export interface components {
             locale: string;
             /** @description Published lyrics only. */
             lyrics: components["schemas"]["PageLyric"][];
+            /** @description Song only, devotional songs: festivals and times it is sung at. */
+            occasions: string[];
             parent?: null | components["schemas"]["PageLink"];
             /** @description Song only. */
             raga?: string | null;
             /** @description A song's or an artist's recordings. */
             recordings: components["schemas"]["PageLink"][];
+            /** @description Song only: songs that share an album, singer, deity, raga, composer, tag or form with this one. */
+            related: components["schemas"]["PageRelated"][];
             /** @description Song only, devotional songs. */
             religion?: string | null;
             /** @description `song`, `recording` or `artist`. */
             scope: string;
             /** @description An artist's songs. */
             songs: components["schemas"]["PageLink"][];
+            /** @description Song only, devotional songs: the text it comes from. */
+            source_work?: string | null;
             /** @description Song only; empty otherwise. */
             tags: string[];
             title: components["schemas"]["Display"];
@@ -3014,6 +3178,8 @@ export interface components {
             x_default: components["schemas"]["PageRef"];
             /** Format: int32 */
             year?: number | null;
+            /** @description Song only: the YouTube video id. The page builds the embed address from it. */
+            youtube_id?: string | null;
         };
         RateDoc: {
             /** Format: int32 */
@@ -4994,6 +5160,7 @@ export interface operations {
                 deity?: string;
                 religion?: string;
                 category?: string;
+                form?: string;
                 language?: string;
                 tag?: string;
                 /** @description Narrow the list to names that start with, contain a word starting with, or nearly match this text. */
@@ -5064,9 +5231,10 @@ export interface operations {
                 deity?: string;
                 religion?: string;
                 category?: string;
+                form?: string;
                 language?: string;
                 tag?: string;
-                /** @description `newest` (default) or `title`. */
+                /** @description `newest` (default), `title`, or `album` (grouped by the album a song is on, in track order). */
                 sort?: string;
             };
             header?: never;
@@ -5123,6 +5291,7 @@ export interface operations {
                 deity?: string;
                 religion?: string;
                 category?: string;
+                form?: string;
                 language?: string;
                 tag?: string;
                 /** @description At least 2 characters. */
@@ -7106,6 +7275,55 @@ export interface operations {
                 };
             };
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    import_songs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportRequest"];
+            };
+        };
+        responses: {
+            /** @description One result per row, in order. A failed row does not stop the others. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Moderators and admins only. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

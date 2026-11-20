@@ -15,7 +15,7 @@
   --ok-bg: #eaf5ec;
   --radius: 12px;
   --shadow: 0 1px 2px rgb(60 40 20 / 6%), 0 6px 20px rgb(60 40 20 / 7%);
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Noto Serif", Georgia, serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Noto Serif", "Noto Serif Malayalam", "Noto Serif Devanagari", "Noto Serif Bengali", "Noto Serif Telugu", "Noto Serif Kannada", "Noto Serif Gujarati", "Noto Serif Gurmukhi", Georgia, serif;
   color-scheme: light;
 }
 * { box-sizing: border-box; }
@@ -26,7 +26,7 @@ body { overflow-x: clip; overflow-wrap: break-word; }
 img, svg, video, table, pre { max-inline-size: 100%; }
 pre { overflow-x: auto; }
 body {
-  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Arabic", "Noto Sans Tamil", sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Arabic", "Noto Sans Tamil", "Noto Sans Malayalam", "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Sans Gujarati", "Noto Sans Gurmukhi", "Noto Sans Oriya", sans-serif;
   line-height: 1.6;
 }
 a { color: var(--accent); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
@@ -386,3 +386,81 @@ button.link { background: none; border: 0; padding: 0; color: inherit; text-deco
 .home-hidden li { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 .page-stats { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-block: 0.25rem 0.75rem; }
 .page-stats span { display: inline-flex; align-items: center; gap: 0.25rem; }
+
+/* Language switcher (footer) */
+.site-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; }
+.locale-switcher ul { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 0; padding: 0; }
+.locale-switcher a { display: inline-flex; align-items: center; min-block-size: 2.25rem; padding-inline: 0.85rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--fg); text-decoration: none; }
+.locale-switcher a[aria-current="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+/* Song page: actions, video, related songs */
+.page-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-block: 0.5rem 1rem; }
+.menu-note { display: flex; gap: 0.4rem; align-items: center; margin: 0; padding: 0.4rem 0.75rem; max-inline-size: 18rem; }
+.video-frame { position: relative; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden; background: #000; }
+.video-frame iframe { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; border: 0; }
+.related-songs { padding-inline-start: 1.25rem; }
+.related-songs li { margin-block: 0.3rem; }
+
+/* Lyrics side by side: columns on a wide screen, a row you swipe through on a phone. */
+.lyric-panes-wrap { inline-size: min(calc(100vw - 2rem), 76rem); margin-inline: calc((100% - min(100vw - 2rem, 76rem)) / 2); margin-block: 0.5rem 1rem; }
+.lyric-panes-bar { display: flex; justify-content: flex-end; margin-block-end: 0.5rem; }
+.lyric-panes { display: flex; gap: 0.75rem; overflow-x: auto; scroll-snap-type: x mandatory; align-items: stretch; padding-block-end: 0.5rem; scrollbar-width: thin; overscroll-behavior-x: contain; }
+.lyric-pane { flex: 0 0 min(100%, 40rem); scroll-snap-align: center; min-inline-size: 0; padding: 0.75rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+@media (min-width: 48rem) { .lyric-panes { scroll-snap-type: x proximity; } .lyric-pane { flex: 1 1 22rem; max-inline-size: 42rem; } }
+.lyric-pane-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; padding-block-end: 0.5rem; border-block-end: 1px solid var(--border); }
+.lyric-pane-head select { flex: 1 1 7rem; min-inline-size: 0; min-block-size: 2.25rem; padding-inline: 0.5rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: inherit; font: inherit; }
+.lyric-pane-tools { display: inline-flex; gap: 0.3rem; margin-inline-start: auto; }
+.lyric-pane-tools a.icon-button { color: inherit; }
+.lyric-pane-empty { padding-block: 1rem; }
+.lyric-pane-add { flex: 0 0 4.5rem; scroll-snap-align: center; display: grid; place-content: center; justify-items: center; gap: 0.4rem; padding: 0.5rem; border: 2px dashed var(--border); border-radius: var(--radius); background: transparent; color: var(--muted); font: inherit; font-size: 0.8rem; cursor: pointer; text-align: center; }
+.lyric-pane-add:hover { border-color: var(--accent); color: var(--accent); }
+.lyric-pane-position { text-align: center; margin-block: 0.25rem 0; }
+@media (min-width: 48rem) { .lyric-pane-position { display: none; } }
+.full-lyrics { }
+main.container:has(.full-lyrics) { max-inline-size: 90rem; }
+
+/* Reading mode: the same columns, large and quiet, over everything else. */
+body.reading-open { overflow: hidden; }
+.reading { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; overflow: auto; background: var(--reading-bg); color: var(--reading-fg); }
+.reading[data-theme="light"] { --reading-bg: #ffffff; --reading-fg: #1f1c19; --reading-line: #e6e0d6; color-scheme: light; }
+.reading[data-theme="sepia"] { --reading-bg: #f4ecd8; --reading-fg: #3f3120; --reading-line: #dccdae; color-scheme: light; }
+.reading[data-theme="dark"] { --reading-bg: #15171c; --reading-fg: #e8e4dc; --reading-line: #333844; color-scheme: dark; }
+.reading-bar { position: sticky; inset-block-start: 0; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem 1rem; background: var(--reading-bg); border-block-end: 1px solid var(--reading-line); }
+.reading-controls { display: inline-flex; gap: 0.4rem; align-items: center; }
+.reading .button, .reading .icon-button, .reading select { background: transparent; color: var(--reading-fg); border-color: var(--reading-line); }
+.reading .button[aria-checked="true"] { background: var(--reading-fg); color: var(--reading-bg); }
+.reading-theme { min-block-size: 2rem; padding-block: 0; }
+.reading-body { inline-size: 100%; max-inline-size: 96rem; margin-inline: auto; padding: 1rem; }
+.reading .lyric-panes-wrap { inline-size: auto; margin-inline: 0; }
+.reading .lyric-pane { background: transparent; border-color: var(--reading-line); }
+.reading .lyric-pane-head { border-color: var(--reading-line); }
+.reading .lyric-body { font-size: var(--reading-size, 1.2rem); line-height: 2; color: var(--reading-fg); }
+.reading .lyric-panes:not(:has(.lyric-pane + .lyric-pane)) { justify-content: center; }
+.reading a { color: inherit; }
+
+/* The page of one value: a singer, a film, a raga… */
+.meta-hero { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; margin-block: 1rem 1.5rem; }
+.meta-hero h1 { margin-block: 0.1rem; }
+.meta-hero p { margin-block: 0.25rem; }
+.meta-icon { display: grid; place-items: center; inline-size: 7.5rem; block-size: 7.5rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
+.album-group { margin-block: 1.25rem; }
+.album-group-title { display: flex; align-items: center; gap: 0.6rem; font-size: 1.15rem; margin-block: 0 0.4rem; }
+.meta-songs { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+.meta-song { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; padding-block: 0.45rem; border-block-end: 1px solid var(--border); }
+
+/* Bulk import */
+.import-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem; }
+.import-steps > li { padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.import-steps h2 { margin-block: 0 0.4rem; font-size: 1.1rem; }
+.import-columns { display: grid; gap: 0.4rem; margin-block: 0.75rem 0; }
+.import-columns div { display: grid; grid-template-columns: 9rem 1fr; gap: 0.75rem; }
+.import-columns dd { margin: 0; }
+.import-summary { margin-block-start: 0.75rem; }
+.import-counts { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; list-style: none; padding: 0; }
+.import-bad { color: var(--error-fg); font-weight: 600; }
+.import-table { inline-size: 100%; border-collapse: collapse; }
+.import-table th, .import-table td { padding: 0.4rem 0.6rem; border-block-end: 1px solid var(--border); text-align: start; vertical-align: top; }
+.import-table tr[data-status="failed"] td:last-child { color: var(--error-fg); }
+progress { inline-size: min(100%, 20rem); vertical-align: middle; }
+@media (max-width: 40rem) { .import-columns div { grid-template-columns: 1fr; gap: 0; } }
+.import-file { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: baseline; }

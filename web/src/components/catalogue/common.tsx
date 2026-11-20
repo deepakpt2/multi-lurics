@@ -398,11 +398,11 @@ export function KindFilter({ value, options, labels }: { value: string; options:
 }
 
 /** Submit + cancel for catalogue forms. */
-export function FormActions({ submitting, cancelHref }: { submitting: boolean; cancelHref: string }) {
+export function FormActions({ submitting, cancelHref, disabled }: { submitting: boolean; cancelHref: string; disabled?: boolean }) {
   const t = useTranslations();
   return (
     <p className="actions">
-      <button className="button primary" type="submit" disabled={submitting} aria-busy={submitting}>
+      <button className="button primary" type="submit" disabled={submitting || disabled} aria-busy={submitting}>
         {submitting ? t("common.submitting") : t("catalogue.save")}
       </button>
       <Link className="button" href={cancelHref}>

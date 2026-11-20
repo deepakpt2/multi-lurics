@@ -76,6 +76,13 @@ pub struct PageLyric {
 }
 
 #[derive(Serialize, ToSchema)]
+pub struct PageRelated {
+    pub song: PageLink,
+    /// Why it is related, strongest first: `album`, `singer`, `deity`, `raga`, `composer`, `lyricist`, `tag`, `form`.
+    pub reasons: Vec<String>,
+}
+
+#[derive(Serialize, ToSchema)]
 pub struct PublicPage {
     /// `song`, `recording` or `artist`.
     pub scope: String,
@@ -105,6 +112,16 @@ pub struct PublicPage {
     pub deity: Option<String>,
     /// Song only; empty otherwise.
     pub tags: Vec<String>,
+    /// Song only, devotional songs: `bhajan`, `stotra`, `aarti`…
+    pub devotional_form: Option<String>,
+    /// Song only, devotional songs: the text it comes from.
+    pub source_work: Option<String>,
+    /// Song only, devotional songs: festivals and times it is sung at.
+    pub occasions: Vec<String>,
+    /// Song only: the YouTube video id. The page builds the embed address from it.
+    pub youtube_id: Option<String>,
+    /// Song only: songs that share an album, singer, deity, raga, composer, tag or form with this one.
+    pub related: Vec<PageRelated>,
     /// A recording's song.
     pub parent: Option<PageLink>,
     pub credits: Vec<PageCredit>,
@@ -137,6 +154,18 @@ impl From<uc::Page> for PublicPage {
             religion: p.religion,
             deity: p.deity,
             tags: p.tags,
+            devotional_form: p.devotional_form,
+            source_work: p.source_work,
+            occasions: p.occasions,
+            youtube_id: p.youtube_id,
+            related: p
+                .related
+                .into_iter()
+                .map(|r| PageRelated {
+                    song: r.song.into(),
+                    reasons: r.reasons,
+                })
+                .collect(),
             parent: p.parent.map(Into::into),
             credits: p
                 .credits

@@ -227,6 +227,11 @@ pub struct CompositionData {
     pub religion: Option<String>,
     pub deity: Option<String>,
     pub tags: Vec<String>,
+    pub devotional_form: Option<String>,
+    pub source_work: Option<String>,
+    pub occasions: Vec<String>,
+    /// The 11-character YouTube video id.
+    pub youtube_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]
@@ -240,6 +245,10 @@ pub struct CompositionRow {
     pub religion: Option<String>,
     pub deity: Option<String>,
     pub tags: Vec<String>,
+    pub devotional_form: Option<String>,
+    pub source_work: Option<String>,
+    pub occasions: Vec<String>,
+    pub youtube_id: Option<String>,
     pub version: i32,
     pub created_by: Uuid,
     pub created_at: DateTime<Utc>,
@@ -257,6 +266,10 @@ impl CompositionRow {
             religion: self.religion.clone(),
             deity: self.deity.clone(),
             tags: self.tags.clone(),
+            devotional_form: self.devotional_form.clone(),
+            source_work: self.source_work.clone(),
+            occasions: self.occasions.clone(),
+            youtube_id: self.youtube_id.clone(),
         }
     }
 }
@@ -268,6 +281,7 @@ const COMPOSITION: &str =
     (SELECT d.name FROM deities d WHERE d.id = compositions.deity_id) AS deity,
     ARRAY(SELECT g.name FROM composition_tags ct JOIN tags g ON g.id = ct.tag_id
           WHERE ct.composition_id = compositions.id ORDER BY ct.position, g.id) AS tags,
+    compositions.devotional_form, compositions.source_work, compositions.occasions, compositions.youtube_id,
     compositions.version, compositions.created_by, compositions.created_at, compositions.updated_at";
 
 /// Which entities a song's raga, deity and tags are.
@@ -285,8 +299,9 @@ pub async fn insert_composition(
     by: Uuid,
 ) -> Res<CompositionRow> {
     let id: Uuid = sqlx::query_scalar(
-        "INSERT INTO compositions (title, iswc, year, category, raga_id, religion, deity_id, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+        "INSERT INTO compositions (title, iswc, year, category, raga_id, religion, deity_id, created_by,
+                                   devotional_form, source_work, occasions, youtube_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id",
     )
     .bind(&d.title)
     .bind(&d.iswc)
@@ -296,6 +311,10 @@ pub async fn insert_composition(
     .bind(&d.religion)
     .bind(t.deity_id)
     .bind(by)
+    .bind(&d.devotional_form)
+    .bind(&d.source_work)
+    .bind(&d.occasions)
+    .bind(&d.youtube_id)
     .fetch_one(&mut *conn)
     .await?;
     set_tags(conn, id, &t.tag_ids).await?;
@@ -310,7 +329,8 @@ pub async fn update_composition(
 ) -> Res<CompositionRow> {
     sqlx::query(
         "UPDATE compositions SET title = $2, iswc = $3, year = $4, category = $5, raga_id = $6, religion = $7,
-                deity_id = $8, version = version + 1, updated_at = now()
+                deity_id = $8, devotional_form = $9, source_work = $10, occasions = $11, youtube_id = $12,
+                version = version + 1, updated_at = now()
          WHERE id = $1",
     )
     .bind(id)
@@ -321,6 +341,10 @@ pub async fn update_composition(
     .bind(t.raga_id)
     .bind(&d.religion)
     .bind(t.deity_id)
+    .bind(&d.devotional_form)
+    .bind(&d.source_work)
+    .bind(&d.occasions)
+    .bind(&d.youtube_id)
     .execute(&mut *conn)
     .await?;
     set_tags(conn, id, &t.tag_ids).await?;

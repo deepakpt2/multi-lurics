@@ -28,6 +28,8 @@ pub enum Facet {
     Deity,
     Religion,
     Category,
+    /// The kind of devotional piece: bhajan, stotra, aarti…
+    Form,
     /// A language the song's published lyrics exist in.
     Language,
     Tag,
@@ -46,7 +48,7 @@ pub const RELIGIONS: [&str; 7] = ["hindu", "sikh", "buddhist", "jain", "christia
 pub const CATEGORIES: [&str; 2] = ["mainstream", "devotional"];
 
 impl Facet {
-    pub const ALL: [Facet; 11] = [
+    pub const ALL: [Facet; 12] = [
         Self::Artist,
         Self::Singer,
         Self::Lyricist,
@@ -56,6 +58,7 @@ impl Facet {
         Self::Deity,
         Self::Religion,
         Self::Category,
+        Self::Form,
         Self::Language,
         Self::Tag,
     ];
@@ -71,6 +74,7 @@ impl Facet {
             Self::Deity => "deity",
             Self::Religion => "religion",
             Self::Category => "category",
+            Self::Form => "form",
             Self::Language => "language",
             Self::Tag => "tag",
         }
@@ -111,6 +115,10 @@ impl Facet {
             Self::Deity => "SELECT c.id AS song, c.deity_id AS v FROM compositions c WHERE c.deity_id IS NOT NULL",
             Self::Religion => "SELECT c.id AS song, c.religion AS v, c.religion AS label FROM compositions c WHERE c.religion IS NOT NULL",
             Self::Category => "SELECT c.id AS song, c.category AS v, c.category AS label FROM compositions c",
+            Self::Form => {
+                "SELECT c.id AS song, c.devotional_form AS v, c.devotional_form AS label FROM compositions c
+                 WHERE c.devotional_form IS NOT NULL"
+            }
             Self::Tag => "SELECT composition_id AS song, tag_id AS v FROM composition_tags",
             Self::Language => {
                 "SELECT r.composition_id AS song, lower(l.iso639_3) AS v, coalesce(l.endonym, l.name_en) AS label
@@ -161,6 +169,9 @@ fn push_filters(qb: &mut QueryBuilder<'_, Postgres>, filters: &[Filter]) {
             }
             Facet::Category => {
                 qb.push("c.category = ");
+            }
+            Facet::Form => {
+                qb.push("c.devotional_form = ");
             }
             // Entity and language facets: the song has a link row with this value.
             _ => {
@@ -288,9 +299,10 @@ pub async fn sync_slug(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> 
 /// Display label of a text value, or `None` when no song carries it.
 pub async fn text_label(conn: &mut PgConnection, facet: Facet, v: &str) -> Res<Option<String>> {
     let sql = match facet {
-        Facet::Religion | Facet::Category => {
+        Facet::Religion | Facet::Category | Facet::Form => {
             return Ok((RELIGIONS.contains(&v) && facet == Facet::Religion
-                || CATEGORIES.contains(&v) && facet == Facet::Category)
+                || CATEGORIES.contains(&v) && facet == Facet::Category
+                || domain::catalogue::DEVOTIONAL_FORMS.contains(&v) && facet == Facet::Form)
                 .then(|| v.to_owned()));
         }
         Facet::Language => "SELECT coalesce(endonym, name_en) FROM languages WHERE lower(iso639_3) = $1",
@@ -305,6 +317,8 @@ pub async fn text_label(conn: &mut PgConnection, facet: Facet, v: &str) -> Res<O
 pub enum Sort {
     Newest,
     Title,
+    /// Grouped by album (the first album the song is on, as the cards show), in track order, then by title.
+    Album,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -328,6 +342,18 @@ pub async fn list_songs(
     qb.push(match sort {
         Sort::Newest => " ORDER BY c.created_at DESC, c.id DESC",
         Sort::Title => " ORDER BY lower(c.title), c.id",
+        Sort::Album => {
+            " ORDER BY (SELECT a.title FROM album_tracks t JOIN recordings r ON r.id = t.recording_id
+                                 JOIN albums a ON a.id = t.album_id WHERE r.composition_id = c.id
+                                 ORDER BY a.title, a.id LIMIT 1) NULLS LAST,
+                       (SELECT a.id FROM album_tracks t JOIN recordings r ON r.id = t.recording_id
+                                 JOIN albums a ON a.id = t.album_id WHERE r.composition_id = c.id
+                                 ORDER BY a.title, a.id LIMIT 1),
+                       (SELECT t.position FROM album_tracks t JOIN recordings r ON r.id = t.recording_id
+                                 JOIN albums a ON a.id = t.album_id WHERE r.composition_id = c.id
+                                 ORDER BY a.title, a.id LIMIT 1),
+                       lower(c.title), c.id"
+        }
     });
     qb.push(" LIMIT ").push_bind(limit).push(" OFFSET ").push_bind(offset);
     qb.build_query_as().fetch_all(conn).await
@@ -685,6 +711,7 @@ pub async fn suggest_values(conn: &mut PgConnection, q: &str, filters: &[Filter]
     for (facet, col, list) in [
         ("religion", "c.religion", codes(&RELIGIONS)),
         ("category", "c.category", codes(&CATEGORIES)),
+        ("form", "c.devotional_form", codes(&domain::catalogue::DEVOTIONAL_FORMS)),
     ] {
         if list.is_empty() {
             continue;

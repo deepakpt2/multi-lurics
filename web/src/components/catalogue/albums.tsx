@@ -134,33 +134,40 @@ export function AlbumDetail({ id }: { id: string }) {
 
 type Ref<C> = { id: string; label: string; choice?: C };
 
-export function AlbumForm({ initial, onReload }: { initial?: S["AlbumDetail"]; onReload?: () => void }) {
+export function AlbumForm({ initial, onReload, fillOnly }: { initial?: S["AlbumDetail"]; onReload?: () => void; fillOnly?: boolean }) {
   const t = useTranslations();
   const router = useRouter();
+  // "Add missing details": only what is still empty is shown and sent (the server enforces the same rule).
+  const fill = !!fillOnly && !!initial;
+  const showYear = !fill || initial?.release_year == null;
+  const showBarcode = !fill || !initial?.barcode;
+  const showCredits = !fill || (initial?.credits.length ?? 0) === 0;
   const [credits, setCredits] = useState<Ref<Role>[]>(initial?.credits.map((c) => ({ id: c.artist_id, label: c.artist_name, choice: c.role })) ?? []);
   const [tracks, setTracks] = useState<Ref<string>[]>(initial?.tracks.map((tr) => ({ id: tr.recording_id, label: tr.title })) ?? []);
   const s = useSubmit(async (v: Record<string, string>) => {
     const body = {
-      title: v.title,
-      kind: v.kind as S["AlbumKind"],
-      release_year: int(v.release_year),
-      barcode: text(v.barcode),
-      credits: credits.map((c) => ({ artist_id: c.id, role: c.choice as Role })),
-      tracks: tracks.map((tr) => tr.id),
+      title: fill ? undefined : v.title,
+      kind: fill ? undefined : (v.kind as S["AlbumKind"]),
+      release_year: showYear ? int(v.release_year) : undefined,
+      barcode: showBarcode ? text(v.barcode) : undefined,
+      credits: showCredits ? credits.map((c) => ({ artist_id: c.id, role: c.choice as Role })) : undefined,
+      tracks: fill ? undefined : tracks.map((tr) => tr.id),
     };
     const saved = initial
       ? await call(api.PATCH("/api/v1/albums/{id}", { params: { path: { id: initial.id } }, body: { ...body, expected_version: initial.version } }))
-      : await call(api.POST("/api/v1/albums", { body }));
-    router.push(`/albums/${saved.id}`);
+      : await call(api.POST("/api/v1/albums", { body: { ...body, title: v.title, kind: v.kind as S["AlbumKind"] } }));
+    if (fill) router.back();
+    else router.push(`/albums/${saved.id}`);
   });
   return (
     <form noValidate onSubmit={(e) => (e.preventDefault(), s.submit(formValues(e.currentTarget)))}>
       {s.error !== undefined && <SaveProblem error={s.error} kind="albums" onReload={onReload} />}
-      <Field name="title" dir="auto" verbatim required defaultValue={initial?.title} hint={t("hints.title")} fieldErrors={s.fieldErrors} />
-      <SelectField name="kind" options={ALBUM_KINDS} labels="catalogue.albumKinds" defaultValue={initial?.kind} fieldErrors={s.fieldErrors} />
-      <Field name="release_year" type="number" defaultValue={initial?.release_year} fieldErrors={s.fieldErrors} />
-      <Field name="barcode" dir="ltr" defaultValue={initial?.barcode} hint={t("hints.barcode")} fieldErrors={s.fieldErrors} />
-      <RefListEditor
+      {fill && <p className="muted">{showYear || showBarcode || showCredits ? t("catalogue.fillHint") : t("catalogue.nothingMissing")}</p>}
+      {!fill && <Field name="title" dir="auto" verbatim required defaultValue={initial?.title} hint={t("hints.title")} fieldErrors={s.fieldErrors} />}
+      {!fill && <SelectField name="kind" options={ALBUM_KINDS} labels="catalogue.albumKinds" defaultValue={initial?.kind} fieldErrors={s.fieldErrors} />}
+      {showYear && <Field name="release_year" type="number" defaultValue={initial?.release_year} fieldErrors={s.fieldErrors} />}
+      {showBarcode && <Field name="barcode" dir="ltr" defaultValue={initial?.barcode} hint={t("hints.barcode")} fieldErrors={s.fieldErrors} />}
+      {showCredits && <RefListEditor
         name="credits"
         legend={t("catalogue.credits")}
         items={credits}
@@ -170,23 +177,25 @@ export function AlbumForm({ initial, onReload }: { initial?: S["AlbumDetail"]; o
         pickerLabel={t("catalogue.findArtist")}
         entity="artist"
         fieldErrors={s.fieldErrors}
-      />
-      <RefListEditor
-        name="tracks"
-        legend={t("catalogue.tracks")}
-        items={tracks}
-        onChange={setTracks}
-        pickerLabel={t("catalogue.findRecording")}
-        search={searchRecordings}
-        fieldErrors={s.fieldErrors}
-        ordered
-      />
-      <FormActions submitting={s.submitting} cancelHref={initial ? `/albums/${initial.id}` : "/albums"} />
+      />}
+      {!fill && (
+        <RefListEditor
+          name="tracks"
+          legend={t("catalogue.tracks")}
+          items={tracks}
+          onChange={setTracks}
+          pickerLabel={t("catalogue.findRecording")}
+          search={searchRecordings}
+          fieldErrors={s.fieldErrors}
+          ordered
+        />
+      )}
+      <FormActions submitting={s.submitting} disabled={fill && !showYear && !showBarcode && !showCredits} cancelHref={initial ? (fill ? "/" : `/albums/${initial.id}`) : "/albums"} />
     </form>
   );
 }
 
-export function AlbumEdit({ id }: { id: string }) {
+export function AlbumEdit({ id, fillOnly }: { id: string; fillOnly?: boolean }) {
   const load = useLoad(id, () => loadAlbum(id));
-  return <Loaded load={load}>{(a) => <AlbumForm key={a.version} initial={a} onReload={load.reload} />}</Loaded>;
+  return <Loaded load={load}>{(a) => <AlbumForm key={a.version} initial={a} onReload={load.reload} fillOnly={fillOnly} />}</Loaded>;
 }

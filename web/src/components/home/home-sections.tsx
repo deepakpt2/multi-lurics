@@ -6,7 +6,7 @@ import { ArrowDown, ArrowUp, Eye, EyeOff, GripVertical, MessageCircle, RotateCcw
 import { api, call } from "@/api/client";
 import type { components } from "@/api/schema";
 import { Link } from "@/i18n/navigation";
-import { browseHref } from "@/lib/browse";
+import { itemHref } from "@/lib/browse";
 import { DEFAULT_PREFS, hide, loadPrefs, move, moveTo, savePrefs, show, visible, type Prefs, type SectionKey } from "@/lib/home-prefs";
 import { Name } from "../localization/localized";
 import { EntityImage } from "../media/entity-image";
@@ -25,7 +25,7 @@ const ADD_HREF: Record<SectionKey, string> = {
   popular_artists: "/artists/new",
 };
 
-const filterHref = (facet: "singer" | "album" | "artist", slug: string) => browseHref({ filters: [{ facet, slug }] });
+const filterHref = (facet: "singer" | "album" | "artist", slug: string) => itemHref(facet, slug);
 
 function MetaLinks({ facet, refs }: { facet: "singer" | "album"; refs: Item["singers"] }) {
   return (

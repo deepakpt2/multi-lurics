@@ -61,6 +61,8 @@ pub enum MatchVia {
     Transliteration,
     Alias,
     Metadata,
+    /// The words of a published lyric; `text` is the line that holds them.
+    Lyrics,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -115,6 +117,7 @@ impl From<Item> for SearchItem {
                     uc::MatchVia::Transliteration => MatchVia::Transliteration,
                     uc::MatchVia::Alias => MatchVia::Alias,
                     uc::MatchVia::Metadata => MatchVia::Metadata,
+                    uc::MatchVia::Lyrics => MatchVia::Lyrics,
                 },
             },
             sub_kind: i.sub_kind,

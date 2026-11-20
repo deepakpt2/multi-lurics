@@ -210,3 +210,36 @@ Song score = `ln(1 + views in 30 days) + 2 · ((bayes − 1) / 4) · ln(1 + rati
 Views: public song and artist pages call `POST /api/v1/views` from the browser (so crawlers that do not run scripts are not counted). A view counts once per viewer, page and day: signed-in people by account, visitors by network address and browser. Only a SHA-256 of `(day, viewer, target)` is stored, in `view_seen`, and rows older than a day are deleted by each list run. Counts per day are in `view_counts`. Behind a proxy, set it to overwrite `cf-connecting-ip` / `x-forwarded-for`, as for the rate limits.
 
 Visitors choose which sections show and in what order on the home page; that is kept in the browser's local storage per signed-in user (`lyrics.home.v1:<user id>`; `guest` when signed out), never on the server.
+
+## Lyric search, related songs, video, devotional structure (migration 0019)
+
+* **Whole-text lyric search.** `lyric_search` holds one row per published lyric (each line normalised with
+  `lyrics_search_key`, plus the whole text for the trigram index). A trigger on `contributions` rewrites or removes the
+  row whenever `published_revision_id` changes, so an unpublished or taken-down lyric leaves search at once; there is no
+  worker lag. The search query adds lyric hits next to the title hits, in classes that sit below a title match:
+  `lyric_opening` (the words open the song, weight 60), `lyric_line` (they start a line, 50), `lyric_inside` (somewhere
+  inside a line, 30). Tune them in the `search_ranking` setting under `class_weights`. Three characters or more are
+  needed (the trigram index); shorter queries only match names. A result shows the line as it was written.
+* **Related songs** are computed per request from shared album (4), singer (3), deity (3), raga (2), composer or
+  lyricist (2), tag (1) and devotional form (1); public songs only, at most eight, cached with the page (ISR, 5 minutes).
+* **YouTube.** A song stores only the 11-character video id (`compositions.youtube_id`). The API accepts any common link
+  (watch, `youtu.be`, shorts, embed, live, music, with or without scheme) and keeps the id; the embed address is built in
+  one place (`web/src/lib/youtube.ts`), on `youtube-nocookie.com`. If YouTube changes its embed address, change that file.
+* **Devotional structure.** Devotional songs may carry a form (bhajan, stotra, aarti, chalisa, shabad, qawwali…), the
+  source text and the occasions they are sung at, on top of religion, deity, raga and tags. The form is a browse facet
+  (`/browse/form/aarti`). The list of forms is in `domain::catalogue::DEVOTIONAL_FORMS`, the database check and
+  `DEVOTIONAL_FORMS` in `web/src/components/catalogue/compositions.tsx`; change all three together.
+* **Filling in what is missing.** Anyone signed in may `PATCH` a song, artist or album, but only to fill a blank field;
+  changing a value that is already there (or the title, category, tracks, existing credits) is still for the creator and
+  moderators and answers 403. The rule is `fills_*` in `application/src/catalogue.rs`.
+* **Bulk import** (`POST /api/v1/import/songs`, moderators and admins). Up to 100 rows per request, each row validated
+  first (`dry_run: true` writes nothing) and then written through the ordinary use cases (artists found by name or alias
+  and otherwise created, song with composer and lyricist credits, recording with the singers, album found by title with the
+  recording appended as its next track, original lyrics published). A row that already exists (same title on the same
+  album; without an album, same title and year) is skipped, so running a file twice is safe. A row that fails does not
+  stop the others, and one row's steps are not one transaction: a rare failure part-way leaves the people and song made so
+  far, which the next run finds and reuses. The web page `/import` reads a CSV, sends it in batches of 25 and reports each row.
+* **Languages.** Migration 0019 adds the remaining scheduled Indian languages (Odia, Assamese, Konkani, Sindhi, Kashmiri,
+  Maithili, Bhojpuri, Dogri, Meitei, Santali, Bodo, Tulu, Rajasthani, Chhattisgarhi, Awadhi, Braj, Pali) and more
+  international ones, with their usual scripts. The site itself is offered in English and Malayalam
+  (`web/messages/ml.json` is laid over English, so untranslated text shows in English); Arabic is built and not offered.

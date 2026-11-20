@@ -51,6 +51,14 @@ pub struct Lyric {
     pub revised_at: DateTime<Utc>,
 }
 
+/// A song that shares something with the page's song, and what.
+#[derive(Debug, Clone)]
+pub struct Related {
+    pub song: Link,
+    /// `album`, `singer`, `deity`, `raga`, `composer`, `lyricist`, `tag`, `form`: strongest first.
+    pub reasons: Vec<String>,
+}
+
 #[derive(Debug, Clone)]
 pub struct Page {
     pub scope: &'static str,
@@ -71,6 +79,12 @@ pub struct Page {
     pub religion: Option<String>,
     pub deity: Option<String>,
     pub tags: Vec<String>,
+    pub devotional_form: Option<String>,
+    pub source_work: Option<String>,
+    pub occasions: Vec<String>,
+    /// The YouTube video id of a song.
+    pub youtube_id: Option<String>,
+    pub related: Vec<Related>,
     pub parent: Option<Link>,
     pub credits: Vec<Credit>,
     pub songs: Vec<Link>,
@@ -168,6 +182,9 @@ async fn links(
         })
         .collect())
 }
+
+/// How many related songs a song page lists.
+const RELATED_SHOWN: i64 = 8;
 
 /// `Ok(None)` is a 404: unknown slug, unknown locale, or content that is not published.
 pub async fn page(app: &App, scope: &str, locale: &str, slug: &str) -> Result<Option<Resolved>, AppError> {
@@ -271,6 +288,24 @@ pub async fn page(app: &App, scope: &str, locale: &str, slug: &str) -> Result<Op
         }
         _ => (Vec::new(), Vec::new()),
     };
+    let related = if entity_type == "composition" {
+        const STRENGTH: [&str; 8] = [
+            "album", "singer", "deity", "raga", "composer", "lyricist", "tag", "form",
+        ];
+        let rows = repo::related_songs(&mut conn, id, RELATED_SHOWN).await?;
+        let pairs: Vec<(Uuid, String)> = rows.iter().map(|r| (r.id, r.title.clone())).collect();
+        let linked = links(&mut conn, &cfg, &langs, "composition", &pairs, &req, locale).await?;
+        rows.into_iter()
+            .zip(linked)
+            .map(|(row, song)| {
+                let mut reasons = row.reasons;
+                reasons.sort_by_key(|r| STRENGTH.iter().position(|s| s == r).unwrap_or(STRENGTH.len()));
+                Related { song, reasons }
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
     let parent = match core.parent_id {
         Some(pid) => {
             let (title, _) = repo::base(&mut conn, "composition", pid).await?.unwrap_or_default();
@@ -322,6 +357,11 @@ pub async fn page(app: &App, scope: &str, locale: &str, slug: &str) -> Result<Op
         religion: core.religion,
         deity: core.deity,
         tags: core.tags,
+        devotional_form: core.devotional_form,
+        source_work: core.source_work,
+        occasions: core.occasions,
+        youtube_id: core.youtube_id,
+        related,
         parent,
         credits,
         songs,

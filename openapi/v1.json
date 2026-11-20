@@ -2257,6 +2257,14 @@
             }
           },
           {
+            "name": "form",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "language",
             "in": "query",
             "required": false,
@@ -2429,6 +2437,14 @@
             }
           },
           {
+            "name": "form",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "language",
             "in": "query",
             "required": false,
@@ -2447,7 +2463,7 @@
           {
             "name": "sort",
             "in": "query",
-            "description": "`newest` (default) or `title`.",
+            "description": "`newest` (default), `title`, or `album` (grouped by the album a song is on, in track order).",
             "required": false,
             "schema": {
               "type": "string"
@@ -2584,6 +2600,14 @@
           },
           {
             "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "form",
             "in": "query",
             "required": false,
             "schema": {
@@ -5601,6 +5625,71 @@
           },
           "409": {
             "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/import/songs": {
+      "post": {
+        "tags": [
+          "import"
+        ],
+        "operationId": "import_songs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "One result per row, in order. A failed row does not stop the others.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Moderators and admins only.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10072,6 +10161,7 @@
           "deity",
           "religion",
           "category",
+          "form",
           "language",
           "tag"
         ]
@@ -10168,8 +10258,38 @@
           "resolved"
         ],
         "properties": {
+          "detail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A short line of facts: an artist's disambiguation, an album's release year."
+          },
           "facet": {
             "$ref": "#/components/schemas/BrowseFacet"
+          },
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The artist's, album's, raga's or deity's id (absent for plain values such as a religion)."
+          },
+          "image_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Its approved picture: `/api/v1/media/{image_id}/{width}`."
+          },
+          "kind": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "An artist's kind (`person`, `group`, `other`) or an album's (`album`, `soundtrack`…)."
           },
           "label": {
             "$ref": "#/components/schemas/Display"
@@ -10410,6 +10530,7 @@
           "deity",
           "religion",
           "category",
+          "form",
           "language",
           "tag"
         ]
@@ -10588,6 +10709,7 @@
           "title",
           "category",
           "tags",
+          "occasions",
           "version",
           "created_by",
           "created_at",
@@ -10611,6 +10733,12 @@
               "null"
             ]
           },
+          "devotional_form": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "display": {
             "$ref": "#/components/schemas/Display",
             "description": "Name resolved for the requested `lang` (see `fallback`)."
@@ -10625,6 +10753,12 @@
               "null"
             ]
           },
+          "occasions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "raga": {
             "type": [
               "string",
@@ -10632,6 +10766,12 @@
             ]
           },
           "religion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_work": {
             "type": [
               "string",
               "null"
@@ -10660,6 +10800,13 @@
               "null"
             ],
             "format": "int32"
+          },
+          "youtube_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The song's YouTube video id (embed it; never store links)."
           }
         }
       },
@@ -10690,12 +10837,26 @@
             ],
             "description": "Deity or revered figure, as written. Devotional songs only."
           },
+          "devotional_form": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Devotional songs only: `bhajan`, `kirtan`, `stotra`, `aarti`, `mantra`, `chalisa`, `shabad`, `qawwali`,\n`hymn` and others (see the `devotional_forms` list in the web app)."
+          },
           "iswc": {
             "type": [
               "string",
               "null"
             ],
             "description": "ISWC, e.g. `T-034.524.680-1`; check digit verified."
+          },
+          "occasions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Devotional songs only: festivals and times it is sung at (at most 10)."
           },
           "raga": {
             "type": [
@@ -10710,6 +10871,13 @@
               "null"
             ],
             "description": "`hindu`, `sikh`, `buddhist`, `jain`, `christian`, `muslim` or `other`. Devotional songs only."
+          },
+          "source_work": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Devotional songs only: the scripture or text it comes from, e.g. `Bhagavad Gita 2.47`."
           },
           "tags": {
             "type": "array",
@@ -10727,6 +10895,13 @@
               "null"
             ],
             "format": "int32"
+          },
+          "youtube": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A YouTube link in any common form (watch, youtu.be, shorts, embed) or a video id. Stored as the id."
           }
         }
       },
@@ -10809,6 +10984,12 @@
               "null"
             ]
           },
+          "devotional_form": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "expected_version": {
             "type": [
               "integer",
@@ -10822,6 +11003,16 @@
               "null"
             ]
           },
+          "occasions": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "When present, replaces all occasions."
+          },
           "raga": {
             "type": [
               "string",
@@ -10829,6 +11020,12 @@
             ]
           },
           "religion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_work": {
             "type": [
               "string",
               "null"
@@ -10856,6 +11053,12 @@
               "null"
             ],
             "format": "int32"
+          },
+          "youtube": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
@@ -11802,6 +12005,235 @@
           }
         }
       },
+      "ImportProblem": {
+        "type": "object",
+        "required": [
+          "field",
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A stable code the web app turns into a message."
+          },
+          "field": {
+            "type": "string",
+            "description": "The column, or `row` for a problem with the row as a whole."
+          }
+        }
+      },
+      "ImportRequest": {
+        "type": "object",
+        "required": [
+          "rows"
+        ],
+        "properties": {
+          "dry_run": {
+            "type": "boolean",
+            "description": "Check everything and report, but write nothing."
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportRow"
+            },
+            "description": "At most 100 rows per request."
+          }
+        }
+      },
+      "ImportResponse": {
+        "type": "object",
+        "required": [
+          "dry_run",
+          "results",
+          "created",
+          "skipped",
+          "failed"
+        ],
+        "properties": {
+          "created": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "failed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportRowResult"
+            }
+          },
+          "skipped": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "ImportRow": {
+        "type": "object",
+        "description": "One song. Everything but `title` is optional; a missing column is the same as an empty one.",
+        "properties": {
+          "album": {
+            "type": "string",
+            "description": "The album, or the film. Found by title, otherwise created.",
+            "default": ""
+          },
+          "album_kind": {
+            "type": "string",
+            "description": "`album` (default), `soundtrack` (a film), `single`, `ep` or `compilation`. Only used when the album is created.",
+            "default": ""
+          },
+          "category": {
+            "type": "string",
+            "description": "`mainstream` (default) or `devotional`.",
+            "default": ""
+          },
+          "composers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "deity": {
+            "type": "string",
+            "default": ""
+          },
+          "devotional_form": {
+            "type": "string",
+            "default": ""
+          },
+          "language": {
+            "type": "string",
+            "description": "Language of the lyrics: `ml`, `mal` or `Malayalam`. Needed when there are lyrics.",
+            "default": ""
+          },
+          "lyricists": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "lyrics": {
+            "type": "string",
+            "description": "The original lyrics. Leave blank to import the song without lyrics (it then has no public page).",
+            "default": ""
+          },
+          "occasions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "raga": {
+            "type": "string",
+            "default": ""
+          },
+          "religion": {
+            "type": "string",
+            "default": ""
+          },
+          "script": {
+            "type": "string",
+            "description": "Script of the lyrics (`Mlym`, `Deva`…); the language's usual script when blank.",
+            "default": ""
+          },
+          "singers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "People, each found by name or alias, otherwise created.",
+            "default": []
+          },
+          "source_work": {
+            "type": "string",
+            "default": ""
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "title": {
+            "type": "string",
+            "default": ""
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "default": null
+          },
+          "youtube": {
+            "type": "string",
+            "description": "A YouTube link in any common form, or a video id.",
+            "default": ""
+          }
+        }
+      },
+      "ImportRowResult": {
+        "type": "object",
+        "required": [
+          "row",
+          "title",
+          "status",
+          "problems"
+        ],
+        "properties": {
+          "composition_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportProblem"
+            }
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "For a skipped row: `already_exists`."
+          },
+          "row": {
+            "type": "integer",
+            "description": "Position in the request, from 1.",
+            "minimum": 0
+          },
+          "status": {
+            "$ref": "#/components/schemas/ImportStatus"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "ImportStatus": {
+        "type": "string",
+        "enum": [
+          "would_create",
+          "created",
+          "skipped",
+          "failed"
+        ]
+      },
       "Language": {
         "type": "object",
         "required": [
@@ -12190,7 +12622,8 @@
           "localization",
           "transliteration",
           "alias",
-          "metadata"
+          "metadata",
+          "lyrics"
         ]
       },
       "Matched": {
@@ -12791,6 +13224,25 @@
           }
         }
       },
+      "PageRelated": {
+        "type": "object",
+        "required": [
+          "song",
+          "reasons"
+        ],
+        "properties": {
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Why it is related, strongest first: `album`, `singer`, `deity`, `raga`, `composer`, `lyricist`, `tag`, `form`."
+          },
+          "song": {
+            "$ref": "#/components/schemas/PageLink"
+          }
+        }
+      },
       "PanelContent": {
         "type": "object",
         "description": "The published text of one contribution, with enough context to label a panel.",
@@ -13296,6 +13748,8 @@
           "x_default",
           "title",
           "tags",
+          "occasions",
+          "related",
           "credits",
           "songs",
           "recordings",
@@ -13348,6 +13802,13 @@
             ],
             "description": "Artist disambiguation."
           },
+          "devotional_form": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Song only, devotional songs: `bhajan`, `stotra`, `aarti`…"
+          },
           "duration_ms": {
             "type": [
               "integer",
@@ -13376,6 +13837,13 @@
             },
             "description": "Published lyrics only."
           },
+          "occasions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Song only, devotional songs: festivals and times it is sung at."
+          },
           "parent": {
             "oneOf": [
               {
@@ -13401,6 +13869,13 @@
             },
             "description": "A song's or an artist's recordings."
           },
+          "related": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageRelated"
+            },
+            "description": "Song only: songs that share an album, singer, deity, raga, composer, tag or form with this one."
+          },
           "religion": {
             "type": [
               "string",
@@ -13418,6 +13893,13 @@
               "$ref": "#/components/schemas/PageLink"
             },
             "description": "An artist's songs."
+          },
+          "source_work": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Song only, devotional songs: the text it comes from."
           },
           "tags": {
             "type": "array",
@@ -13442,6 +13924,13 @@
               "null"
             ],
             "format": "int32"
+          },
+          "youtube_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Song only: the YouTube video id. The page builds the embed address from it."
           }
         }
       },

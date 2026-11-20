@@ -150,8 +150,8 @@ describe("browse page", () => {
     renderIntl(<BrowseView state={state("")} result={{ ok: true, data: songs() }} />);
     expect(screen.getByRole("link", { name: /Karunamayane/ })).toHaveAttribute("href", "/song/karunamayane");
     const card = within(screen.getByRole("list", { name: "Songs" })).getByRole("listitem");
-    expect(within(card).getByRole("link", { name: "Yesudas" })).toHaveAttribute("href", "/browse?singer=yesudas");
-    expect(within(card).getByRole("link", { name: "Yesu Mahathwam" })).toHaveAttribute("href", "/browse?album=yesu-mahathwam");
+    expect(within(card).getByRole("link", { name: "Yesudas" })).toHaveAttribute("href", "/browse/singer/yesudas");
+    expect(within(card).getByRole("link", { name: "Yesu Mahathwam" })).toHaveAttribute("href", "/browse/album/yesu-mahathwam");
     expect(within(card).getByText("മലയാളം")).toBeInTheDocument();
     expect(within(card).getByText("English")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "1 song" })).toBeInTheDocument();
@@ -161,9 +161,9 @@ describe("browse page", () => {
     }
   });
 
-  it("adding a person from a card keeps the filters already chosen", () => {
+  it("a person on a card opens that person's own page, whatever filters are chosen", () => {
     renderIntl(<BrowseView state={state("album=yesu-mahathwam")} result={{ ok: true, data: songs({ filters: [filter("album", "yesu-mahathwam", "Yesu Mahathwam")] }) }} />);
-    expect(within(within(screen.getByRole("list", { name: "Songs" })).getByRole("listitem")).getByRole("link", { name: "Yesudas" })).toHaveAttribute("href", "/browse?album=yesu-mahathwam&singer=yesudas");
+    expect(within(within(screen.getByRole("list", { name: "Songs" })).getByRole("listitem")).getByRole("link", { name: "Yesudas" })).toHaveAttribute("href", "/browse/singer/yesudas");
   });
 
   it("pages keep the filters, mark the current page, and the size and sort live in the address", async () => {

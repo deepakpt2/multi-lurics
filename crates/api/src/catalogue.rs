@@ -390,6 +390,16 @@ pub struct CompositionCreate {
     /// Free tags (at most 20, 40 characters each).
     #[serde(default)]
     pub tags: Vec<String>,
+    /// Devotional songs only: `bhajan`, `kirtan`, `stotra`, `aarti`, `mantra`, `chalisa`, `shabad`, `qawwali`,
+    /// `hymn` and others (see the `devotional_forms` list in the web app).
+    pub devotional_form: Option<String>,
+    /// Devotional songs only: the scripture or text it comes from, e.g. `Bhagavad Gita 2.47`.
+    pub source_work: Option<String>,
+    /// Devotional songs only: festivals and times it is sung at (at most 10).
+    #[serde(default)]
+    pub occasions: Vec<String>,
+    /// A YouTube link in any common form (watch, youtu.be, shorts, embed) or a video id. Stored as the id.
+    pub youtube: Option<String>,
     /// Work-level credits only: composer (the music director) and lyricist.
     pub credits: Option<Vec<CreditInput>>,
 }
@@ -417,6 +427,17 @@ pub struct CompositionPatch {
     pub deity: Option<Option<String>>,
     /// When present, replaces all tags.
     pub tags: Option<Vec<String>>,
+    #[serde(default, deserialize_with = "present")]
+    #[schema(value_type = Option<String>)]
+    pub devotional_form: Option<Option<String>>,
+    #[serde(default, deserialize_with = "present")]
+    #[schema(value_type = Option<String>)]
+    pub source_work: Option<Option<String>>,
+    /// When present, replaces all occasions.
+    pub occasions: Option<Vec<String>>,
+    #[serde(default, deserialize_with = "present")]
+    #[schema(value_type = Option<String>)]
+    pub youtube: Option<Option<String>>,
     pub credits: Option<Vec<CreditInput>>,
 }
 
@@ -433,6 +454,11 @@ pub struct Composition {
     pub religion: Option<String>,
     pub deity: Option<String>,
     pub tags: Vec<String>,
+    pub devotional_form: Option<String>,
+    pub source_work: Option<String>,
+    pub occasions: Vec<String>,
+    /// The song's YouTube video id (embed it; never store links).
+    pub youtube_id: Option<String>,
     pub version: i32,
     pub created_by: Uuid,
     pub created_at: DateTime<Utc>,
@@ -453,6 +479,10 @@ impl Composition {
             religion: r.religion,
             deity: r.deity,
             tags: r.tags,
+            devotional_form: r.devotional_form,
+            source_work: r.source_work,
+            occasions: r.occasions,
+            youtube_id: r.youtube_id,
             version: r.version,
             created_by: r.created_by,
             created_at: r.created_at,
@@ -551,6 +581,10 @@ pub async fn create_composition(
             religion: Some(b.religion),
             deity: Some(b.deity),
             tags: Some(b.tags),
+            devotional_form: Some(b.devotional_form),
+            source_work: Some(b.source_work),
+            occasions: Some(b.occasions),
+            youtube: Some(b.youtube),
             credits: credits_in(b.credits),
         },
     )
@@ -588,6 +622,10 @@ pub async fn update_composition(
             religion: b.religion,
             deity: b.deity,
             tags: b.tags,
+            devotional_form: b.devotional_form,
+            source_work: b.source_work,
+            occasions: b.occasions,
+            youtube: b.youtube,
             credits: credits_in(b.credits),
         },
     )

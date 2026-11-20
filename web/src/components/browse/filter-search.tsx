@@ -21,6 +21,7 @@ export function useValueLabel() {
   return (facet: string, label: BrowseFilter["label"]) => {
     if (facet === "religion" && t.has(`catalogue.religions.${label.text}`)) return t(`catalogue.religions.${label.text}` as never);
     if (facet === "category" && t.has(`browse.categories.${label.text}`)) return t(`browse.categories.${label.text}` as never);
+    if (facet === "form" && t.has(`catalogue.devotionalForms.${label.text}`)) return t(`catalogue.devotionalForms.${label.text}` as never);
     return label.text;
   };
 }

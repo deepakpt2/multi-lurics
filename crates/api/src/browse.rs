@@ -27,6 +27,7 @@ pub enum BrowseFacet {
     Deity,
     Religion,
     Category,
+    Form,
     Language,
     Tag,
 }
@@ -43,6 +44,7 @@ impl From<FacetKind> for BrowseFacet {
             FacetKind::Deity => Self::Deity,
             FacetKind::Religion => Self::Religion,
             FacetKind::Category => Self::Category,
+            FacetKind::Form => Self::Form,
             FacetKind::Language => Self::Language,
             FacetKind::Tag => Self::Tag,
         }
@@ -72,6 +74,7 @@ pub struct BrowseQuery {
     pub deity: Option<String>,
     pub religion: Option<String>,
     pub category: Option<String>,
+    pub form: Option<String>,
     pub language: Option<String>,
     pub tag: Option<String>,
 }
@@ -80,7 +83,7 @@ pub struct BrowseQuery {
 #[into_params(parameter_in = Query)]
 #[allow(dead_code)]
 pub struct SongsQuery {
-    /// `newest` (default) or `title`.
+    /// `newest` (default), `title`, or `album` (grouped by the album a song is on, in track order).
     pub sort: Option<String>,
 }
 
@@ -158,6 +161,14 @@ pub struct BrowseFilter {
     pub label: Display,
     /// False when nothing has this slug: the list is then empty.
     pub resolved: bool,
+    /// The artist's, album's, raga's or deity's id (absent for plain values such as a religion).
+    pub id: Option<Uuid>,
+    /// Its approved picture: `/api/v1/media/{image_id}/{width}`.
+    pub image_id: Option<Uuid>,
+    /// An artist's kind (`person`, `group`, `other`) or an album's (`album`, `soundtrack`…).
+    pub kind: Option<String>,
+    /// A short line of facts: an artist's disambiguation, an album's release year.
+    pub detail: Option<String>,
 }
 
 impl From<uc::ResolvedFilter> for BrowseFilter {
@@ -167,6 +178,10 @@ impl From<uc::ResolvedFilter> for BrowseFilter {
             slug: f.slug,
             label: f.label.into(),
             resolved: f.resolved,
+            id: f.id,
+            image_id: f.image,
+            kind: f.kind,
+            detail: f.detail,
         }
     }
 }
@@ -376,6 +391,7 @@ pub enum BrowseSuggestionKind {
     Deity,
     Religion,
     Category,
+    Form,
     Language,
     Tag,
 }
@@ -439,6 +455,7 @@ pub async fn suggest(State(app): State<App>, headers: HeaderMap, RawQuery(raw): 
                     "deity" => BrowseSuggestionKind::Deity,
                     "religion" => BrowseSuggestionKind::Religion,
                     "category" => BrowseSuggestionKind::Category,
+                    "form" => BrowseSuggestionKind::Form,
                     "language" => BrowseSuggestionKind::Language,
                     _ => BrowseSuggestionKind::Tag,
                 },

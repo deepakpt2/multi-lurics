@@ -35,9 +35,9 @@ describe("home sections", () => {
     renderIntl(<HomeSections />);
     const section = (await screen.findByRole("heading", { name: "Most popular songs" })).closest("section")!;
     expect(within(section).getByRole("link", { name: "Karunamayane" })).toHaveAttribute("href", "/song/karunamayane");
-    // Metadata links filter browse by that value; the title goes to the song itself.
-    expect(within(section).getByRole("link", { name: "Yesudas" })).toHaveAttribute("href", "/browse?singer=yesudas");
-    expect(within(section).getByRole("link", { name: "Hits" })).toHaveAttribute("href", "/browse?album=hits");
+    // Metadata links open that value's own page; the title goes to the song itself.
+    expect(within(section).getByRole("link", { name: "Yesudas" })).toHaveAttribute("href", "/browse/singer/yesudas");
+    expect(within(section).getByRole("link", { name: "Hits" })).toHaveAttribute("href", "/browse/album/hits");
     expect(within(section).getByText("120 views")).toBeInTheDocument();
     expect(within(section).getByText("4.5 (12)")).toBeInTheDocument();
   });
@@ -68,8 +68,8 @@ describe("home sections", () => {
     const mod = { ...me("m"), roles: ["moderator"] };
     mockFetch({ "GET /api/v1/me": () => json(200, mod), "GET /api/v1/home": () => json(200, { generated_at: null, sections }), "DELETE /api/v1/editors-picks/s1": () => json(200, { picked: false }) });
     renderIntl(<HomeSections />);
-    expect(await screen.findByRole("link", { name: "Chitra" })).toHaveAttribute("href", "/browse?artist=chitra");
-    expect(screen.getByRole("link", { name: "Hits" })).toHaveAttribute("href", "/browse?album=hits");
+    expect(await screen.findByRole("link", { name: "Chitra" })).toHaveAttribute("href", "/browse/artist/chitra");
+    expect(screen.getByRole("link", { name: "Hits" })).toHaveAttribute("href", "/browse/album/hits");
     expect(screen.getByRole("link", { name: "Pick" })).toHaveAttribute("href", "/song/pick");
     await userEvent.click(screen.getByRole("button", { name: "Remove Pick from editors' picks" }));
   });

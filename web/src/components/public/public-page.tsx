@@ -5,17 +5,22 @@ import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { decodeSlug, describe, fetchPage, jsonLd, pagePath, pageUrl, safeJson, siteUrl, type PublicPage, type Scope } from "@/lib/seo";
 import { Name } from "../localization/localized";
+import { ContributeButton } from "./contribute";
+import { LyricPanes } from "./lyric-panes";
+import { parseIds } from "@/lib/lyric-panes";
 import { PageStats } from "./page-stats";
+import { VideoEmbed } from "./video-embed";
 
 type Params = Promise<{ locale: string; slug: string }>;
 
 /** Resolves the address, sending every non-canonical spelling to the canonical one (permanent). */
-async function load(scope: Scope, params: Params) {
+async function load(scope: Scope, params: Params, suffix = "") {
   const { locale, slug: raw } = await params;
   const slug = decodeSlug(raw);
   const r = await fetchPage(scope, locale, slug);
   if (r.kind === "missing") notFound();
-  if (r.kind === "moved") permanentRedirect(pagePath(r.to, scope));
+  // A view of the page (such as its full-screen lyrics) keeps its tail when the address moves.
+  if (r.kind === "moved") permanentRedirect(`${pagePath(r.to, scope)}${suffix}`);
   return { locale, page: r.page };
 }
 
@@ -67,9 +72,12 @@ export function publicPage(scope: Scope) {
     setRequestLocale(locale);
     const t = await getTranslations("public");
     const tr = await getTranslations("catalogue");
-    const tl = await getTranslations("lyrics");
     const tf = await getTranslations("fields");
     const others = p.alternates.filter((a) => a.locale !== p.locale);
+    const lead = p.lyrics[0];
+    const recordingId = p.scope === "recording" ? p.id : lead?.recording_id;
+    const sourceId = p.lyrics.find((l) => l.type === "original" && l.recording_id === recordingId)?.id;
+    const songPath = `/${scope}/${encodeURIComponent(p.canonical.slug)}`;
     return (
       <article>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(jsonLd(p)) }} />
@@ -86,6 +94,9 @@ export function publicPage(scope: Scope) {
           )}
         </p>
         {(p.scope === "song" || p.scope === "artist") && <PageStats kind={p.scope} id={p.id} lyricIds={p.lyrics.map((l) => l.id)} />}
+        <p className="page-actions">
+          <ContributeButton target={p.scope === "artist" ? { kind: "artist", id: p.id } : { kind: p.scope === "song" ? "song" : "recording", id: p.id, recordingId, sourceId }} />
+        </p>
         {p.scope === "song" && (
           <dl className="facts">
             <dt>{tf("category")}</dt>
@@ -106,6 +117,24 @@ export function publicPage(scope: Scope) {
               <>
                 <dt>{tf("deity")}</dt>
                 <dd dir="auto">{p.deity}</dd>
+              </>
+            )}
+            {p.devotional_form && (
+              <>
+                <dt>{tf("devotional_form")}</dt>
+                <dd>{tr(`devotionalForms.${p.devotional_form as "bhajan"}`)}</dd>
+              </>
+            )}
+            {p.source_work && (
+              <>
+                <dt>{tf("source_work")}</dt>
+                <dd dir="auto">{p.source_work}</dd>
+              </>
+            )}
+            {p.occasions.length > 0 && (
+              <>
+                <dt>{tf("occasions")}</dt>
+                <dd dir="auto">{p.occasions.join(", ")}</dd>
               </>
             )}
             {p.tags.length > 0 && (
@@ -152,16 +181,29 @@ export function publicPage(scope: Scope) {
             </ul>
           </>
         )}
-        {p.lyrics.map((l) => (
-          <section key={l.id} aria-label={t("lyricsLabel", { type: tl(`types.${l.type as "original"}`) })}>
-            <h2>
-              {t("lyrics")} <small className="badge">{tl(`types.${l.type as "original"}`)}</small>
-            </h2>
-            <pre className="lyric-body" lang={l.language} dir={l.dir}>
-              {l.body}
-            </pre>
+        {p.youtube_id && <VideoEmbed id={p.youtube_id} title={p.title.text} />}
+        {p.lyrics.length > 0 && recordingId && (
+          <section aria-labelledby="lyrics-title">
+            <h2 id="lyrics-title">{t("lyrics")}</h2>
+            <LyricPanes lyrics={p.lyrics} songPath={songPath} pageLocale={p.locale} recordingId={recordingId} sourceId={sourceId} />
           </section>
-        ))}
+        )}
+        {p.related.length > 0 && (
+          <section aria-labelledby="related-title">
+            <h2 id="related-title">{t("related.title")}</h2>
+            <ul className="related-songs">
+              {p.related.map((r) => (
+                <li key={r.song.id}>
+                  <PageLinkItem link={r.song} />
+                  <span className="muted small">
+                    {" "}
+                    {r.reasons.map((x) => t(`related.reasons.${x as "album"}`)).join(" · ")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {others.length > 0 && (
           <nav aria-label={t("otherLanguages")}>
             <h2>{t("otherLanguages")}</h2>
@@ -178,6 +220,61 @@ export function publicPage(scope: Scope) {
         )}
       </article>
     );
+  };
+}
+
+/**
+ * A song's lyrics on a page of their own: wide, with the same columns, reading mode and "+" as the song
+ * page. `?l=id,id` names the columns that are open, so a full-screen view can be shared as it stands.
+ */
+export function publicLyricsPage(scope: "song" | "recording") {
+  return async function Page({ params, searchParams }: { params: Params; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+    const sp = await searchParams;
+    const l = parseIds(sp.l).join(",");
+    const { locale, page: p } = await load(scope, params, `/lyrics${l ? `?l=${encodeURIComponent(l)}` : ""}`);
+    setRequestLocale(locale);
+    const t = await getTranslations("public");
+    const lead = p.lyrics[0];
+    const recordingId = scope === "recording" ? p.id : lead?.recording_id;
+    if (!lead || !recordingId) notFound();
+    const sourceId = p.lyrics.find((l) => l.type === "original" && l.recording_id === recordingId)?.id;
+    const songPath = `/${scope}/${encodeURIComponent(p.canonical.slug)}`;
+    return (
+      <article className="full-lyrics">
+        <p>
+          <Link href={songPath} locale={p.locale as never}>
+            {t("panes.backToSong")}
+          </Link>
+        </p>
+        <h1>
+          <Name display={p.title} />
+        </h1>
+        <LyricPanes
+          lyrics={p.lyrics}
+          songPath={songPath}
+          pageLocale={p.locale}
+          recordingId={recordingId}
+          sourceId={sourceId}
+          initial={parseIds(sp.l)}
+          fullScreen
+        />
+      </article>
+    );
+  };
+}
+
+export function publicLyricsMetadata(scope: "song" | "recording") {
+  return async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+    const { locale, slug: raw } = await params;
+    const r = await fetchPage(scope, locale, decodeSlug(raw));
+    const t = await getTranslations({ locale, namespace: "public.panes" });
+    if (r.kind !== "page") return { robots: { index: false, follow: false } };
+    return {
+      title: t("pageTitle", { name: r.page.title.text }),
+      // The song's own page is the one to index; this is a view of it.
+      alternates: { canonical: pageUrl(r.page.canonical, scope) },
+      robots: { index: false, follow: true },
+    };
   };
 }
 

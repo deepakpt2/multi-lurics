@@ -53,6 +53,12 @@ impl Selection {
 #[derive(Debug, Clone)]
 pub struct ResolvedFilter {
     pub facet: Facet,
+    /// The entity's id and approved image, for facets that are entities.
+    pub id: Option<Uuid>,
+    pub image: Option<Uuid>,
+    /// Basic facts: an artist's or album's kind (a code), and a short line (disambiguation, release year).
+    pub kind: Option<String>,
+    pub detail: Option<String>,
     /// The current slug (what the URL should say).
     pub slug: String,
     pub label: Display,
@@ -232,16 +238,57 @@ async fn resolve(
         }
     }
     let shown_names = names(conn, &req, &refs).await?;
+    let mut pictures: HashMap<(&'static str, Uuid), Uuid> = HashMap::new();
+    type Facts = (Option<String>, Option<String>);
+    let mut facts: HashMap<(&'static str, Uuid), Facts> = HashMap::new();
+    for entity_type in ["artist", "album", "raga", "deity", "tag"] {
+        let ids: Vec<Uuid> = pending
+            .iter()
+            .filter(|(f, ..)| f.kind() == Kind::Entity(entity_type))
+            .filter_map(|(_, _, id, _)| *id)
+            .collect();
+        if ids.is_empty() {
+            continue;
+        }
+        for (id, image) in images::current_for(conn, entity_type, &ids).await? {
+            pictures.insert((entity_type, id), image);
+        }
+        for id in ids {
+            let row: Option<(Option<String>, Option<String>)> = match entity_type {
+                "artist" => {
+                    sqlx::query_as("SELECT kind, disambiguation FROM artists WHERE id = $1")
+                        .bind(id)
+                        .fetch_optional(&mut *conn)
+                        .await?
+                }
+                "album" => {
+                    sqlx::query_as("SELECT kind, release_year::text FROM albums WHERE id = $1")
+                        .bind(id)
+                        .fetch_optional(&mut *conn)
+                        .await?
+                }
+                _ => None,
+            };
+            if let Some(r) = row {
+                facts.insert((entity_type, id), r);
+            }
+        }
+    }
     let shown = pending
         .into_iter()
         .map(|(facet, slug, id, label)| match (facet.kind(), id, label) {
             (Kind::Entity(t), Some(id), _) => {
                 let base = refs.iter().find(|r| r.1 == id).map(|r| r.2.clone()).unwrap_or_default();
+                let (kind, detail) = facts.get(&(t, id)).cloned().unwrap_or_default();
                 ResolvedFilter {
                     facet,
                     slug: current.get(&(t, id)).cloned().unwrap_or(slug),
                     label: shown_names.get(entity_of(t), id, &base),
                     resolved: true,
+                    id: Some(id),
+                    image: pictures.get(&(t, id)).copied(),
+                    kind,
+                    detail,
                 }
             }
             (Kind::Text, _, Some(label)) => ResolvedFilter {
@@ -249,12 +296,20 @@ async fn resolve(
                 slug,
                 label: Display::base(&label),
                 resolved: true,
+                id: None,
+                image: None,
+                kind: None,
+                detail: None,
             },
             (_, _, _) => ResolvedFilter {
                 facet,
                 label: Display::base(&slug),
                 slug,
                 resolved: false,
+                id: None,
+                image: None,
+                kind: None,
+                detail: None,
             },
         })
         .collect();
@@ -399,6 +454,7 @@ pub async fn songs(
     let sort = match sort {
         None | Some("newest") => Sort::Newest,
         Some("title") => Sort::Title,
+        Some("album") => Sort::Album,
         Some(_) => {
             v.push("sort", "invalid_value");
             Sort::Newest

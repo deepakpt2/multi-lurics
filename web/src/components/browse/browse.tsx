@@ -7,6 +7,7 @@ import { toProblem } from "@/api/client";
 import {
   FACET_KEYS,
   browseHref,
+  itemHref,
   type BrowseSong,
   type BrowseState,
   type Loaded,
@@ -44,16 +45,10 @@ export function FacetNav({ current }: { current?: string }) {
   );
 }
 
-function SongCard({ song, state }: { song: BrowseSong; state: BrowseState }) {
+function SongCard({ song }: { song: BrowseSong }) {
   const t = useTranslations("browse.results");
-  const filterHref = (facet: "singer" | "album", slug: string) =>
-    browseHref({
-      ...state,
-      filters: state.filters.some((f) => f.facet === facet && f.slug === slug)
-        ? state.filters
-        : [...state.filters, { facet, slug }],
-      page: 1,
-    });
+  // Each singer and album has a page of its own, with its songs grouped by album.
+  const filterHref = (facet: "singer" | "album", slug: string) => itemHref(facet, slug);
   // The album's cover if the song is on one, otherwise its first singer's photo.
   const cover = song.albums[0]
     ? { type: "album" as const, ref: song.albums[0] }
@@ -224,11 +219,7 @@ export function BrowseView({
             start={(data.page - 1) * data.page_size + 1}
           >
             {data.items.map((s) => (
-              <SongCard
-                key={`${s.page?.slug ?? s.title.text}`}
-                song={s}
-                state={state}
-              />
+              <SongCard key={`${s.page?.slug ?? s.title.text}`} song={s} />
             ))}
           </ol>
         )}

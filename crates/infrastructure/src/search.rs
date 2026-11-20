@@ -32,6 +32,12 @@ pub struct ClassWeights {
     pub normalized: f64,
     pub prefix: f64,
     pub fuzzy: f64,
+    /// Lyrics: the text typed opens the song, starts one of its lines, or is somewhere inside a line.
+    /// Below a title match, in that order, so a song that opens with the words comes before one that
+    /// merely contains them.
+    pub lyric_opening: f64,
+    pub lyric_line: f64,
+    pub lyric_inside: f64,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -42,6 +48,8 @@ pub struct OriginMultipliers {
     pub alias: f64,
     /// Raga, deity or tag of a song.
     pub metadata: f64,
+    /// The words of a published lyric.
+    pub lyrics: f64,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -59,6 +67,9 @@ impl Default for ClassWeights {
             normalized: 90.0,
             prefix: 70.0,
             fuzzy: 40.0,
+            lyric_opening: 60.0,
+            lyric_line: 50.0,
+            lyric_inside: 30.0,
         }
     }
 }
@@ -70,6 +81,7 @@ impl Default for OriginMultipliers {
             transliteration: 0.95,
             alias: 0.9,
             metadata: 0.8,
+            lyrics: 1.0,
         }
     }
 }
@@ -158,6 +170,29 @@ pub async fn search(conn: &mut PgConnection, ranking: &Ranking, q: &Query<'_>) -
                             SELECT 1 FROM entity_aliases a WHERE a.id = d.source_id AND a.verification_state = 'verified'))
                        OR (d.origin IN ('localization', 'transliteration') AND EXISTS (
                             SELECT 1 FROM entity_localizations l WHERE l.id = d.source_id AND l.verification_state = 'verified')))
+                UNION ALL
+                -- The words of published lyrics, anywhere in the text (trigram index on `key`; three or more
+                -- characters). How early the words come decides the class, and the line that holds them is shown.
+                SELECT 'composition', m.composition_id, 'lyrics', m.snippet, 0, m.class, 1.0::float8, m.lang_hit
+                FROM (
+                  SELECT s.composition_id, s.lang_hit, s.rank,
+                         CASE s.rank WHEN 1 THEN 'lyric_opening' WHEN 2 THEN 'lyric_line' ELSE 'lyric_inside' END AS class,
+                         split_part(v.body, E'\n', s.line) AS snippet
+                  FROM (
+                    SELECT ls.composition_id, ls.contribution_id, (ls.language_id = $4) AS lang_hit,
+                           CASE WHEN (SELECT l FROM unnest(ls.lines) l WHERE l <> '' LIMIT 1) LIKE q.k || '%' THEN 1
+                                WHEN EXISTS (SELECT 1 FROM unnest(ls.lines) l WHERE l LIKE q.k || '%') THEN 2
+                                ELSE 3 END AS rank,
+                           COALESCE((SELECT i FROM generate_subscripts(ls.lines, 1) i WHERE ls.lines[i] LIKE q.k || '%' ORDER BY i LIMIT 1),
+                                    (SELECT i FROM generate_subscripts(ls.lines, 1) i WHERE ls.lines[i] LIKE '%' || q.k || '%' ORDER BY i LIMIT 1),
+                                    1) AS line
+                    FROM lyric_search ls, q
+                    WHERE 'composition' = ANY($2) AND NOT $3 AND char_length(q.c) >= 3 AND ls.key LIKE '%' || q.k || '%'
+                    ORDER BY 4, 1 LIMIT 600
+                  ) s
+                  JOIN contributions c ON c.id = s.contribution_id
+                  JOIN lyric_revisions v ON v.id = c.published_revision_id
+                ) m
               ),
               scored AS (
                 SELECT cand.*,

@@ -5,13 +5,14 @@ import { createElement } from "react";
 
 export const push = vi.fn();
 export const replace = vi.fn();
+export const back = vi.fn();
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode; locale?: string }) => {
     delete rest.locale;
     return createElement("a", { href, ...rest }, children);
   },
-  useRouter: () => ({ push, replace }),
+  useRouter: () => ({ push, replace, back }),
   usePathname: () => "/",
 }));
 
@@ -20,5 +21,6 @@ afterEach(() => {
   vi.restoreAllMocks();
   push.mockReset();
   replace.mockReset();
+  back.mockReset();
   if (typeof window !== "undefined") window.location.hash = "";
 });

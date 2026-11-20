@@ -9,7 +9,7 @@ export type Suggestion = components["schemas"]["BrowseSuggestion"];
 
 /** Every kind of metadata, in the order they are offered. The generated `Facet` type forces this list to stay complete. */
 export const FACET_KEYS = [
-  "album", "artist", "singer", "lyricist", "composer", "raga", "deity", "religion", "category", "language", "tag",
+  "album", "artist", "singer", "lyricist", "composer", "raga", "deity", "religion", "category", "form", "language", "tag",
 ] as const satisfies readonly FacetKey[];
 type Missing = Exclude<FacetKey, (typeof FACET_KEYS)[number]>;
 const _complete: Missing extends never ? true : never = true;
@@ -21,7 +21,7 @@ export const PAGE_SIZES = [10, 20, 50] as const;
 export const DEFAULT_PAGE_SIZE = 20;
 
 export type Selected = { facet: FacetKey; slug: string };
-export type Sort = "newest" | "title";
+export type Sort = "newest" | "title" | "album";
 export type BrowseState = { filters: Selected[]; page: number; pageSize: number; sort: Sort };
 
 type Params = URLSearchParams | Record<string, string | string[] | undefined>;
@@ -49,7 +49,7 @@ export function parseState(p: Params): BrowseState {
     filters,
     page: positive(first("page"), 1),
     pageSize: (PAGE_SIZES as readonly number[]).includes(size) ? size : DEFAULT_PAGE_SIZE,
-    sort: first("sort") === "title" ? "title" : "newest",
+    sort: first("sort") === "title" ? "title" : first("sort") === "album" ? "album" : "newest",
   };
 }
 
@@ -68,6 +68,9 @@ export const browseHref = (s: Partial<BrowseState> & Pick<BrowseState, "filters"
   const q = toQuery(s, extra);
   return q ? `${path}?${q}` : path;
 };
+
+/** The address of one value's page: a singer, a film (album), a raga… with its songs grouped by album. */
+export const itemHref = (facet: FacetKey, slug: string) => `/browse/${facet}/${encodeURIComponent(slug)}`;
 
 /** Adds a filter (page back to 1). Choosing something already chosen changes nothing. */
 export function withFilter(s: BrowseState, f: Selected): BrowseState {

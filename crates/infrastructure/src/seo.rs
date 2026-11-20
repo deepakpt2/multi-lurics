@@ -311,14 +311,18 @@ pub struct Core {
     pub religion: Option<String>,
     pub deity: Option<String>,
     pub tags: Vec<String>,
+    pub devotional_form: Option<String>,
+    pub source_work: Option<String>,
+    pub occasions: Vec<String>,
+    pub youtube_id: Option<String>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 pub async fn core(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> Res<Option<Core>> {
     let sql = match entity_type {
-        "composition" => "SELECT title, year, iswc AS code, NULL::text AS kind, NULL::text AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, category, (SELECT r.name FROM ragas r WHERE r.id = raga_id) AS raga, religion, (SELECT d.name FROM deities d WHERE d.id = deity_id) AS deity, ARRAY(SELECT g.name FROM composition_tags ct JOIN tags g ON g.id = ct.tag_id WHERE ct.composition_id = compositions.id ORDER BY ct.position, g.id) AS tags, updated_at FROM compositions WHERE id = $1",
-        "recording" => "SELECT title, year, isrc AS code, NULL::text AS kind, NULL::text AS detail, duration_ms, composition_id AS parent_id, NULL::text AS category, NULL::text AS raga, NULL::text AS religion, NULL::text AS deity, '{}'::text[] AS tags, updated_at FROM recordings WHERE id = $1",
-        _ => "SELECT name AS title, NULL::smallint AS year, isni AS code, kind, disambiguation AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, NULL::text AS category, NULL::text AS raga, NULL::text AS religion, NULL::text AS deity, '{}'::text[] AS tags, updated_at FROM artists WHERE id = $1",
+        "composition" => "SELECT title, year, iswc AS code, NULL::text AS kind, NULL::text AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, category, (SELECT r.name FROM ragas r WHERE r.id = raga_id) AS raga, religion, (SELECT d.name FROM deities d WHERE d.id = deity_id) AS deity, ARRAY(SELECT g.name FROM composition_tags ct JOIN tags g ON g.id = ct.tag_id WHERE ct.composition_id = compositions.id ORDER BY ct.position, g.id) AS tags, devotional_form, source_work, occasions, youtube_id, updated_at FROM compositions WHERE id = $1",
+        "recording" => "SELECT title, year, isrc AS code, NULL::text AS kind, NULL::text AS detail, duration_ms, composition_id AS parent_id, NULL::text AS category, NULL::text AS raga, NULL::text AS religion, NULL::text AS deity, '{}'::text[] AS tags, NULL::text AS devotional_form, NULL::text AS source_work, '{}'::text[] AS occasions, NULL::text AS youtube_id, updated_at FROM recordings WHERE id = $1",
+        _ => "SELECT name AS title, NULL::smallint AS year, isni AS code, kind, disambiguation AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, NULL::text AS category, NULL::text AS raga, NULL::text AS religion, NULL::text AS deity, '{}'::text[] AS tags, NULL::text AS devotional_form, NULL::text AS source_work, '{}'::text[] AS occasions, NULL::text AS youtube_id, updated_at FROM artists WHERE id = $1",
     };
     sqlx::query_as(sql).bind(id).fetch_optional(conn).await
 }
@@ -363,6 +367,60 @@ pub async fn linked(conn: &mut PgConnection, relation: &str, id: Uuid) -> Res<Ve
         _ => return Ok(Vec::new()),
     };
     sqlx::query_as(sql).bind(id).fetch_all(conn).await
+}
+
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct RelatedRow {
+    pub id: Uuid,
+    pub title: String,
+    pub reasons: Vec<String>,
+}
+
+/// Public songs that share something with this one, closest first. What counts, strongest first: the
+/// same album, a singer who sang it, its deity, its raga, its composer or lyricist, a tag, its devotional
+/// form. Each shared thing adds to a song's score; the reasons are returned so the page can say why.
+pub async fn related_songs(conn: &mut PgConnection, id: Uuid, limit: i64) -> Res<Vec<RelatedRow>> {
+    sqlx::query_as(
+        "WITH me AS (SELECT id, deity_id, raga_id, devotional_form FROM compositions WHERE id = $1),
+              sig AS (
+                SELECT r2.composition_id AS id, 'album' AS reason, 4 AS w
+                  FROM recordings r1 JOIN album_tracks a ON a.recording_id = r1.id
+                  JOIN album_tracks a2 ON a2.album_id = a.album_id
+                  JOIN recordings r2 ON r2.id = a2.recording_id
+                 WHERE r1.composition_id = $1
+                UNION ALL
+                SELECT r2.composition_id, 'singer', 3
+                  FROM recordings r1 JOIN credits k ON k.recording_id = r1.id AND k.role IN ('performer', 'featured_performer')
+                  JOIN credits k2 ON k2.artist_id = k.artist_id AND k2.role IN ('performer', 'featured_performer')
+                  JOIN recordings r2 ON r2.id = k2.recording_id
+                 WHERE r1.composition_id = $1
+                UNION ALL
+                SELECT c2.id, 'deity', 3 FROM me JOIN compositions c2 ON c2.deity_id = me.deity_id
+                UNION ALL
+                SELECT c2.id, 'raga', 2 FROM me JOIN compositions c2 ON c2.raga_id = me.raga_id
+                UNION ALL
+                SELECT k2.composition_id, k.role, 2
+                  FROM credits k JOIN credits k2 ON k2.artist_id = k.artist_id AND k2.role = k.role
+                 WHERE k.composition_id = $1 AND k.role IN ('composer', 'lyricist') AND k2.composition_id IS NOT NULL
+                UNION ALL
+                SELECT t2.composition_id, 'tag', 1
+                  FROM composition_tags t JOIN composition_tags t2 ON t2.tag_id = t.tag_id WHERE t.composition_id = $1
+                UNION ALL
+                SELECT c2.id, 'form', 1 FROM me JOIN compositions c2 ON c2.devotional_form = me.devotional_form
+              ),
+              ranked AS (
+                SELECT s.id, array_agg(DISTINCT s.reason) AS reasons, sum(s.w) AS score
+                FROM sig s WHERE s.id <> $1 GROUP BY s.id ORDER BY sum(s.w) DESC, s.id LIMIT $2 * 4
+              )
+         SELECT c.id, c.title, r.reasons
+         FROM ranked r JOIN compositions c ON c.id = r.id
+         WHERE seo_is_public('composition', c.id)
+         ORDER BY r.score DESC, lower(c.title), c.id LIMIT $2",
+    )
+    .bind(id)
+    .bind(limit)
+    .fetch_all(conn)
+    .await
 }
 
 pub async fn is_public_batch(conn: &mut PgConnection, entity_type: &str, ids: &[Uuid]) -> Res<Vec<Uuid>> {

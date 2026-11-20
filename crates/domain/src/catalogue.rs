@@ -47,6 +47,122 @@ pub fn religion(field: &'static str, raw: Option<&str>) -> Result<Option<String>
     }
 }
 
+/// The kinds of devotional piece. The same list is in the database check and in the UI.
+pub const DEVOTIONAL_FORMS: [&str; 25] = [
+    "bhajan",
+    "kirtan",
+    "stotra",
+    "stuti",
+    "aarti",
+    "mantra",
+    "shloka",
+    "chalisa",
+    "ashtakam",
+    "sahasranamam",
+    "suprabhatam",
+    "keerthanam",
+    "namavali",
+    "abhang",
+    "shabad",
+    "qawwali",
+    "naat",
+    "hamd",
+    "marsiya",
+    "hymn",
+    "psalm",
+    "carol",
+    "gospel",
+    "sutta",
+    "other",
+];
+
+/// Form of a devotional piece. Blank means absent.
+pub fn devotional_form(field: &'static str, raw: Option<&str>) -> Result<Option<String>, DomainError> {
+    match raw.map(str::trim) {
+        None | Some("") => Ok(None),
+        Some(s) if DEVOTIONAL_FORMS.contains(&s) => Ok(Some(s.to_owned())),
+        Some(_) => Err(DomainError::invalid(field, "invalid_value")),
+    }
+}
+
+/// The text a devotional piece comes from. Blank means absent.
+pub fn source_work(field: &'static str, raw: Option<&str>) -> Result<Option<String>, DomainError> {
+    match raw.map(str::trim) {
+        None | Some("") => Ok(None),
+        Some(s) => clean_text(field, s, 200).map(Some),
+    }
+}
+
+/// Festivals and times a piece is sung at: at most 10, each at most 60 characters, duplicates dropped.
+pub fn occasions(field: &'static str, raw: &[String]) -> Result<Vec<String>, DomainError> {
+    let mut out: Vec<String> = Vec::new();
+    for t in raw.iter().map(|t| t.trim()).filter(|t| !t.is_empty()) {
+        let t = clean_text(field, t, 60)?;
+        if !out.iter().any(|o| o.to_lowercase() == t.to_lowercase()) {
+            out.push(t);
+        }
+    }
+    if out.len() > 10 {
+        return Err(DomainError::invalid(field, "too_many"));
+    }
+    Ok(out)
+}
+
+/// The id of a YouTube video from whatever a person pasted: a watch, short, embed, live or youtu.be link
+/// (with or without scheme, `www.`, `m.` or `music.`, and with any extra parameters), or the bare id.
+/// Only the id is kept; pages build the embed address from it. Blank means absent.
+pub fn youtube(field: &'static str, raw: Option<&str>) -> Result<Option<String>, DomainError> {
+    let Some(s) = raw.map(str::trim).filter(|s| !s.is_empty()) else {
+        return Ok(None);
+    };
+    let is_id = |s: &str| s.len() == 11 && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-');
+    if is_id(s) {
+        return Ok(Some(s.to_owned()));
+    }
+    let rest = s.split_once("://").map_or(s, |(_, r)| r);
+    let (host, path) = rest.split_once('/').unwrap_or((rest, ""));
+    let host = host
+        .rsplit('@')
+        .next()
+        .unwrap_or(host)
+        .split(':')
+        .next()
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    let host = host
+        .strip_prefix("www.")
+        .or_else(|| host.strip_prefix("m."))
+        .or_else(|| host.strip_prefix("music."))
+        .unwrap_or(&host);
+    let (path, query) = path.split_once('?').unwrap_or((path, ""));
+    let path = path.split('#').next().unwrap_or("");
+    let first = |p: &str| p.split('/').next().unwrap_or("").to_owned();
+    let id = match host {
+        "youtu.be" => first(path),
+        "youtube.com" | "youtube-nocookie.com" => {
+            let mut parts = path.split('/');
+            match parts.next() {
+                Some("embed" | "shorts" | "live" | "v") => parts.next().unwrap_or("").to_owned(),
+                Some("watch") => query
+                    .split('#')
+                    .next()
+                    .unwrap_or("")
+                    .split('&')
+                    .find_map(|kv| kv.strip_prefix("v="))
+                    .unwrap_or("")
+                    .to_owned(),
+                _ => String::new(),
+            }
+        }
+        _ => String::new(),
+    };
+    if is_id(&id) {
+        Ok(Some(id))
+    } else {
+        Err(DomainError::invalid(field, "invalid_video_link"))
+    }
+}
+
 /// Raga or deity name as written, in any script. Blank means absent.
 pub fn short_name(field: &'static str, raw: Option<&str>) -> Result<Option<String>, DomainError> {
     match raw.map(str::trim) {
@@ -253,6 +369,58 @@ impl RelationshipKind {
 #[cfg(test)]
 mod classification_tests {
     use super::*;
+
+    #[test]
+    fn youtube_links_of_every_shape_give_the_id() {
+        for link in [
+            "dQw4w9WgXcQ",
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "http://youtube.com/watch?feature=share&v=dQw4w9WgXcQ&t=42",
+            "youtube.com/watch?v=dQw4w9WgXcQ",
+            "https://m.youtube.com/watch?v=dQw4w9WgXcQ#t=1",
+            "https://music.youtube.com/watch?v=dQw4w9WgXcQ&list=x",
+            "https://youtu.be/dQw4w9WgXcQ?si=abc",
+            "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
+            "https://www.youtube.com/shorts/dQw4w9WgXcQ",
+            "https://www.youtube.com/live/dQw4w9WgXcQ?feature=share",
+            "  https://youtu.be/dQw4w9WgXcQ  ",
+        ] {
+            assert_eq!(
+                youtube("video", Some(link)).unwrap().as_deref(),
+                Some("dQw4w9WgXcQ"),
+                "{link}"
+            );
+        }
+        assert_eq!(youtube("video", Some("  ")).unwrap(), None);
+        assert_eq!(youtube("video", None).unwrap(), None);
+        for bad in [
+            "https://vimeo.com/123456789",
+            "https://youtube.com/watch?v=short",
+            "https://youtube.com/channel/UCabcdefghijk",
+            "https://evil.example/watch?v=dQw4w9WgXcQ",
+            "not a link",
+        ] {
+            assert!(youtube("video", Some(bad)).is_err(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn devotional_structure_is_validated() {
+        assert_eq!(
+            devotional_form("form", Some("bhajan")).unwrap().as_deref(),
+            Some("bhajan")
+        );
+        assert_eq!(devotional_form("form", Some("")).unwrap(), None);
+        assert!(devotional_form("form", Some("pop")).is_err());
+        let o = occasions(
+            "occasions",
+            &["Navratri".into(), " navratri ".into(), "".into(), "Ekadashi".into()],
+        )
+        .unwrap();
+        assert_eq!(o, ["Navratri", "Ekadashi"]);
+        assert!(occasions("occasions", &(0..11).map(|i| format!("o{i}")).collect::<Vec<_>>()).is_err());
+    }
 
     #[test]
     fn category_religion_and_tags_are_validated() {

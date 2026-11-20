@@ -128,6 +128,8 @@ pub enum MatchVia {
     Transliteration,
     Alias,
     Metadata,
+    /// The words of a published lyric.
+    Lyrics,
 }
 
 impl MatchVia {
@@ -138,6 +140,7 @@ impl MatchVia {
             Self::Transliteration => "transliteration",
             Self::Alias => "alias",
             Self::Metadata => "metadata",
+            Self::Lyrics => "lyrics",
         }
     }
 }
@@ -222,7 +225,7 @@ impl SearchService for PgSearch {
                     kind: match r.class.as_str() {
                         "exact" => MatchKind::Exact,
                         "normalized" => MatchKind::Normalized,
-                        "prefix" => MatchKind::Prefix,
+                        "prefix" | "lyric_opening" | "lyric_line" => MatchKind::Prefix,
                         _ => MatchKind::Fuzzy,
                     },
                     via: match r.origin.as_str() {
@@ -230,6 +233,7 @@ impl SearchService for PgSearch {
                         "transliteration" => MatchVia::Transliteration,
                         "alias" => MatchVia::Alias,
                         "metadata" => MatchVia::Metadata,
+                        "lyrics" => MatchVia::Lyrics,
                         _ => MatchVia::Name,
                     },
                     position: Position(r.score, r.entity_id),

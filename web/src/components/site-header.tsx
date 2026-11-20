@@ -1,11 +1,10 @@
 "use client";
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { Columns2, Disc3, Flower2, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, NotebookPen, ShieldCheck, UserPlus, UserRound, Users } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { Columns2, Disc3, FileUp, Flower2, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, NotebookPen, ShieldCheck, UserPlus, UserRound, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { api, call } from "@/api/client";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { locales, offeredLocales } from "@/i18n/routing";
 import { SearchBox } from "./search/search";
 import { useSession } from "./session";
 
@@ -13,11 +12,9 @@ type Icon = typeof Library;
 
 export function SiteHeader() {
   const t = useTranslations();
-  const current = useLocale();
   const pathname = usePathname();
   const router = useRouter();
   const { user, isModerator, isAdmin } = useSession();
-  const offered = locales.filter((l) => offeredLocales.includes(l));
   const signOut = async () => {
     try {
       await call(api.POST("/api/v1/auth/logout"));
@@ -88,6 +85,7 @@ export function SiteHeader() {
               <MenuLink href="/albums" icon={ListMusic}>{t("nav.albums")}</MenuLink>
               {(isModerator || isAdmin) && <Dropdown.Separator className="menu-sep" />}
               {isModerator && <MenuLink href="/moderation" icon={ShieldCheck}>{t("nav.moderation")}</MenuLink>}
+              {isModerator && <MenuLink href="/import" icon={FileUp}>{t("nav.import")}</MenuLink>}
               {isAdmin && <MenuLink href="/admin/users" icon={Users}>{t("nav.users")}</MenuLink>}
               <Dropdown.Separator className="menu-sep" />
               <Dropdown.Item className="menu-item" onSelect={() => void signOut()}>
@@ -97,15 +95,6 @@ export function SiteHeader() {
             </Dropdown.Content>
           </Dropdown.Portal>
         </Dropdown.Root>
-      )}
-      {offered.length > 1 && (
-        <nav aria-label={t("nav.language")} className="locale-switcher">
-          {offered.map((l) => (
-            <Link key={l} href={pathname} locale={l} lang={l} aria-current={l === current ? "true" : undefined}>
-              {t(`localeNames.${l}`)}
-            </Link>
-          ))}
-        </nav>
       )}
     </header>
   );

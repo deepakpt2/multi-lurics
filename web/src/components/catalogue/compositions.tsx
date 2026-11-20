@@ -8,6 +8,7 @@ import { Name } from "../localization/localized";
 import { NamesLink } from "../localization/names";
 import { MatchHint } from "./match-hint";
 import { Field, SelectField, formValues, useSubmit } from "../form";
+import { youtubeId } from "@/lib/youtube";
 import { CREDIT_ROLES, CreditList, FormActions, ListShell, Loaded, RefListEditor, SaveProblem, int, str, text, useLoad, usePaged, type S } from "./common";
 
 type Query = Record<string, string>;
@@ -15,6 +16,12 @@ type Role = S["CreditRole"];
 
 const CATEGORIES = ["mainstream", "devotional"] as const;
 const RELIGIONS = ["hindu", "sikh", "buddhist", "jain", "christian", "muslim", "other"] as const;
+/** Kinds of devotional piece; the same list is validated by the API and the database. */
+export const DEVOTIONAL_FORMS = [
+  "bhajan", "kirtan", "stotra", "stuti", "aarti", "mantra", "shloka", "chalisa", "ashtakam", "sahasranamam",
+  "suprabhatam", "keerthanam", "namavali", "abhang", "shabad", "qawwali", "naat", "hamd", "marsiya", "hymn",
+  "psalm", "carol", "gospel", "sutta", "other",
+] as const;
 
 export function CompositionList({ query }: { query: Query }) {
   const t = useTranslations();
@@ -199,29 +206,59 @@ export function CompositionDetail({ id }: { id: string }) {
 
 type Ref = { id: string; label: string; choice?: Role };
 
-export function CompositionForm({ initial, onReload }: { initial?: S["CompositionDetail"]; onReload?: () => void }) {
+/**
+ * The song form. With `fillOnly` (anyone signed in, "Add missing details") only the fields that are still
+ * empty are shown and sent; what is already filled in stays as it is, because changing it is for the song's
+ * creator and moderators. The server enforces the same rule.
+ */
+export function CompositionForm({ initial, onReload, fillOnly }: { initial?: S["CompositionDetail"]; onReload?: () => void; fillOnly?: boolean }) {
   const t = useTranslations();
   const router = useRouter();
   const [credits, setCredits] = useState<Ref[]>(initial?.credits.map((c) => ({ id: c.artist_id, label: c.artist_name, choice: c.role })) ?? []);
   const [category, setCategory] = useState<string>(initial?.category ?? "mainstream");
   const [typed, setTyped] = useState({ raga: initial?.raga ?? "", deity: initial?.deity ?? "", tag: "" });
+  const [video, setVideo] = useState(initial?.youtube_id ?? "");
+  const fill = !!fillOnly && !!initial;
+  const filled = {
+    iswc: !!initial?.iswc,
+    year: initial?.year != null,
+    raga: !!initial?.raga,
+    religion: !!initial?.religion,
+    deity: !!initial?.deity,
+    form: !!initial?.devotional_form,
+    source: !!initial?.source_work,
+    occasions: (initial?.occasions.length ?? 0) > 0,
+    tags: (initial?.tags.length ?? 0) > 0,
+    youtube: !!initial?.youtube_id,
+    credits: (initial?.credits.length ?? 0) > 0,
+  };
+  const show = (k: keyof typeof filled) => !fill || !filled[k];
+  const devotional = category === "devotional";
+  const anythingToShow = !fill || Object.entries(filled).some(([k, v]) => !v && (devotional || !["religion", "deity", "form", "source", "occasions"].includes(k)));
   const s = useSubmit(async (v: Record<string, string>) => {
-    const devotional = category === "devotional";
+    // A field that is not shown is not sent, so it cannot change.
+    const when = <T,>(k: keyof typeof filled, value: T) => (show(k) ? value : undefined);
+    const list = (x: string | undefined) => (x ?? "").split(/[,،]/).map((y) => y.trim()).filter(Boolean);
     const body = {
-      title: v.title,
-      iswc: text(v.iswc),
-      year: int(v.year),
-      category,
-      raga: text(v.raga),
-      religion: devotional ? text(v.religion) : null,
-      deity: devotional ? text(v.deity) : null,
-      tags: (v.tags ?? "").split(/[,،]/).map((x) => x.trim()).filter(Boolean),
-      credits: credits.map((c) => ({ artist_id: c.id, role: c.choice as Role })),
+      title: fill ? undefined : v.title,
+      category: fill ? undefined : category,
+      iswc: when("iswc", text(v.iswc)),
+      year: when("year", int(v.year)),
+      raga: when("raga", text(v.raga)),
+      religion: devotional ? when("religion", text(v.religion)) : fill ? undefined : null,
+      deity: devotional ? when("deity", text(v.deity)) : fill ? undefined : null,
+      devotional_form: devotional ? when("form", text(v.devotional_form)) : fill ? undefined : null,
+      source_work: devotional ? when("source", text(v.source_work)) : fill ? undefined : null,
+      occasions: devotional ? when("occasions", list(v.occasions)) : fill ? undefined : [],
+      youtube: when("youtube", text(v.youtube)),
+      tags: when("tags", list(v.tags)),
+      credits: when("credits", credits.map((c) => ({ artist_id: c.id, role: c.choice as Role }))),
     };
     const saved = initial
       ? await call(api.PATCH("/api/v1/compositions/{id}", { params: { path: { id: initial.id } }, body: { ...body, expected_version: initial.version } }))
-      : await call(api.POST("/api/v1/compositions", { body }));
-    router.push(`/compositions/${saved.id}`);
+      : await call(api.POST("/api/v1/compositions", { body: { ...body, title: v.title } }));
+    if (fill) router.back();
+    else router.push(`/compositions/${saved.id}`);
   });
   return (
     <form
@@ -229,43 +266,72 @@ export function CompositionForm({ initial, onReload }: { initial?: S["Compositio
       onInput={(e) => {
         const el = e.target as unknown as HTMLInputElement;
         if (el.name === "raga" || el.name === "deity") setTyped((x) => ({ ...x, [el.name]: el.value }));
+        if (el.name === "youtube") setVideo(el.value);
         if (el.name === "tags") setTyped((x) => ({ ...x, tag: el.value.split(/[,،]/).pop() ?? "" }));
       }}
       onSubmit={(e) => (e.preventDefault(), s.submit(formValues(e.currentTarget)))}
     >
       {s.error !== undefined && <SaveProblem error={s.error} kind="compositions" onReload={onReload} />}
-      <Field name="title" dir="auto" verbatim required defaultValue={initial?.title} hint={t("hints.title")} fieldErrors={s.fieldErrors} />
-      <Field name="iswc" dir="ltr" defaultValue={initial?.iswc} hint={t("hints.iswc")} fieldErrors={s.fieldErrors} />
-      <Field name="year" type="number" defaultValue={initial?.year} fieldErrors={s.fieldErrors} />
-      <SelectField name="category" options={CATEGORIES} labels="catalogue.songCategories" defaultValue={category} onChange={setCategory} fieldErrors={s.fieldErrors} />
-      <Field name="raga" dir="auto" verbatim defaultValue={initial?.raga} hint={t("hints.raga")} fieldErrors={s.fieldErrors} />
-      <MatchHint type="raga" value={typed.raga} />
-      {category === "devotional" && (
+      {fill && <p className="muted">{anythingToShow ? t("catalogue.fillHint") : t("catalogue.nothingMissing")}</p>}
+      {!fill && <Field name="title" dir="auto" verbatim required defaultValue={initial?.title} hint={t("hints.title")} fieldErrors={s.fieldErrors} />}
+      {show("iswc") && <Field name="iswc" dir="ltr" defaultValue={initial?.iswc} hint={t("hints.iswc")} fieldErrors={s.fieldErrors} />}
+      {show("year") && <Field name="year" type="number" defaultValue={initial?.year} fieldErrors={s.fieldErrors} />}
+      {!fill && <SelectField name="category" options={CATEGORIES} labels="catalogue.songCategories" defaultValue={category} onChange={setCategory} fieldErrors={s.fieldErrors} />}
+      {show("raga") && (
         <>
-          <SelectField name="religion" options={RELIGIONS} labels="catalogue.religions" optional defaultValue={initial?.religion ?? ""} fieldErrors={s.fieldErrors} />
-          <Field name="deity" dir="auto" verbatim defaultValue={initial?.deity} hint={t("hints.deity")} fieldErrors={s.fieldErrors} />
-          <MatchHint type="deity" value={typed.deity} />
+          <Field name="raga" dir="auto" verbatim defaultValue={initial?.raga} hint={t("hints.raga")} fieldErrors={s.fieldErrors} />
+          <MatchHint type="raga" value={typed.raga} />
         </>
       )}
-      <Field name="tags" dir="auto" verbatim defaultValue={initial?.tags.join(", ")} hint={t("hints.tags")} fieldErrors={s.fieldErrors} />
-      <MatchHint type="tag" value={typed.tag} />
-      <RefListEditor
-        name="credits"
-        legend={t("catalogue.credits")}
-        items={credits}
-        onChange={setCredits}
-        choices={CREDIT_ROLES.compositions}
-        choiceLabels="catalogue.roles"
-        pickerLabel={t("catalogue.findArtist")}
-        entity="artist"
-        fieldErrors={s.fieldErrors}
-      />
-      <FormActions submitting={s.submitting} cancelHref={initial ? `/compositions/${initial.id}` : "/compositions"} />
+      {devotional && (
+        <>
+          {show("religion") && <SelectField name="religion" options={RELIGIONS} labels="catalogue.religions" optional defaultValue={initial?.religion ?? ""} fieldErrors={s.fieldErrors} />}
+          {show("deity") && (
+            <>
+              <Field name="deity" dir="auto" verbatim defaultValue={initial?.deity} hint={t("hints.deity")} fieldErrors={s.fieldErrors} />
+              <MatchHint type="deity" value={typed.deity} />
+            </>
+          )}
+          {show("form") && <SelectField name="devotional_form" options={DEVOTIONAL_FORMS} labels="catalogue.devotionalForms" optional defaultValue={initial?.devotional_form ?? ""} fieldErrors={s.fieldErrors} />}
+          {show("source") && <Field name="source_work" dir="auto" verbatim defaultValue={initial?.source_work} hint={t("hints.sourceWork")} fieldErrors={s.fieldErrors} />}
+          {show("occasions") && <Field name="occasions" dir="auto" verbatim defaultValue={initial?.occasions.join(", ")} hint={t("hints.occasions")} fieldErrors={s.fieldErrors} />}
+        </>
+      )}
+      {show("youtube") && (
+        <>
+          <Field name="youtube" dir="ltr" defaultValue={initial?.youtube_id ? `https://youtu.be/${initial.youtube_id}` : ""} hint={t("hints.youtube")} fieldErrors={s.fieldErrors} />
+          {video.trim() !== "" && youtubeId(video) === null && (
+            <p className="muted small" role="status">
+              {t("hints.youtubeUnrecognised")}
+            </p>
+          )}
+        </>
+      )}
+      {show("tags") && (
+        <>
+          <Field name="tags" dir="auto" verbatim defaultValue={initial?.tags.join(", ")} hint={t("hints.tags")} fieldErrors={s.fieldErrors} />
+          <MatchHint type="tag" value={typed.tag} />
+        </>
+      )}
+      {show("credits") && (
+        <RefListEditor
+          name="credits"
+          legend={t("catalogue.credits")}
+          items={credits}
+          onChange={setCredits}
+          choices={CREDIT_ROLES.compositions}
+          choiceLabels="catalogue.roles"
+          pickerLabel={t("catalogue.findArtist")}
+          entity="artist"
+          fieldErrors={s.fieldErrors}
+        />
+      )}
+      <FormActions submitting={s.submitting} disabled={fill && !anythingToShow} cancelHref={initial ? (fill ? "/" : `/compositions/${initial.id}`) : "/compositions"} />
     </form>
   );
 }
 
-export function CompositionEdit({ id }: { id: string }) {
+export function CompositionEdit({ id, fillOnly }: { id: string; fillOnly?: boolean }) {
   const load = useLoad(id, () => loadComposition(id));
-  return <Loaded load={load}>{(c) => <CompositionForm key={c.version} initial={c} onReload={load.reload} />}</Loaded>;
+  return <Loaded load={load}>{(c) => <CompositionForm key={c.version} initial={c} onReload={load.reload} fillOnly={fillOnly} />}</Loaded>;
 }

@@ -58,6 +58,12 @@ pub struct CompositionInput {
     pub deity: Option<Option<String>>,
     /// Replaces the whole list when present.
     pub tags: Option<Vec<String>>,
+    /// Devotional songs only: what kind of piece it is, where it comes from, when it is sung.
+    pub devotional_form: Option<Option<String>>,
+    pub source_work: Option<Option<String>>,
+    pub occasions: Option<Vec<String>>,
+    /// A YouTube link or video id; only the id is kept.
+    pub youtube: Option<Option<String>>,
     pub credits: Option<Vec<CreditInput>>,
 }
 
@@ -486,12 +492,15 @@ pub async fn update_artist(
         async {
             let mut tx = AppTx::begin(&app.pool).await?;
             let cur = repo::get_artist(&mut tx, id, true).await?.ok_or(not_found("artist"))?;
-            authz::require_editor(p, cur.created_by)?;
+            let editor = authz::is_editor(p, cur.created_by);
             check_version(expected_version, cur.version)?;
             let mut v = Violations::default();
             let d = artist_data(&mut v, i, Some(cur.data()));
             v.finish()?;
             let d = d.expect("valid when no violations");
+            if !editor && !fills_artist(&cur.data(), &d) {
+                return Err(AppError::Forbidden);
+            }
             if d != cur.data() {
                 guard_identifier(&mut tx, Identifier::ArtistIsni, d.isni.as_deref(), Some(id)).await?;
                 let row = repo::update_artist(&mut tx, id, &d).await?;
@@ -565,7 +574,51 @@ pub async fn list_artists(
     Ok(Listed { page, names })
 }
 
+// ---------- filling in what is missing ----------
+
+/// Each rule below says: nothing that already has a value changes. A blank field may be filled; a filled
+/// one is left alone (changing it is for the record's creator and moderators).
+fn fillable<T: PartialEq>(cur: &Option<T>, new: &Option<T>) -> bool {
+    cur.is_none() || cur == new
+}
+
+fn fills_composition(cur: &CompositionData, new: &CompositionData) -> bool {
+    new.title == cur.title
+        && new.category == cur.category
+        && fillable(&cur.iswc, &new.iswc)
+        && fillable(&cur.year, &new.year)
+        && fillable(&cur.raga, &new.raga)
+        && fillable(&cur.religion, &new.religion)
+        && fillable(&cur.deity, &new.deity)
+        && (cur.tags.is_empty() || cur.tags == new.tags)
+        && fillable(&cur.devotional_form, &new.devotional_form)
+        && fillable(&cur.source_work, &new.source_work)
+        && (cur.occasions.is_empty() || cur.occasions == new.occasions)
+        && fillable(&cur.youtube_id, &new.youtube_id)
+}
+
+fn fills_artist(cur: &ArtistData, new: &ArtistData) -> bool {
+    new.name == cur.name
+        && new.kind == cur.kind
+        && fillable(&cur.disambiguation, &new.disambiguation)
+        && fillable(&cur.isni, &new.isni)
+}
+
+fn fills_album(cur: &AlbumData, new: &AlbumData) -> bool {
+    new.title == cur.title
+        && new.kind == cur.kind
+        && fillable(&cur.release_year, &new.release_year)
+        && fillable(&cur.barcode, &new.barcode)
+}
+
 // ---------- compositions ----------
+
+/// Checks a song's fields without writing anything (the bulk import's dry run).
+pub(crate) fn validate_composition(i: &CompositionInput) -> Result<(), AppError> {
+    let mut v = Violations::default();
+    composition_data(&mut v, i, None);
+    Ok(v.finish()?)
+}
 
 fn composition_data(
     v: &mut Violations,
@@ -581,6 +634,10 @@ fn composition_data(
         religion: None,
         deity: None,
         tags: Vec::new(),
+        devotional_form: None,
+        source_work: None,
+        occasions: Vec::new(),
+        youtube_id: None,
     });
     let title = v.check(dc::title("title", i.title.as_deref().unwrap_or(&b.title)));
     let iswc = v.check(dc::iswc("iswc", i.iswc.clone().unwrap_or(b.iswc).as_deref()));
@@ -588,6 +645,10 @@ fn composition_data(
     let category = v.check(dc::category("category", i.category.as_deref().unwrap_or(&b.category)));
     let raga = v.check(dc::short_name("raga", i.raga.clone().unwrap_or(b.raga).as_deref()));
     let tags = v.check(dc::tags("tags", i.tags.as_deref().unwrap_or(&b.tags)));
+    let youtube_id = v.check(dc::youtube(
+        "youtube",
+        i.youtube.clone().unwrap_or(b.youtube_id).as_deref(),
+    ));
     // Religion and deity belong to devotional songs. Leaving "devotional" clears them; sending them for a
     // mainstream song is an error rather than silently dropped.
     let devotional = category.as_deref() == Some("devotional");
@@ -608,6 +669,38 @@ fn composition_data(
         }
         (Some(None), Some(None))
     };
+    // Form, source and occasions follow the same rule as religion and deity.
+    let (devotional_form, source_work, occasions) = if devotional {
+        (
+            v.check(dc::devotional_form(
+                "devotional_form",
+                i.devotional_form.clone().unwrap_or(b.devotional_form).as_deref(),
+            )),
+            v.check(dc::source_work(
+                "source_work",
+                i.source_work.clone().unwrap_or(b.source_work).as_deref(),
+            )),
+            v.check(dc::occasions(
+                "occasions",
+                i.occasions.as_deref().unwrap_or(&b.occasions),
+            )),
+        )
+    } else {
+        let sent = i
+            .devotional_form
+            .as_ref()
+            .is_some_and(|x| x.as_deref().is_some_and(|s| !s.trim().is_empty()))
+            || i.source_work
+                .as_ref()
+                .is_some_and(|x| x.as_deref().is_some_and(|s| !s.trim().is_empty()))
+            || i.occasions
+                .as_ref()
+                .is_some_and(|x| x.iter().any(|s| !s.trim().is_empty()));
+        if category.is_some() && sent {
+            v.check::<()>(Err(domain::DomainError::invalid("devotional_form", "devotional_only")));
+        }
+        (Some(None), Some(None), Some(Vec::new()))
+    };
     Some(CompositionData {
         title: title?,
         iswc: iswc?,
@@ -617,6 +710,10 @@ fn composition_data(
         religion: religion?,
         deity: deity?,
         tags: tags?,
+        devotional_form: devotional_form?,
+        source_work: source_work?,
+        occasions: occasions?,
+        youtube_id: youtube_id?,
     })
 }
 
@@ -707,7 +804,7 @@ pub async fn update_composition(
             let cur = repo::get_composition(&mut tx, id, true)
                 .await?
                 .ok_or(not_found("composition"))?;
-            authz::require_editor(p, cur.created_by)?;
+            let editor = authz::is_editor(p, cur.created_by);
             check_version(expected_version, cur.version)?;
             let mut v = Violations::default();
             let d = composition_data(&mut v, &i, Some(cur.data()));
@@ -716,12 +813,20 @@ pub async fn update_composition(
                 None => None,
             };
             v.finish()?;
-            let (d, terms) = canonical_spellings(&mut tx, d.expect("valid when no violations"), p.user_id).await?;
+            let d = d.expect("valid when no violations");
             let owner = CreditOwner::Composition(id);
             let credits_before = match &credits {
                 Some(c) => credits_changed(&mut tx, owner, c).await?,
                 None => None,
             };
+            // Anyone signed in may add what is missing; changing what is there is for the creator and moderators.
+            if !editor
+                && (!fills_composition(&cur.data(), &d)
+                    || credits_before.as_ref().is_some_and(|before| !before.is_empty()))
+            {
+                return Err(AppError::Forbidden);
+            }
+            let (d, terms) = canonical_spellings(&mut tx, d, p.user_id).await?;
             if d == cur.data() && credits_before.is_none() {
                 return Ok(());
             }
@@ -1164,7 +1269,7 @@ pub async fn update_album(
         async {
             let mut tx = AppTx::begin(&app.pool).await?;
             let cur = repo::get_album(&mut tx, id, true).await?.ok_or(not_found("album"))?;
-            authz::require_editor(p, cur.created_by)?;
+            let editor = authz::is_editor(p, cur.created_by);
             check_version(expected_version, cur.version)?;
             let mut v = Violations::default();
             let d = album_data(&mut v, &i, Some(cur.data()));
@@ -1182,6 +1287,13 @@ pub async fn update_album(
                 Some(c) => credits_changed(&mut tx, owner, c).await?,
                 None => None,
             };
+            if !editor
+                && (!fills_album(&cur.data(), &d)
+                    || i.tracks.is_some()
+                    || credits_before.as_ref().is_some_and(|before| !before.is_empty()))
+            {
+                return Err(AppError::Forbidden);
+            }
             let tracks_before = match &i.tracks {
                 Some(t) => {
                     let old = repo::track_ids(&mut tx, id).await?;
