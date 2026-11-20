@@ -112,7 +112,13 @@ async fn locales(conn: &mut PgConnection, cfg: &SeoConfig) -> Result<Vec<LocaleL
     Ok(repo::locale_languages(conn, cfg).await?)
 }
 
-fn pick_slug(rows: &[SlugRow], id: Uuid, langs: &[LocaleLang], locale: &str, cfg: &SeoConfig) -> Option<Canonical> {
+pub(crate) fn pick_slug(
+    rows: &[SlugRow],
+    id: Uuid,
+    langs: &[LocaleLang],
+    locale: &str,
+    cfg: &SeoConfig,
+) -> Option<Canonical> {
     let find = |loc: &str| {
         let lang = langs.iter().find(|l| l.locale == loc)?.language_id;
         rows.iter()

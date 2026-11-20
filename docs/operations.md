@@ -168,3 +168,11 @@ Evidence is the automated suite run at this commit (Rust workspace all green, we
 | 7 | SEO, slugs, ISR, invalidation | Held | seo suites + e2e; per-replica ISR cache limitation (C1) |
 | 8 | Comparison and community | Held | community suite 14/14 + e2e; gaps as in the Phase 8 report (X2) |
 | 9 | Production readiness | See the report | Metrics, auth rate limits, SMTP delivery, legal workflow, backup + restore drill, load script and SLO table, isolation/authz suite, accessibility audit (automated), runbooks, alerts, register |
+
+## Browse (`/browse`)
+
+Public, read-only, published songs only. `GET /api/v1/browse/songs`, `/browse/facets/{facet}` and `/browse/suggest` take filters as `facet=slug` pairs (AND across all of them); the web address carries the same pairs, so a view is shareable and survives refresh and back/forward. Facets (artist, singer, lyricist, composer, album, raga, deity, religion, category, language, tag) are defined once, in `infrastructure::browse::Facet`; the web mirror is `FACET_KEYS` in `web/src/lib/browse.ts` and the generated API types fail the build if the two drift.
+
+- **Slugs, never ids.** Artists and albums are addressed by a slug of their canonical name (`browse_slugs`, migration 0014): `yesudas`, a second person with the same name gets `yesudas-2`. A rename retires the old slug but it keeps resolving (merged entities follow `entity_merges`), and the page redirects to the current slug. The worker keeps slugs current on the `search.reindex` event; a list that meets an entity without one creates it on the spot (one small insert, idempotent).
+- **Suggestions** reuse `search_documents`, so localized names, transliterations and aliases match and resolve to the one entity. With filters active, a suggestion is offered only if a published song has it *and* matches every active filter.
+- **Cost.** Lists use `OFFSET` paging (page size at most 50) with `count(*) OVER()`; each filter is an `EXISTS` over indexed credit/track joins (`credits_artist_role_idx`, `album_tracks_recording_idx`). Answers carry ETag and `max-age` from the `search_ranking.cache_max_age_secs` setting, and suggestions share the typeahead rate limit. Watch `lyrics` request latency for `/browse/`; if the unfiltered total becomes slow on a very large catalogue, cache the unfiltered count rather than changing the query.

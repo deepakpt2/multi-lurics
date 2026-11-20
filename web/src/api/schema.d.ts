@@ -431,6 +431,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/browse/facets/{facet}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["browse_facet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/browse/songs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["browse_songs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/browse/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["browse_suggest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/comments/{id}": {
         parameters: {
             query?: never;
@@ -1732,6 +1780,99 @@ export interface components {
             items: components["schemas"]["Bookmark"][];
             next_cursor?: string | null;
         };
+        /**
+         * @description Every kind of metadata songs can be browsed by. The same words are the filter parameter names.
+         * @enum {string}
+         */
+        BrowseFacet: "artist" | "singer" | "lyricist" | "composer" | "album" | "raga" | "deity" | "religion" | "category" | "language" | "tag";
+        BrowseFacetResponse: {
+            facet: components["schemas"]["BrowseFacet"];
+            filters: components["schemas"]["BrowseFilter"][];
+            items: components["schemas"]["BrowseFacetValue"][];
+            /** Format: int64 */
+            page: number;
+            /** Format: int64 */
+            page_size: number;
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            total_pages: number;
+        };
+        BrowseFacetValue: {
+            label: components["schemas"]["Display"];
+            /** @description Use as the filter value for this facet. */
+            slug: string;
+            /**
+             * Format: int64
+             * @description Songs that have it and match the other filters.
+             */
+            songs: number;
+        };
+        BrowseFilter: {
+            facet: components["schemas"]["BrowseFacet"];
+            label: components["schemas"]["Display"];
+            /** @description False when nothing has this slug: the list is then empty. */
+            resolved: boolean;
+            /** @description The current slug; a client should rewrite its URL when this differs from what it sent. */
+            slug: string;
+        };
+        BrowseLanguage: {
+            /** @description ISO 639-1 where there is one, otherwise 639-3. */
+            code: string;
+            name: string;
+        };
+        BrowsePageRef: {
+            locale: string;
+            /** @description The song's public page is `/{locale}/song/{slug}`. */
+            slug: string;
+        };
+        BrowseRef: {
+            name: components["schemas"]["Display"];
+            /** @description Slug to filter by (`singer=…` or `album=…`). */
+            slug: string;
+        };
+        BrowseSong: {
+            albums: components["schemas"]["BrowseRef"][];
+            original_language?: null | components["schemas"]["BrowseLanguage"];
+            page?: null | components["schemas"]["BrowsePageRef"];
+            singers: components["schemas"]["BrowseRef"][];
+            title: components["schemas"]["Display"];
+            translations: components["schemas"]["BrowseLanguage"][];
+            /** Format: int32 */
+            year?: number | null;
+        };
+        BrowseSongsResponse: {
+            /** @description The filters as understood, with current slugs and localized labels. */
+            filters: components["schemas"]["BrowseFilter"][];
+            items: components["schemas"]["BrowseSong"][];
+            /** Format: int64 */
+            page: number;
+            /** Format: int64 */
+            page_size: number;
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            total_pages: number;
+        };
+        BrowseSuggestResponse: {
+            /** @description Best first; already restricted to what exists together with the active filters. */
+            items: components["schemas"]["BrowseSuggestion"][];
+        };
+        BrowseSuggestion: {
+            /** @description What it is. `song` opens the song; every other kind is a filter to add. */
+            kind: components["schemas"]["BrowseSuggestionKind"];
+            label: components["schemas"]["Display"];
+            locale?: string | null;
+            /** @description The name that matched, as written (an alias or another script may differ from `label`). */
+            matched: string;
+            /** @description A song's page slug (with `locale`), or the filter value for the other kinds. */
+            slug: string;
+            via: components["schemas"]["BrowseVia"];
+        };
+        /** @enum {string} */
+        BrowseSuggestionKind: "song" | "artist" | "singer" | "lyricist" | "composer" | "album" | "raga" | "deity" | "religion" | "category" | "language" | "tag";
+        /** @enum {string} */
+        BrowseVia: "name" | "localization" | "transliteration" | "alias";
         Comment: {
             /** Format: uuid */
             author_id: string;
@@ -4482,6 +4623,205 @@ export interface operations {
                 content?: never;
             };
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    browse_facet: {
+        parameters: {
+            query?: {
+                /** @description Page number, from 1 (default 1). */
+                page?: number;
+                /** @description 1-50 (default 20). */
+                page_size?: number;
+                /** @description Preferred display language, e.g. `ml`. Names in this language are shown when they exist. */
+                lang?: string;
+                /**
+                 * @description Filters: each is the slug of an artist, singer, lyricist, composer or album, or the value of a raga,
+                 *     deity, religion, category, language (ISO 639-3) or tag. May repeat. All filters must match (AND).
+                 */
+                artist?: string;
+                singer?: string;
+                lyricist?: string;
+                composer?: string;
+                album?: string;
+                raga?: string;
+                deity?: string;
+                religion?: string;
+                category?: string;
+                language?: string;
+                tag?: string;
+                /** @description Narrow the list to names that start with, contain a word starting with, or nearly match this text. */
+                q?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Kind of metadata to list */
+                facet: components["schemas"]["BrowseFacet"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The values of one kind of metadata, paged, A to Z. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowseFacetResponse"];
+                };
+            };
+            /** @description Unchanged since `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    browse_songs: {
+        parameters: {
+            query?: {
+                /** @description Page number, from 1 (default 1). */
+                page?: number;
+                /** @description 1-50 (default 20). */
+                page_size?: number;
+                /** @description Preferred display language, e.g. `ml`. Names in this language are shown when they exist. */
+                lang?: string;
+                /**
+                 * @description Filters: each is the slug of an artist, singer, lyricist, composer or album, or the value of a raga,
+                 *     deity, religion, category, language (ISO 639-3) or tag. May repeat. All filters must match (AND).
+                 */
+                artist?: string;
+                singer?: string;
+                lyricist?: string;
+                composer?: string;
+                album?: string;
+                raga?: string;
+                deity?: string;
+                religion?: string;
+                category?: string;
+                language?: string;
+                tag?: string;
+                /** @description `newest` (default) or `title`. */
+                sort?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Songs with a published lyric that match every filter. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowseSongsResponse"];
+                };
+            };
+            /** @description Unchanged since `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    browse_suggest: {
+        parameters: {
+            query: {
+                /** @description Page number, from 1 (default 1). */
+                page?: number;
+                /** @description 1-50 (default 20). */
+                page_size?: number;
+                /** @description Preferred display language, e.g. `ml`. Names in this language are shown when they exist. */
+                lang?: string;
+                /**
+                 * @description Filters: each is the slug of an artist, singer, lyricist, composer or album, or the value of a raga,
+                 *     deity, religion, category, language (ISO 639-3) or tag. May repeat. All filters must match (AND).
+                 */
+                artist?: string;
+                singer?: string;
+                lyricist?: string;
+                composer?: string;
+                album?: string;
+                raga?: string;
+                deity?: string;
+                religion?: string;
+                category?: string;
+                language?: string;
+                tag?: string;
+                /** @description At least 2 characters. */
+                q: string;
+                /** @description 1-20 (default 10). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rate limited per client; cacheable for a short time. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowseSuggestResponse"];
+                };
+            };
+            /** @description Unchanged since `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Slow down; see `Retry-After`. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

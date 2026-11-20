@@ -2138,6 +2138,531 @@
         }
       }
     },
+    "/api/v1/browse/facets/{facet}": {
+      "get": {
+        "tags": [
+          "browse"
+        ],
+        "operationId": "browse_facet",
+        "parameters": [
+          {
+            "name": "facet",
+            "in": "path",
+            "description": "Kind of metadata to list",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BrowseFacet"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number, from 1 (default 1).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "1-50 (default 20).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Preferred display language, e.g. `ml`. Names in this language are shown when they exist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "artist",
+            "in": "query",
+            "description": "Filters: each is the slug of an artist, singer, lyricist, composer or album, or the value of a raga,\ndeity, religion, category, language (ISO 639-3) or tag. May repeat. All filters must match (AND).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "singer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lyricist",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "composer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "album",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "raga",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "religion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Narrow the list to names that start with, contain a word starting with, or nearly match this text.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The values of one kind of metadata, paged, A to Z.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseFacetResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged since `If-None-Match`."
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/browse/songs": {
+      "get": {
+        "tags": [
+          "browse"
+        ],
+        "operationId": "browse_songs",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number, from 1 (default 1).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "1-50 (default 20).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Preferred display language, e.g. `ml`. Names in this language are shown when they exist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "artist",
+            "in": "query",
+            "description": "Filters: each is the slug of an artist, singer, lyricist, composer or album, or the value of a raga,\ndeity, religion, category, language (ISO 639-3) or tag. May repeat. All filters must match (AND).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "singer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lyricist",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "composer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "album",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "raga",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "religion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "`newest` (default) or `title`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Songs with a published lyric that match every filter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseSongsResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged since `If-None-Match`."
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/browse/suggest": {
+      "get": {
+        "tags": [
+          "browse"
+        ],
+        "operationId": "browse_suggest",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number, from 1 (default 1).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "1-50 (default 20).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Preferred display language, e.g. `ml`. Names in this language are shown when they exist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "artist",
+            "in": "query",
+            "description": "Filters: each is the slug of an artist, singer, lyricist, composer or album, or the value of a raga,\ndeity, religion, category, language (ISO 639-3) or tag. May repeat. All filters must match (AND).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "singer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lyricist",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "composer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "album",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "raga",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "religion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "At least 2 characters.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1-20 (default 10).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rate limited per client; cacheable for a short time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseSuggestResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged since `If-None-Match`."
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Slow down; see `Retry-After`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/comments/{id}": {
       "delete": {
         "tags": [
@@ -8831,6 +9356,341 @@
             ]
           }
         }
+      },
+      "BrowseFacet": {
+        "type": "string",
+        "description": "Every kind of metadata songs can be browsed by. The same words are the filter parameter names.",
+        "enum": [
+          "artist",
+          "singer",
+          "lyricist",
+          "composer",
+          "album",
+          "raga",
+          "deity",
+          "religion",
+          "category",
+          "language",
+          "tag"
+        ]
+      },
+      "BrowseFacetResponse": {
+        "type": "object",
+        "required": [
+          "facet",
+          "items",
+          "page",
+          "page_size",
+          "total",
+          "total_pages",
+          "filters"
+        ],
+        "properties": {
+          "facet": {
+            "$ref": "#/components/schemas/BrowseFacet"
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseFilter"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseFacetValue"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "page_size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "BrowseFacetValue": {
+        "type": "object",
+        "required": [
+          "slug",
+          "label",
+          "songs"
+        ],
+        "properties": {
+          "label": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Use as the filter value for this facet."
+          },
+          "songs": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Songs that have it and match the other filters."
+          }
+        }
+      },
+      "BrowseFilter": {
+        "type": "object",
+        "required": [
+          "facet",
+          "slug",
+          "label",
+          "resolved"
+        ],
+        "properties": {
+          "facet": {
+            "$ref": "#/components/schemas/BrowseFacet"
+          },
+          "label": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "resolved": {
+            "type": "boolean",
+            "description": "False when nothing has this slug: the list is then empty."
+          },
+          "slug": {
+            "type": "string",
+            "description": "The current slug; a client should rewrite its URL when this differs from what it sent."
+          }
+        }
+      },
+      "BrowseLanguage": {
+        "type": "object",
+        "required": [
+          "code",
+          "name"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "ISO 639-1 where there is one, otherwise 639-3."
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "BrowsePageRef": {
+        "type": "object",
+        "required": [
+          "locale",
+          "slug"
+        ],
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "description": "The song's public page is `/{locale}/song/{slug}`."
+          }
+        }
+      },
+      "BrowseRef": {
+        "type": "object",
+        "required": [
+          "slug",
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Slug to filter by (`singer=…` or `album=…`)."
+          }
+        }
+      },
+      "BrowseSong": {
+        "type": "object",
+        "required": [
+          "title",
+          "singers",
+          "albums",
+          "translations"
+        ],
+        "properties": {
+          "albums": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseRef"
+            }
+          },
+          "original_language": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BrowseLanguage"
+              }
+            ]
+          },
+          "page": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BrowsePageRef"
+              }
+            ]
+          },
+          "singers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseRef"
+            }
+          },
+          "title": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "translations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseLanguage"
+            }
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "BrowseSongsResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total",
+          "total_pages",
+          "filters"
+        ],
+        "properties": {
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseFilter"
+            },
+            "description": "The filters as understood, with current slugs and localized labels."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseSong"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "page_size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "BrowseSuggestResponse": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseSuggestion"
+            },
+            "description": "Best first; already restricted to what exists together with the active filters."
+          }
+        }
+      },
+      "BrowseSuggestion": {
+        "type": "object",
+        "required": [
+          "kind",
+          "slug",
+          "label",
+          "matched",
+          "via"
+        ],
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/BrowseSuggestionKind",
+            "description": "What it is. `song` opens the song; every other kind is a filter to add."
+          },
+          "label": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "locale": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "matched": {
+            "type": "string",
+            "description": "The name that matched, as written (an alias or another script may differ from `label`)."
+          },
+          "slug": {
+            "type": "string",
+            "description": "A song's page slug (with `locale`), or the filter value for the other kinds."
+          },
+          "via": {
+            "$ref": "#/components/schemas/BrowseVia"
+          }
+        }
+      },
+      "BrowseSuggestionKind": {
+        "type": "string",
+        "enum": [
+          "song",
+          "artist",
+          "singer",
+          "lyricist",
+          "composer",
+          "album",
+          "raga",
+          "deity",
+          "religion",
+          "category",
+          "language",
+          "tag"
+        ]
+      },
+      "BrowseVia": {
+        "type": "string",
+        "enum": [
+          "name",
+          "localization",
+          "transliteration",
+          "alias"
+        ]
       },
       "Comment": {
         "type": "object",

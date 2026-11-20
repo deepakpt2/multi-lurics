@@ -294,3 +294,42 @@ button.link { background: none; border: 0; padding: 0; color: inherit; text-deco
 .badge.status-unverified { background: var(--warn-bg); color: #7a5a0a; }
 .badge.role { background: var(--sage); color: #fff; }
 @media (max-width: 40rem) { .auth-links .button { padding-inline: 0.8rem; min-block-size: 2.25rem; } }
+
+/* Browse: filter chips + one input, song cards, facet lists, pager */
+.browse-search { position: relative; margin-block-end: 1rem; }
+.filter-box { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; padding: 0.35rem 0.6rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); cursor: text; }
+.filter-box:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.filter-chips { display: contents; list-style: none; margin: 0; padding: 0; }
+.filter-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding-block: 0.2rem; padding-inline: 0.55rem; background: var(--accent-soft); color: var(--accent); border-radius: 999px; font-size: 0.92rem; max-inline-size: 100%; }
+.filter-chip .chip-kind { opacity: 0.8; }
+.filter-chip[data-unresolved] { background: var(--warn-bg); color: #7a5a0a; }
+.filter-chip button { display: inline-grid; place-items: center; inline-size: 1.4rem; block-size: 1.4rem; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.filter-chip button:hover, .filter-chip button:focus-visible { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.filter-box input[role="combobox"] { flex: 1 1 10rem; min-inline-size: 8rem; border: 0; outline: 0; background: transparent; min-block-size: 2.4rem; font-size: 1rem; box-shadow: none; }
+.clear-all { margin-inline-start: auto; }
+.browse-search .search-popover { inset-inline: 0; }
+.kind-badge { display: inline-flex; align-items: center; gap: 0.25rem; margin-inline-start: 0; text-transform: none; }
+.kind-badge[data-kind="song"] { background: var(--sage); color: #fff; }
+.facet-nav ul { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.facet-nav a { display: inline-flex; align-items: center; gap: 0.35rem; padding-block: 0.3rem; padding-inline: 0.7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); text-decoration: none; color: inherit; }
+.facet-nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.results-title { font-size: 1.1rem; margin-block: 0.5rem; }
+[data-pending] .song-list, [data-pending] .facet-values { opacity: 0.55; transition: opacity 0.15s; }
+.song-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.song-card { padding-block: 0.75rem; padding-inline: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.song-card h2 { margin-block: 0 0.4rem; font-size: 1.15rem; }
+.song-meta { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; margin: 0; }
+.song-meta > div { display: flex; gap: 0.4rem; min-inline-size: 0; }
+.song-meta dt { color: var(--muted); }
+.song-meta dt::after { content: ":"; }
+.song-meta dd { margin: 0; }
+.facet-values { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.5rem; }
+.facet-values li { display: flex; justify-content: space-between; gap: 0.5rem; align-items: baseline; padding-block: 0.5rem; padding-inline: 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.pager { display: grid; gap: 0.5rem; justify-items: center; margin-block: 1.25rem; }
+.pager ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; justify-content: center; }
+.pager .button[aria-disabled="true"] { opacity: 0.45; pointer-events: none; }
+.pager .button[aria-current="page"] { background: var(--accent); color: var(--accent-fg); }
+.pager-options { display: flex; flex-wrap: wrap; gap: 1rem; }
+.pager-options label { display: inline-flex; gap: 0.4rem; align-items: center; }
+.menu-label { padding-block: 0.25rem; padding-inline: 0.75rem; font-size: 0.8rem; color: var(--muted); }
+@media (max-width: 40rem) { .song-meta { display: grid; } .clear-all { margin-inline-start: 0; } }

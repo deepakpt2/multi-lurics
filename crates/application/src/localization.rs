@@ -38,7 +38,7 @@ impl Display {
         self.resolution.is_fallback()
     }
 
-    fn base(text: &str) -> Self {
+    pub(crate) fn base(text: &str) -> Self {
         Self {
             text: text.to_owned(),
             description: None,

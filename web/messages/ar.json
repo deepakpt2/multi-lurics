@@ -28,7 +28,9 @@
     "menu": "القائمة",
     "users": "المستخدمون",
     "signOut": "تسجيل الخروج",
-    "moderationHub": "قوائم المراجعة"
+    "moderationHub": "قوائم المراجعة",
+    "browse": "تصفح",
+    "catalogueTools": "أدوات الفهرس"
   },
   "localeNames": {
     "en": "English",
@@ -835,5 +837,99 @@
     "enable": "تفعيل الحساب",
     "loadMore": "عرض المزيد",
     "joined": "انضم في {date}"
+  },
+  "browse": {
+    "title": "تصفح الأغاني",
+    "metaDescription": "تصفح كلمات الأغاني حسب المغني وكاتب الكلمات والملحن والألبوم والراغا وغيرها.",
+    "byTitle": "الأغاني: {filters}",
+    "browseBy": "تصفح حسب",
+    "facet": {
+      "album": "ألبوم",
+      "artist": "فنان",
+      "singer": "مغنٍّ",
+      "lyricist": "كاتب كلمات",
+      "composer": "ملحن",
+      "raga": "راغا",
+      "deity": "معبود",
+      "religion": "دين",
+      "category": "نوع",
+      "language": "لغة",
+      "tag": "وسم",
+      "song": "أغنية"
+    },
+    "facets": {
+      "album": "الألبومات",
+      "artist": "الفنانون",
+      "singer": "المغنون",
+      "lyricist": "كتّاب الكلمات",
+      "composer": "الملحنون",
+      "raga": "الراغات",
+      "deity": "المعبودات",
+      "religion": "الأديان",
+      "category": "الأنواع",
+      "language": "اللغات",
+      "tag": "الوسوم"
+    },
+    "categories": {
+      "mainstream": "أفلام ومستقلة",
+      "devotional": "ترانيم دينية"
+    },
+    "search": {
+      "label": "ابحث عن أغنية أو مغنٍّ أو ألبوم",
+      "placeholder": "ابحث بالأغنية أو المغني أو الألبوم…",
+      "placeholderMore": "أضف عامل تصفية آخر…",
+      "filters": "عوامل التصفية الحالية",
+      "remove": "إزالة {facet}: {name}",
+      "clearAll": "مسح الكل",
+      "suggestions": "اقتراحات",
+      "searching": "جارٍ البحث…",
+      "none": "لا نتائج لـ «{query}» مع عوامل التصفية هذه.",
+      "searchAll": "ابحث في كل شيء عن «{query}»",
+      "retry": "حاول مرة أخرى",
+      "count": "{count, plural, one {# اقتراح} other {# اقتراحات}}",
+      "matched": "تطابق: {text}",
+      "opensSong": "يفتح الأغنية",
+      "unresolved": "غير موجود",
+      "kindLabel": "{kind}:"
+    },
+    "results": {
+      "count": "{count, plural, one {# أغنية} other {# أغنيات}}",
+      "list": "الأغاني",
+      "empty": "لا توجد أغانٍ للتصفح بعد.",
+      "noMatch": "لا توجد أغانٍ تطابق عوامل التصفية هذه.",
+      "noMatchHint": "أزل أحد عوامل التصفية لتوسيع البحث.",
+      "unresolved": "لم يتم العثور على «{name}». ربما تغير اسمه أو أُزيل.",
+      "singers": "المغنون",
+      "albums": "الألبومات",
+      "language": "اللغة الأصلية",
+      "translations": "الترجمات",
+      "noTranslations": "لا توجد ترجمات بعد",
+      "noPage": "الصفحة غير متاحة بعد",
+      "updating": "جارٍ التحديث…",
+      "year": "({year})"
+    },
+    "pager": {
+      "label": "ترقيم الصفحات",
+      "previous": "السابق",
+      "next": "التالي",
+      "page": "الصفحة {page}",
+      "status": "الصفحة {page} من {pages}",
+      "perPage": "في الصفحة",
+      "sort": "ترتيب حسب",
+      "newest": "الأحدث أولًا",
+      "title": "العنوان (أ إلى ي)",
+      "gap": "…"
+    },
+    "facetPage": {
+      "title": "تصفح {facets}",
+      "filter": "ابحث في {facets}",
+      "submit": "بحث",
+      "empty": "لا شيء لعرضه بعد.",
+      "noMatch": "لا شيء يطابق «{q}».",
+      "songs": "{count, plural, one {# أغنية} other {# أغنيات}}",
+      "inContext": "يعرض فقط {facets} المناسبة لعوامل التصفية المختارة.",
+      "allSongs": "كل الأغاني"
+    },
+    "errorTitle": "تعذر تحميل القائمة"
   }
 }

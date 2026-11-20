@@ -28,7 +28,9 @@
     "menu": "Menu",
     "users": "Users",
     "signOut": "Sign out",
-    "moderationHub": "Review queues"
+    "moderationHub": "Review queues",
+    "browse": "Browse",
+    "catalogueTools": "Catalogue tools"
   },
   "localeNames": {
     "en": "English",
@@ -835,5 +837,99 @@
     "enable": "Enable account",
     "loadMore": "Load more",
     "joined": "Joined {date}"
+  },
+  "browse": {
+    "title": "Browse songs",
+    "metaDescription": "Browse song lyrics by singer, lyricist, composer, album, raga and more.",
+    "byTitle": "Songs: {filters}",
+    "browseBy": "Browse by",
+    "facet": {
+      "album": "Album",
+      "artist": "Artist",
+      "singer": "Singer",
+      "lyricist": "Lyricist",
+      "composer": "Composer",
+      "raga": "Raga",
+      "deity": "Deity",
+      "religion": "Religion",
+      "category": "Type",
+      "language": "Language",
+      "tag": "Tag",
+      "song": "Song"
+    },
+    "facets": {
+      "album": "Albums",
+      "artist": "Artists",
+      "singer": "Singers",
+      "lyricist": "Lyricists",
+      "composer": "Composers",
+      "raga": "Ragas",
+      "deity": "Deities",
+      "religion": "Religions",
+      "category": "Types",
+      "language": "Languages",
+      "tag": "Tags"
+    },
+    "categories": {
+      "mainstream": "Film and independent",
+      "devotional": "Devotional"
+    },
+    "search": {
+      "label": "Search songs, singers, albums and more",
+      "placeholder": "Search by song, singer, album…",
+      "placeholderMore": "Add another filter…",
+      "filters": "Active filters",
+      "remove": "Remove {facet}: {name}",
+      "clearAll": "Clear all",
+      "suggestions": "Suggestions",
+      "searching": "Searching…",
+      "none": "Nothing found for “{query}” with these filters.",
+      "searchAll": "Search everything for “{query}”",
+      "retry": "Try again",
+      "count": "{count, plural, one {# suggestion} other {# suggestions}}",
+      "matched": "Matched: {text}",
+      "opensSong": "Opens the song",
+      "unresolved": "Not found",
+      "kindLabel": "{kind}:"
+    },
+    "results": {
+      "count": "{count, plural, one {# song} other {# songs}}",
+      "list": "Songs",
+      "empty": "There are no songs to browse yet.",
+      "noMatch": "No songs match these filters.",
+      "noMatchHint": "Remove a filter to widen the search.",
+      "unresolved": "“{name}” was not found. It may have been renamed or removed.",
+      "singers": "Singers",
+      "albums": "Albums",
+      "language": "Original language",
+      "translations": "Translations",
+      "noTranslations": "No translations yet",
+      "noPage": "Page not available yet",
+      "updating": "Updating…",
+      "year": "({year})"
+    },
+    "pager": {
+      "label": "Pagination",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page}",
+      "status": "Page {page} of {pages}",
+      "perPage": "Per page",
+      "sort": "Sort by",
+      "newest": "Newest first",
+      "title": "Title (A to Z)",
+      "gap": "…"
+    },
+    "facetPage": {
+      "title": "Browse {facets}",
+      "filter": "Find in {facets}",
+      "submit": "Find",
+      "empty": "Nothing to list yet.",
+      "noMatch": "Nothing matches “{q}”.",
+      "songs": "{count, plural, one {# song} other {# songs}}",
+      "inContext": "Showing only {facets} that fit the chosen filters.",
+      "allSongs": "All songs"
+    },
+    "errorTitle": "Could not load the list"
   }
 }

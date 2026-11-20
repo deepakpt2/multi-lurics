@@ -25,9 +25,10 @@ export function SiteHeader() {
       router.push("/login");
     }
   };
-  const active = (href: string) => (pathname === href || pathname.startsWith(`${href}/`) ? "page" : undefined);
-  const NavLink = ({ href, icon: I, children }: { href: string; icon: Icon; children: React.ReactNode }) => (
-    <Link href={href} aria-current={active(href)}>
+  const active = (href: string, exact = false) =>
+    pathname === href || (!exact && pathname.startsWith(`${href}/`)) ? "page" : undefined;
+  const NavLink = ({ href, icon: I, exact, children }: { href: string; icon: Icon; exact?: boolean; children: React.ReactNode }) => (
+    <Link href={href} aria-current={active(href, exact)}>
       <I size={16} aria-hidden="true" />
       {children}
     </Link>
@@ -51,10 +52,9 @@ export function SiteHeader() {
       </Link>
       <SearchBox />
       <nav aria-label={t("nav.primary")}>
-        <NavLink href="/compositions" icon={Library}>{t("nav.compositions")}</NavLink>
-        <NavLink href="/recordings" icon={Disc3}>{t("nav.recordings")}</NavLink>
-        <NavLink href="/artists" icon={Mic2}>{t("nav.artists")}</NavLink>
-        <NavLink href="/albums" icon={ListMusic}>{t("nav.albums")}</NavLink>
+        <NavLink href="/browse" icon={Library} exact>{t("nav.browse")}</NavLink>
+        <NavLink href="/browse/album" icon={ListMusic}>{t("nav.albums")}</NavLink>
+        <NavLink href="/browse/artist" icon={Mic2}>{t("nav.artists")}</NavLink>
         <NavLink href="/compare" icon={Columns2}>{t("nav.compare")}</NavLink>
       </nav>
       {user === null && (
@@ -80,6 +80,12 @@ export function SiteHeader() {
               <MenuLink href="/account" icon={UserRound}>{t("nav.account")}</MenuLink>
               <MenuLink href="/contributions" icon={NotebookPen}>{t("nav.myLyrics")}</MenuLink>
               <MenuLink href="/account/comments" icon={MessageSquare}>{t("nav.myComments")}</MenuLink>
+              <Dropdown.Separator className="menu-sep" />
+              <Dropdown.Label className="menu-label">{t("nav.catalogueTools")}</Dropdown.Label>
+              <MenuLink href="/compositions" icon={Library}>{t("nav.compositions")}</MenuLink>
+              <MenuLink href="/recordings" icon={Disc3}>{t("nav.recordings")}</MenuLink>
+              <MenuLink href="/artists" icon={Mic2}>{t("nav.artists")}</MenuLink>
+              <MenuLink href="/albums" icon={ListMusic}>{t("nav.albums")}</MenuLink>
               {(isModerator || isAdmin) && <Dropdown.Separator className="menu-sep" />}
               {isModerator && <MenuLink href="/moderation" icon={ShieldCheck}>{t("nav.moderation")}</MenuLink>}
               {isAdmin && <MenuLink href="/admin/users" icon={Users}>{t("nav.users")}</MenuLink>}

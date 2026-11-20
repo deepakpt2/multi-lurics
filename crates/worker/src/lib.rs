@@ -144,6 +144,10 @@ impl<H: Handler> Handler for SearchIndexer<H> {
         } else {
             Vec::new()
         };
+        // Browse filters address artists and albums by a name-based slug; a rename retires the old one.
+        if matches!(e.aggregate_type.as_str(), "artist" | "album") {
+            infrastructure::browse::sync_slug(&mut tx, &e.aggregate_type, e.aggregate_id).await?;
+        }
         let cfg = infrastructure::seo::load_config(&mut tx).await?;
         tx.commit().await?;
         // After the commit: a page re-rendered now sees the new state. A failure retries the event.

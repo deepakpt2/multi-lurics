@@ -152,7 +152,7 @@ pub struct SuggestResponse {
 }
 
 /// JSON with a weak ETag, short public caching and a 304 for an unchanged answer.
-fn cached<T: Serialize>(req: &HeaderMap, body: &T, max_age: u32) -> Response {
+pub(crate) fn cached<T: Serialize>(req: &HeaderMap, body: &T, max_age: u32) -> Response {
     let bytes = serde_json::to_vec(body).expect("search response serializes");
     let digest = Sha256::digest(&bytes);
     let etag = format!(

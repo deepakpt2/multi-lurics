@@ -4,6 +4,7 @@
 pub mod admin;
 pub mod auth;
 pub mod authz;
+pub mod browse;
 pub mod catalogue;
 pub mod community;
 pub mod comparison;

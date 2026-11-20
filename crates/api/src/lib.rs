@@ -1,5 +1,6 @@
 //! HTTP adapter: routing, extractors, problem+json, OpenAPI. No business rules here.
 
+pub mod browse;
 pub mod catalogue;
 pub mod community;
 pub mod entities;
@@ -19,6 +20,7 @@ pub mod seo;
 use application::App;
 use axum::routing::{get, post};
 use axum::{Json, Router};
+use browse as brw;
 use catalogue as cat;
 use community as com;
 use entities as ent;
@@ -56,6 +58,7 @@ use utoipa::{Modify, OpenApi};
         lyr::get_trust_policy, lyr::set_trust_policy,
         ent::suggest, ent::create_proposal, ent::proposal_queue, ent::approve_proposal, ent::reject_proposal,
         ent::merge_entities,
+        brw::songs, brw::facet, brw::suggest,
         srch::search, srch::suggest, srch::suggestion_accepted, srch::metrics,
         seo_api::get_page, seo_api::sitemap,
         com::resolve, com::save_comparison, com::list_saved, com::get_saved, com::delete_saved,
@@ -179,6 +182,7 @@ pub fn router(app: App) -> Router {
     let typeahead = Router::new()
         .route("/search/suggest", get(srch::suggest))
         .route("/search/suggest/accepted", post(srch::suggestion_accepted))
+        .route("/browse/suggest", get(brw::suggest))
         .route_layer(axum::middleware::from_fn_with_state(limiter, ratelimit::limit));
 
     // Credential endpoints get their own per-client bucket (guessing, enumeration, mail flooding).
@@ -255,6 +259,8 @@ pub fn router(app: App) -> Router {
         .route("/pages/{scope}/{slug}", get(seo_api::get_page))
         .route("/sitemap", get(seo_api::sitemap))
         .route("/search", get(srch::search))
+        .route("/browse/songs", get(brw::songs))
+        .route("/browse/facets/{facet}", get(brw::facet))
         .route("/admin/search/metrics", get(srch::metrics))
         .route("/openapi.json", get(|| async { Json(ApiDoc::openapi()) }))
         .merge(typeahead)

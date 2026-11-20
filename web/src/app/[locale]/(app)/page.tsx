@@ -20,7 +20,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <LogIn size={16} aria-hidden="true" />
           {t("nav.signIn")}
         </Link>
-        <Link className="button ghost" href="/compositions">
+        <Link className="button ghost" href="/browse">
           <Library size={16} aria-hidden="true" />
           {t("home.browse")}
         </Link>
