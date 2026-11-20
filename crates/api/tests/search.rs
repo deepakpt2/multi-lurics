@@ -43,6 +43,7 @@ async fn index(pool: &PgPool) {
     let h = SearchIndexer {
         pool: pool.clone(),
         inner: LogOnly,
+        revalidate: None,
     };
     while run_once(pool, &h).await.unwrap() > 0 {}
 }

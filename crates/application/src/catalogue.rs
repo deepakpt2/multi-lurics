@@ -189,6 +189,18 @@ pub(crate) fn settle<T>(r: Result<T, AppError>) -> Result<T, AppError> {
             code: "proposal_pending",
             existing_id: None,
         },
+        DbViolation::Unique(c) if c == "reports_open_key" => AppError::Taken {
+            code: "report_exists",
+            existing_id: None,
+        },
+        DbViolation::Unique(c) if c == "appeals_open_key" => AppError::Taken {
+            code: "appeal_pending",
+            existing_id: None,
+        },
+        DbViolation::Unique(c) if c == "takedown_appeals_open_key" => AppError::Taken {
+            code: "appeal_pending",
+            existing_id: None,
+        },
         DbViolation::Unique(c) if c == "aliases_key" => AppError::Taken {
             code: "alias_exists",
             existing_id: None,

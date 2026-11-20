@@ -83,3 +83,25 @@ pub async fn mark_failed(pool: &PgPool, id: Uuid, attempts: i32, error: &str) ->
     .await
     .map(|_| ())
 }
+
+pub struct Stats {
+    pub pending: i64,
+    pub retrying: i64,
+    pub oldest_secs: f64,
+}
+
+/// Queue depth for the worker alerts: what is waiting, what has failed at least once, how old the oldest is.
+pub async fn stats(pool: &sqlx::PgPool) -> Result<Stats, sqlx::Error> {
+    let (pending, retrying, oldest_secs): (i64, i64, f64) = sqlx::query_as(
+        "SELECT count(*), count(*) FILTER (WHERE attempts > 0),
+                COALESCE(EXTRACT(EPOCH FROM now() - min(created_at)), 0)::float8
+         FROM outbox WHERE processed_at IS NULL",
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok(Stats {
+        pending,
+        retrying,
+        oldest_secs,
+    })
+}

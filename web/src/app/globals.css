@@ -135,3 +135,40 @@ form { display: grid; gap: 1rem; }
 .search-form input { flex: 1 1 14rem; min-block-size: 2.75rem; font-size: 1rem; }
 .search-results li { display: grid; gap: 0.1rem; padding-block: 0.4rem; }
 @media (max-width: 40rem) { .search-box { flex-basis: 100%; max-inline-size: none; order: 3; } }
+
+/* Public pages */
+.lyric-body { white-space: pre-wrap; font: inherit; line-height: 1.8; padding-block: 0.5rem; overflow-wrap: anywhere; margin: 0; }
+
+/* Comparison: columns on wide screens, one active panel on narrow ones. Logical properties only, so RTL needs no overrides. */
+.compare { display: grid; gap: 1rem; grid-template-columns: repeat(var(--panels, 1), minmax(0, 1fr)); align-items: start; }
+.compare-panel { min-inline-size: 0; padding-inline: 0.75rem; padding-block: 0.5rem; border: 1px solid var(--border); border-radius: 0.5rem; }
+.compare-tabs { display: none; gap: 0.5rem; flex-wrap: wrap; margin-block-end: 0.75rem; }
+.compare-head h2 { margin-block: 0.25rem; font-size: 1.1rem; }
+.panel-fields { display: grid; gap: 0.5rem; }
+@media (max-width: 47.99rem) {
+  .compare { grid-template-columns: minmax(0, 1fr); }
+  .compare-tabs { display: flex; }
+  .compare-panel[data-active="false"] { display: none; }
+}
+.badge-primary { color: var(--fg, inherit); border-color: currentColor; }
+.community { margin-block-start: 1.5rem; }
+.rating, .reactions { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-block: 0.5rem; }
+.comments { list-style: none; padding: 0; }
+.comment { padding-block: 0.5rem; border-block-end: 1px solid var(--border); }
+.comment-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
+.facts dd { margin: 0; }
+button.link { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
+
+/* Footer: policy links. Logical properties only, so it mirrors in RTL. */
+.site-footer {
+  margin-block-start: 3rem;
+  padding-block: 1.25rem;
+  padding-inline: 1rem;
+  border-block-start: 1px solid var(--border, #d0d0d0);
+}
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}

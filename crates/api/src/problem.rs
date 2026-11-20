@@ -52,6 +52,9 @@ pub struct Problem {
     /// Present on `409 likely_duplicates`: entities that probably are the one being proposed.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub candidate_ids: Vec<Uuid>,
+    /// Present on `429 rate_limited`: seconds until the action is allowed again (also `Retry-After`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retry_after_secs: Option<u64>,
 }
 
 #[derive(Debug)]
@@ -71,6 +74,7 @@ impl ApiError {
             current_version: None,
             existing_id: None,
             candidate_ids: Vec::new(),
+            retry_after_secs: None,
         }))
     }
 
@@ -139,6 +143,12 @@ impl From<AppError> for ApiError {
                 p.0.candidate_ids = candidates;
                 p
             }
+            AppError::Restricted { code } => Self::new(S::FORBIDDEN, code, "Forbidden"),
+            AppError::RateLimited { retry_after_secs } => {
+                let mut p = Self::new(S::TOO_MANY_REQUESTS, "rate_limited", "Too many requests");
+                p.0.retry_after_secs = Some(retry_after_secs);
+                p
+            }
             AppError::Unavailable => Self::new(S::SERVICE_UNAVAILABLE, "unavailable", "Service unavailable"),
             AppError::Internal(err) => {
                 // Full error goes to logs (correlated by request id), never to the client.
@@ -184,7 +194,11 @@ impl IntoResponse for ApiError {
     fn into_response(mut self) -> Response {
         self.0.request_id = current_request_id();
         let status = StatusCode::from_u16(self.0.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        let retry = self.0.retry_after_secs;
         let mut res = (status, axum::Json(*self.0)).into_response();
+        if let Some(secs) = retry {
+            res.headers_mut().insert(header::RETRY_AFTER, HeaderValue::from(secs));
+        }
         res.headers_mut()
             .insert(header::CONTENT_TYPE, HeaderValue::from_static(CONTENT_TYPE));
         res

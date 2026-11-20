@@ -23,8 +23,10 @@ export function SiteHeader() {
         <Link href="/recordings">{t("nav.recordings")}</Link>
         <Link href="/artists">{t("nav.artists")}</Link>
         <Link href="/albums">{t("nav.albums")}</Link>
+        <Link href="/compare">{t("nav.compare")}</Link>
         <Link href="/moderation">{t("nav.moderation")}</Link>
         <Link href="/contributions">{t("nav.myLyrics")}</Link>
+        <Link href="/account/comments">{t("nav.myComments")}</Link>
         <Link href="/login">{t("nav.signIn")}</Link>
         <Link href="/register">{t("nav.register")}</Link>
         <Link href="/account">{t("nav.account")}</Link>

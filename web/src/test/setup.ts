@@ -18,5 +18,5 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   push.mockReset();
-  window.location.hash = "";
+  if (typeof window !== "undefined") window.location.hash = "";
 });

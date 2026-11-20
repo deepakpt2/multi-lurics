@@ -23,11 +23,12 @@ cargo build -q -p api -p worker
   || { tail -n 30 "$LOGS/build.log"; exit 1; }
 
 export LYRICS_DATABASE_URL="$E2E_DB_URL" LYRICS_APP_BASE_URL="http://127.0.0.1:$WEB_PORT" \
-  LYRICS_BIND_ADDR="127.0.0.1:$API_PORT" LYRICS_COOKIE_SECURE=false LYRICS_DEV_MAILBOX_DIR="$MAILBOX"
+  LYRICS_BIND_ADDR="127.0.0.1:$API_PORT" LYRICS_COOKIE_SECURE=false LYRICS_DEV_MAILBOX_DIR="$MAILBOX" LYRICS_AUTH_RATE_PER_MIN=100000 \
+  LYRICS_REVALIDATE_URL="http://127.0.0.1:$WEB_PORT/api/revalidate" LYRICS_REVALIDATE_SECRET="e2e-revalidate-secret"
 ./target/debug/lyrics-api migrate
 ./target/debug/lyrics-api serve >"$LOGS/api.log" 2>&1 & PIDS+=($!)
 ./target/debug/lyrics-worker >"$LOGS/worker.log" 2>&1 & PIDS+=($!)
-(cd web && API_ORIGIN="http://127.0.0.1:$API_PORT" exec ./node_modules/.bin/next start -p "$WEB_PORT" -H 127.0.0.1 >"$LOGS/web.log" 2>&1) & PIDS+=($!)
+(cd web && API_ORIGIN="http://127.0.0.1:$API_PORT" SITE_URL="http://127.0.0.1:$WEB_PORT" REVALIDATE_SECRET="e2e-revalidate-secret" exec ./node_modules/.bin/next start -p "$WEB_PORT" -H 127.0.0.1 >"$LOGS/web.log" 2>&1) & PIDS+=($!)
 
 # Each probe must match content only our services return, so a foreign process on the port can't pass.
 wait_for() {

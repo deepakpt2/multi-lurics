@@ -16,6 +16,9 @@ RUN mkdir -p public && npm run build
 
 FROM node:20-alpine
 WORKDIR /app
+# The server renders public pages by calling the API itself, so it needs the origin at run time too.
+ARG API_ORIGIN=http://api:8787
+ENV API_ORIGIN=${API_ORIGIN}
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static

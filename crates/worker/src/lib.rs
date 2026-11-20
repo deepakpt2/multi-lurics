@@ -1,6 +1,8 @@
 //! Outbox consumer skeleton: lease due events, dispatch by topic, record outcome.
 //! Delivery is at-least-once; handlers must be idempotent.
 
+pub mod mail;
+
 use infrastructure::outbox::{self, OutboxEvent};
 use sqlx::PgPool;
 use std::path::PathBuf;
@@ -52,11 +54,74 @@ impl Handler for LogOnly {
     }
 }
 
-/// Keeps `search_documents` current: `search.reindex` events rebuild one entity from the source
-/// tables (idempotent, so redelivery is harmless); every other topic goes to `inner`.
+/// Tells the web app which cached pages are stale. Plain HTTP on the internal network.
+#[derive(Clone)]
+pub struct Revalidate {
+    pub url: String,
+    pub secret: String,
+}
+
+impl Revalidate {
+    pub async fn tags(&self, tags: &[String]) -> anyhow::Result<()> {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let rest = self
+            .url
+            .strip_prefix("http://")
+            .ok_or_else(|| anyhow::anyhow!("revalidate url must be http://"))?;
+        let (host, path) = rest
+            .split_once('/')
+            .map_or((rest, "/".to_owned()), |(h, p)| (h, format!("/{p}")));
+        let addr = if host.contains(':') {
+            host.to_owned()
+        } else {
+            format!("{host}:80")
+        };
+        let body = serde_json::json!({ "tags": tags }).to_string();
+        let request = format!(
+            "POST {path} HTTP/1.1\r\nHost: {host}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nx-revalidate-secret: {}\r\nConnection: close\r\n\r\n{body}",
+            body.len(),
+            self.secret
+        );
+        let io = async {
+            let mut stream = tokio::net::TcpStream::connect(&addr).await?;
+            stream.write_all(request.as_bytes()).await?;
+            let mut head = Vec::new();
+            stream.take(4096).read_to_end(&mut head).await?;
+            anyhow::Ok(head)
+        };
+        let head = tokio::time::timeout(std::time::Duration::from_secs(5), io).await??;
+        let status = String::from_utf8_lossy(&head);
+        let code = status.split_whitespace().nth(1).unwrap_or("");
+        anyhow::ensure!(code.starts_with('2'), "revalidate answered {code}");
+        Ok(())
+    }
+}
+
+/// Cache tags that identify every page address of an entity: one per slug it ever had, per locale
+/// (a visitor may ask for any slug under any locale), plus the entity and the sitemap.
+pub fn page_tags(
+    locales: &[String],
+    entity_type: &str,
+    id: uuid::Uuid,
+    slugs: &[infrastructure::seo::SlugRow],
+) -> Vec<String> {
+    let scope = infrastructure::seo::scope_of(entity_type);
+    let mut tags = vec![format!("entity:{id}"), "sitemap".to_owned()];
+    for s in slugs {
+        for l in locales {
+            tags.push(format!("slug:{scope}:{l}:{}", s.slug));
+        }
+    }
+    tags
+}
+
+/// Keeps the public read models current: `search.reindex` events rebuild one entity's search
+/// documents and its URL slugs from the source tables (idempotent, so redelivery is harmless),
+/// then drop the cached pages that depend on it. Every other topic goes to `inner`.
 pub struct SearchIndexer<H> {
     pub pool: PgPool,
     pub inner: H,
+    pub revalidate: Option<Revalidate>,
 }
 
 #[async_trait::async_trait]
@@ -71,8 +136,21 @@ impl<H: Handler> Handler for SearchIndexer<H> {
         ) {
             anyhow::bail!("cannot index aggregate type '{}'", e.aggregate_type);
         }
-        let mut conn = self.pool.acquire().await?;
-        infrastructure::search::reindex(&mut conn, &e.aggregate_type, e.aggregate_id).await?;
+        let mut tx = self.pool.begin().await?;
+        infrastructure::search::reindex(&mut tx, &e.aggregate_type, e.aggregate_id).await?;
+        let pages = matches!(e.aggregate_type.as_str(), "composition" | "recording" | "artist");
+        let slugs = if pages {
+            infrastructure::seo::sync(&mut tx, &e.aggregate_type, e.aggregate_id).await?
+        } else {
+            Vec::new()
+        };
+        let cfg = infrastructure::seo::load_config(&mut tx).await?;
+        tx.commit().await?;
+        // After the commit: a page re-rendered now sees the new state. A failure retries the event.
+        if let (Some(r), true) = (&self.revalidate, pages) {
+            r.tags(&page_tags(&cfg.locales, &e.aggregate_type, e.aggregate_id, &slugs))
+                .await?;
+        }
         Ok(())
     }
 }

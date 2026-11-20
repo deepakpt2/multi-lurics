@@ -13,6 +13,23 @@ pub struct Config {
     pub dev_mailbox_dir: Option<String>,
     /// Requests per minute per client for typeahead endpoints.
     pub search_rate_per_min: u32,
+    /// Requests per minute per client for login, registration and password reset.
+    pub auth_rate_per_min: u32,
+    /// Bearer token for `/metrics`; the endpoint answers 404 when unset.
+    pub metrics_token: Option<String>,
+    /// Outbound mail for the worker: `smtp://host:25` or `smtps://user:pass@host:465`, and the From address.
+    pub smtp_url: Option<String>,
+    pub mail_from: Option<String>,
+    /// Where the worker tells the web app to drop cached pages (`http://web:3000/api/revalidate`), and the shared secret.
+    pub revalidate_url: Option<String>,
+    pub revalidate_secret: Option<String>,
+    /// First administrator, created (or promoted) at API start-up. Both or neither.
+    pub admin_email: Option<String>,
+    pub admin_password: Option<String>,
+    pub admin_display_name: String,
+    /// Google sign-in (OpenID Connect). Both or neither; the feature is off when unset.
+    pub google_client_id: Option<String>,
+    pub google_client_secret: Option<String>,
 }
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -103,6 +120,62 @@ impl Config {
             errs.push("LYRICS_SEARCH_RATE_PER_MIN must be at least 1".into());
         }
 
+        let auth_rate_per_min: u32 = parse_or(
+            &mut errs,
+            get("LYRICS_AUTH_RATE_PER_MIN"),
+            "LYRICS_AUTH_RATE_PER_MIN",
+            "20",
+        )
+        .unwrap_or(0);
+        if auth_rate_per_min == 0 {
+            errs.push("LYRICS_AUTH_RATE_PER_MIN must be at least 1".into());
+        }
+        let metrics_token = get("LYRICS_METRICS_TOKEN").filter(|t| !t.is_empty());
+        if metrics_token.as_ref().is_some_and(|t| t.len() < 16) {
+            errs.push("LYRICS_METRICS_TOKEN must be at least 16 characters".into());
+        }
+
+        let smtp_url = get("LYRICS_SMTP_URL").filter(|v| !v.is_empty());
+        let mail_from = get("LYRICS_MAIL_FROM").filter(|v| !v.is_empty());
+        match (&smtp_url, &mail_from) {
+            (Some(u), Some(_)) if !(u.starts_with("smtp://") || u.starts_with("smtps://")) => {
+                errs.push("LYRICS_SMTP_URL must start with smtp:// or smtps://".into());
+            }
+            (Some(_), None) | (None, Some(_)) => {
+                errs.push("LYRICS_SMTP_URL and LYRICS_MAIL_FROM must be set together".into());
+            }
+            _ => {}
+        }
+
+        let revalidate_url = get("LYRICS_REVALIDATE_URL");
+        let revalidate_secret = get("LYRICS_REVALIDATE_SECRET");
+        match (&revalidate_url, &revalidate_secret) {
+            (None, None) => {}
+            (Some(u), Some(sec)) => {
+                if !u.starts_with("http://") {
+                    errs.push("LYRICS_REVALIDATE_URL must be an http:// URL on the internal network".into());
+                }
+                if sec.len() < 16 {
+                    errs.push("LYRICS_REVALIDATE_SECRET must be at least 16 characters".into());
+                }
+            }
+            _ => errs.push("LYRICS_REVALIDATE_URL and LYRICS_REVALIDATE_SECRET must be set together".into()),
+        }
+
+        let admin_email = get("LYRICS_ADMIN_EMAIL").filter(|v| !v.trim().is_empty());
+        let admin_password = get("LYRICS_ADMIN_PASSWORD").filter(|v| !v.is_empty());
+        if admin_email.is_some() != admin_password.is_some() {
+            errs.push("LYRICS_ADMIN_EMAIL and LYRICS_ADMIN_PASSWORD must be set together".into());
+        }
+        let admin_display_name = get("LYRICS_ADMIN_NAME")
+            .filter(|v| !v.trim().is_empty())
+            .unwrap_or_else(|| "Administrator".into());
+        let google_client_id = get("LYRICS_GOOGLE_CLIENT_ID").filter(|v| !v.trim().is_empty());
+        let google_client_secret = get("LYRICS_GOOGLE_CLIENT_SECRET").filter(|v| !v.trim().is_empty());
+        if google_client_id.is_some() != google_client_secret.is_some() {
+            errs.push("LYRICS_GOOGLE_CLIENT_ID and LYRICS_GOOGLE_CLIENT_SECRET must be set together".into());
+        }
+
         if !errs.is_empty() {
             return Err(ConfigError(errs));
         }
@@ -115,6 +188,17 @@ impl Config {
             db_max_connections,
             dev_mailbox_dir: get("LYRICS_DEV_MAILBOX_DIR"),
             search_rate_per_min,
+            auth_rate_per_min,
+            metrics_token,
+            smtp_url,
+            mail_from,
+            revalidate_url,
+            revalidate_secret,
+            admin_email,
+            admin_password,
+            admin_display_name,
+            google_client_id,
+            google_client_secret,
         })
     }
 }
@@ -194,5 +278,30 @@ mod tests {
         ])
         .unwrap_err();
         assert_eq!(errs.len(), 2, "{errs:?}");
+    }
+
+    #[test]
+    fn admin_and_google_settings_must_be_complete_pairs() {
+        let mut base = vec![
+            ("LYRICS_DATABASE_URL", "postgres://u:p@localhost/lyrics_dev"),
+            ("LYRICS_APP_BASE_URL", "http://localhost:3000"),
+        ];
+        assert!(cfg(&base).unwrap().admin_email.is_none());
+        base.push(("LYRICS_ADMIN_EMAIL", "a@b.co"));
+        assert!(cfg(&base)
+            .unwrap_err()
+            .0
+            .iter()
+            .any(|e| e.contains("LYRICS_ADMIN_EMAIL and LYRICS_ADMIN_PASSWORD")));
+        base.push(("LYRICS_ADMIN_PASSWORD", "x"));
+        assert_eq!(cfg(&base).unwrap().admin_display_name, "Administrator");
+        base.push(("LYRICS_GOOGLE_CLIENT_ID", "id"));
+        assert!(cfg(&base)
+            .unwrap_err()
+            .0
+            .iter()
+            .any(|e| e.contains("LYRICS_GOOGLE_CLIENT_ID and")));
+        base.push(("LYRICS_GOOGLE_CLIENT_SECRET", "s"));
+        assert!(cfg(&base).unwrap().google_client_id.is_some());
     }
 }

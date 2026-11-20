@@ -7,8 +7,12 @@ publish.workspace = true
 
 [dependencies]
 serde.workspace = true
+unicode-normalization = "0.1"
 thiserror.workspace = true
 uuid.workspace = true
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

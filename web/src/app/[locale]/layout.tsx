@@ -4,6 +4,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { dirFor, routing } from "@/i18n/routing";
 import { LocaleSync } from "@/components/locale-sync";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import "../globals.css";
 
@@ -36,6 +37,7 @@ export default async function LocaleLayout({
           <main id="main" className="container">
             {children}
           </main>
+          <SiteFooter />
         </NextIntlClientProvider>
       </body>
     </html>

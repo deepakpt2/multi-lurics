@@ -1,7 +1,8 @@
 use infrastructure::{db, Config};
 use std::time::Duration;
 use tracing_subscriber::EnvFilter;
-use worker::{DevMailbox, Handler, LogOnly, SearchIndexer};
+use worker::mail::Smtp as Mailer;
+use worker::{DevMailbox, Handler, LogOnly, Revalidate, SearchIndexer};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -19,14 +20,27 @@ async fn main() -> anyhow::Result<()> {
         }
     };
     let pool = db::connect(&config.database_url, 2).await?;
-    let handler: Box<dyn Handler> = match &config.dev_mailbox_dir {
-        Some(dir) => Box::new(DevMailbox { dir: dir.into() }),
-        None => Box::new(LogOnly),
+    // Real delivery when SMTP is configured, the file sink for development, otherwise log only.
+    let handler: Box<dyn Handler> = match (&config.smtp_url, &config.mail_from, &config.dev_mailbox_dir) {
+        (Some(url), Some(from), _) => Box::new(Mailer::new(url, from)?),
+        (_, _, Some(dir)) => Box::new(DevMailbox { dir: dir.into() }),
+        _ => {
+            tracing::warn!("no SMTP configured: emails are acknowledged but not delivered");
+            Box::new(LogOnly)
+        }
     };
 
+    let revalidate = match (&config.revalidate_url, &config.revalidate_secret) {
+        (Some(url), Some(secret)) => Some(Revalidate {
+            url: url.clone(),
+            secret: secret.clone(),
+        }),
+        _ => None,
+    };
     let handler = SearchIndexer {
         pool: pool.clone(),
         inner: handler,
+        revalidate,
     };
     loop {
         let n = worker::run_once(&pool, &handler).await?;

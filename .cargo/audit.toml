@@ -1,0 +1,8 @@
+# Advisories reviewed and accepted. Each entry says why it cannot affect a running binary.
+[advisories]
+ignore = [
+  # rsa (via sqlx-mysql) and libsqlite3-sys (via sqlx-sqlite) are in Cargo.lock only because sqlx-macros
+  # resolves every driver. `cargo tree -i <crate>` shows neither is compiled into any of our binaries.
+  "RUSTSEC-2023-0071",
+  "RUSTSEC-2026-0459",
+]

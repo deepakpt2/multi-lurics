@@ -49,6 +49,114 @@ pub async fn insert_user(
     .await
 }
 
+/// A user created through a verified external identity: active from the start.
+pub async fn insert_active_user(
+    conn: &mut PgConnection,
+    email: &str,
+    display_name: &str,
+    password_hash: &str,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    sqlx::query_scalar(
+        "INSERT INTO users (email, display_name, password_hash, status, email_verified_at)
+         VALUES ($1, $2, $3, 'active', now()) ON CONFLICT (email) DO NOTHING RETURNING id",
+    )
+    .bind(email)
+    .bind(display_name)
+    .bind(password_hash)
+    .fetch_optional(conn)
+    .await
+}
+
+pub async fn find_external_identity(
+    conn: &mut PgConnection,
+    provider: &str,
+    subject: &str,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    sqlx::query_scalar("SELECT user_id FROM external_identities WHERE provider = $1 AND subject = $2")
+        .bind(provider)
+        .bind(subject)
+        .fetch_optional(conn)
+        .await
+}
+
+pub async fn insert_external_identity(
+    conn: &mut PgConnection,
+    user_id: Uuid,
+    provider: &str,
+    subject: &str,
+    email: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("INSERT INTO external_identities (user_id, provider, subject, email) VALUES ($1, $2, $3, $4)")
+        .bind(user_id)
+        .bind(provider)
+        .bind(subject)
+        .bind(email)
+        .execute(conn)
+        .await?;
+    Ok(())
+}
+
+pub struct OauthState {
+    pub code_verifier: String,
+    pub nonce: String,
+    pub locale: String,
+}
+
+pub async fn insert_oauth_state(
+    conn: &mut PgConnection,
+    state_hash: &[u8; 32],
+    code_verifier: &str,
+    nonce: &str,
+    locale: &str,
+    ttl_minutes: i32,
+) -> Result<(), sqlx::Error> {
+    // Opportunistic cleanup keeps the table small without a scheduled job.
+    sqlx::query("DELETE FROM oauth_states WHERE expires_at < now()")
+        .execute(&mut *conn)
+        .await?;
+    sqlx::query(
+        "INSERT INTO oauth_states (state_hash, code_verifier, nonce, locale, expires_at)
+         VALUES ($1, $2, $3, $4, now() + make_interval(mins => $5))",
+    )
+    .bind(&state_hash[..])
+    .bind(code_verifier)
+    .bind(nonce)
+    .bind(locale)
+    .bind(ttl_minutes)
+    .execute(conn)
+    .await?;
+    Ok(())
+}
+
+/// Single use: the row is gone after the first successful call.
+pub async fn consume_oauth_state(
+    conn: &mut PgConnection,
+    state_hash: &[u8; 32],
+) -> Result<Option<OauthState>, sqlx::Error> {
+    let row: Option<(String, String, String)> = sqlx::query_as(
+        "DELETE FROM oauth_states WHERE state_hash = $1 AND expires_at > now()
+         RETURNING code_verifier, nonce, locale",
+    )
+    .bind(&state_hash[..])
+    .fetch_optional(conn)
+    .await?;
+    Ok(row.map(|(code_verifier, nonce, locale)| OauthState {
+        code_verifier,
+        nonce,
+        locale,
+    }))
+}
+
+/// Drops every outstanding single-use token for a user (used when an unverified registration is
+/// taken over by the verified owner of the address).
+pub async fn delete_user_tokens(conn: &mut PgConnection, user_id: Uuid) -> Result<u64, sqlx::Error> {
+    Ok(sqlx::query("DELETE FROM account_tokens WHERE user_id = $1")
+        .bind(user_id)
+        .execute(conn)
+        .await?
+        .rows_affected())
+}
+
 pub async fn activate_user(conn: &mut PgConnection, id: Uuid) -> Result<bool, sqlx::Error> {
     let r = sqlx::query(
         "UPDATE users SET status = 'active', email_verified_at = now(), updated_at = now()

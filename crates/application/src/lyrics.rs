@@ -238,6 +238,7 @@ async fn publish_head(
         ),
     )
     .await?;
+    crate::community::award_published(conn, c.created_by, c.id).await?;
     outbox::enqueue(
         conn,
         "lyrics.published",

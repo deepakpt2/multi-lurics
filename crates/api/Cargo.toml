@@ -34,7 +34,9 @@ uuid.workspace = true
 http-body-util.workspace = true
 tower.workspace = true
 worker = { path = "../worker" }
+unicode-normalization = "0.1"
 async-trait.workspace = true
+url.workspace = true
 
 [lints]
 workspace = true

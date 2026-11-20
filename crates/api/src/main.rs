@@ -49,6 +49,11 @@ async fn main() -> anyhow::Result<()> {
 
     let addr = config.bind_addr;
     let app = App::new(pool, Arc::new(config));
+    if matches!(db::migration_state(&app.pool).await?, MigrationState::UpToDate { .. }) {
+        application::oauth::bootstrap_admin(&app)
+            .await
+            .map_err(|e| anyhow::anyhow!("first-admin bootstrap failed: {e}"))?;
+    }
     let listener = tokio::net::TcpListener::bind(addr).await?;
     tracing::info!(%addr, "listening");
     axum::serve(listener, api::router(app))

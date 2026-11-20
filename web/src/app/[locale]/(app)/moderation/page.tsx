@@ -6,6 +6,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("localization");
+  const tc = await getTranslations("community");
+  const tl = await getTranslations("legal");
   return (
     <>
       <h1>{t("queueTitle")}</h1>
@@ -13,6 +15,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <Link href="/moderation/lyrics">{t("lyricsQueueLink")}</Link>
         {" "}
         <Link href="/moderation/entities">{t("proposalsQueueLink")}</Link>
+        {" "}
+        <Link href="/moderation/community">{tc("reportsTitle")}</Link>
+        {" "}
+        <Link href="/moderation/legal">{tl("queueTitle")}</Link>
       </p>
       <ModerationQueue />
     </>

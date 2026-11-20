@@ -16,7 +16,15 @@
     "artists": "Artists",
     "albums": "Albums",
     "moderation": "Moderation",
-    "myLyrics": "My lyrics"
+    "myLyrics": "My lyrics",
+    "compare": "Compare",
+    "myComments": "My comments",
+    "legal": "Legal",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "contentPolicy": "Content policy",
+    "copyright": "Copyright and takedown",
+    "moderationLegal": "Legal notices"
   },
   "localeNames": {
     "en": "English",
@@ -56,7 +64,12 @@
     "alias": "Alias",
     "body": "Lyrics",
     "note": "Note",
-    "type": "Type"
+    "type": "Type",
+    "contact_name": "Your name",
+    "contact_email": "Your email",
+    "statement": "Statement",
+    "contribution_id": "Contribution ID",
+    "good_faith": "Confirmation"
   },
   "hints": {
     "password": "At least {min} characters.",
@@ -111,7 +124,9 @@
     "no_letters": "Enter a name with at least one letter or digit.",
     "not_applicable": "This does not apply to this type.",
     "same_entity": "Choose two different records.",
-    "unknown_entity": "This record does not exist."
+    "unknown_entity": "This record does not exist.",
+    "must_accept": "You must confirm this to continue.",
+    "no_target": "This notice is not about a specific contribution."
   },
   "errors": {
     "title": "Something went wrong",
@@ -152,7 +167,17 @@
     "kind_mismatch": "These records are of different kinds, so they are not merged.",
     "track_conflict": "These albums list different tracks in the same places, so they are not merged.",
     "rate_limited": "You are searching too quickly. Please wait a moment and try again.",
-    "cursor_requires_type": "Choose a result type to page through it."
+    "cursor_requires_type": "Choose a result type to page through it.",
+    "rate_limited_wait": "You are doing that too often. Try again in {seconds, plural, one {# second} other {# seconds}}.",
+    "reputation_too_low": "You need a little more standing in the community before you can do this.",
+    "own_decision": "A different moderator must review this.",
+    "already_resolved": "Someone already decided this.",
+    "report_exists": "You already reported this.",
+    "appeal_pending": "An appeal is already open.",
+    "nothing_to_appeal": "There is nothing to appeal.",
+    "comment_not_visible": "This comment is already hidden.",
+    "slow_down": "You are doing that too often. Please wait a moment.",
+    "not_published": "This contribution is not published, so there is nothing to take down."
   },
   "conflict": {
     "title": "Someone else changed this",
@@ -513,6 +538,244 @@
       "artists": "Artists",
       "albums": "Albums",
       "contributors": "Writers and translators"
+    }
+  },
+  "public": {
+    "title": {
+      "song": "{name} lyrics",
+      "recording": "{name} lyrics",
+      "artist": "{name}: songs and lyrics"
+    },
+    "description": {
+      "song": "Lyrics, translations and credits for {name}.",
+      "recording": "Lyrics and credits for the recording {name}.",
+      "artist": "Songs, recordings and lyrics by {name}."
+    },
+    "credits": "Credits",
+    "songs": "Songs",
+    "recordings": "Recordings",
+    "lyrics": "Lyrics",
+    "lyricsLabel": "{type} lyrics",
+    "recordingOf": "Recording of",
+    "otherLanguages": "Other languages",
+    "localeNames": {
+      "en": "English",
+      "ar": "العربية"
+    }
+  },
+  "compare": {
+    "title": "Compare lyrics",
+    "intro": "Put up to four published versions side by side: an original, a translation, a transliteration, or an approved alternative. The link holds only which versions you chose.",
+    "panels": "Panels",
+    "panelN": "Panel {n}",
+    "recording": "Find a recording",
+    "recordingChosen": "Recording:",
+    "noPublished": "This recording has no published lyrics yet.",
+    "type": "Type",
+    "language": "Language",
+    "script": "Script",
+    "version": "Version",
+    "any": "Any",
+    "chooseVersion": "Choose one of {count}",
+    "primary": "Primary",
+    "alternative": "Alternative {n}",
+    "alternativeShort": "Alternative",
+    "cancel": "Cancel",
+    "change": "Change",
+    "remove": "Remove",
+    "addPanel": "Add a panel",
+    "copyLink": "Copy link",
+    "copied": "Link copied.",
+    "save": "Save comparison",
+    "saved": "Saved. It always shows the current published text.",
+    "name": "Name",
+    "maxPanels": "At most {max} panels.",
+    "unavailable": "This version is no longer available."
+  },
+  "community": {
+    "rating": "Rating",
+    "rateN": "Rate {n} out of 5",
+    "ratingSummary": "{avg} average from {count, plural, one {# rating} other {# ratings}}",
+    "noRatings": "No ratings yet",
+    "reactions": "Reactions",
+    "reaction": {
+      "like": "Like",
+      "moving": "Moving",
+      "insightful": "Insightful"
+    },
+    "bookmark": "Bookmark",
+    "bookmarked": "Bookmarked",
+    "comments": "Comments",
+    "noComments": "No comments yet.",
+    "addComment": "Add a comment",
+    "post": "Post",
+    "more": "Load more",
+    "report": "Report",
+    "reason": "Reason",
+    "reportDetail": "Details (optional)",
+    "sendReport": "Send report",
+    "cancel": "Cancel",
+    "reportSent": "Thank you. A moderator will review this.",
+    "reasons": {
+      "spam": "Spam",
+      "abuse": "Abuse",
+      "copyright": "Copyright",
+      "inaccurate": "Inaccurate",
+      "other": "Other"
+    },
+    "codes": {
+      "too_many_links": "This looks like spam: too many links.",
+      "blocked_term": "This contains a word that is not allowed here.",
+      "repeated_characters": "Too many repeated characters.",
+      "duplicate_content": "You already posted this.",
+      "too_long": "This is too long.",
+      "required": "Please write something.",
+      "self_rating": "You cannot rate your own work.",
+      "own_content": "You cannot report your own content.",
+      "out_of_range": "This value is out of range.",
+      "not_published": "Only published versions can be used.",
+      "invalid_characters": "This contains characters that are not allowed."
+    },
+    "levels": {
+      "newcomer": "Newcomer",
+      "regular": "Regular",
+      "trusted": "Trusted"
+    },
+    "roles": {
+      "moderator": "Moderator",
+      "admin": "Administrator"
+    },
+    "reputation": "Reputation",
+    "published": "Published lyrics",
+    "commentsCount": "Comments",
+    "joined": "Joined",
+    "myComments": "My comments",
+    "hiddenNotice": "A moderator hid this comment.",
+    "appeal": "Appeal",
+    "appealMessage": "Why should it be restored?",
+    "appealSent": "Appeal sent.",
+    "reportsTitle": "Reports",
+    "appealsTitle": "Appeals",
+    "noReports": "No open reports.",
+    "noAppeals": "No open appeals.",
+    "targets": {
+      "contribution": "Lyrics",
+      "comment": "Comment"
+    },
+    "open": "Open",
+    "moderatorNote": "Note",
+    "uphold": "Uphold",
+    "upholdHide": "Uphold and hide comment",
+    "dismiss": "Dismiss",
+    "restore": "Restore comment",
+    "deny": "Deny"
+  },
+  "legal": {
+    "docs": {
+      "terms": {
+        "title": "Terms of use",
+        "sections": [
+          {
+            "h": "Your contributions",
+            "p": "You keep the rights you have in what you submit. By submitting you confirm you may share it, and you grant this site permission to publish it, keep its revision history and show it alongside other versions."
+          },
+          {
+            "h": "What we publish",
+            "p": "Contributions are reviewed before they are public. Published lyrics may be shown in several versions side by side; no version is merged into another without a visible record."
+          },
+          {
+            "h": "Acceptable use",
+            "p": "Do not submit work you do not have the right to share, do not harass others, and do not abuse the service. Accounts that do may be limited or removed."
+          },
+          {
+            "h": "Takedown and appeal",
+            "p": "Rights holders can send a notice. Contributors may appeal a takedown. Both processes are described on the copyright page."
+          }
+        ]
+      },
+      "privacy": {
+        "title": "Privacy",
+        "sections": [
+          {
+            "h": "What we keep",
+            "p": "Your account email and display name, the contributions and comments you write, and an audit record of consequential actions. Pending and private content is never shown publicly."
+          },
+          {
+            "h": "Notices",
+            "p": "If you file a legal notice, your name and email are visible only to the moderators and administrators who handle it."
+          },
+          {
+            "h": "Your rights",
+            "p": "You can ask for a copy of your data or for its erasure by filing a privacy request on the copyright page. Published contributions may need to be kept or anonymised to preserve revision history."
+          },
+          {
+            "h": "Cookies",
+            "p": "One session cookie, needed to keep you signed in. No advertising or tracking cookies."
+          }
+        ]
+      },
+      "content-policy": {
+        "title": "Content policy",
+        "sections": [
+          {
+            "h": "Allowed",
+            "p": "Original lyrics you wrote, translations and transliterations you made, and lyrics you have permission to share."
+          },
+          {
+            "h": "Not allowed",
+            "p": "Lyrics copied without permission, spam, harassment, hate speech, and personal data about other people."
+          },
+          {
+            "h": "Reporting",
+            "p": "Use the report button on any contribution or comment. Moderators review reports; the author of a hidden comment may appeal."
+          }
+        ]
+      }
+    },
+    "draftNotice": "This text is a working draft and has not been reviewed by a lawyer.",
+    "noticeTitle": "Copyright, takedown and privacy requests",
+    "noticeIntro": "Use this form to report a copyright concern, ask for a contribution to be removed, or make a privacy request. We review every notice. Your name and email are only seen by the staff handling it.",
+    "kind": "Type of request",
+    "kinds": {
+      "copyright": "Copyright complaint",
+      "content": "Other content complaint",
+      "privacy": "Privacy request"
+    },
+    "send": "Send notice",
+    "sending": "Sending…",
+    "receiptTitle": "Notice received",
+    "receipt": "Your reference is {reference}. Quote it if you write to us again.",
+    "goodFaith": "I confirm in good faith that what I have written here is accurate.",
+    "contributionHint": "Open the contribution and copy its ID from the address bar.",
+    "queueTitle": "Legal notices",
+    "noNotices": "No notices in this state.",
+    "from": "From {name} <{email}>",
+    "takedown": "Take down",
+    "reject": "Reject",
+    "close": "Close without action",
+    "note": "Decision note",
+    "statuses": {
+      "open": "Open",
+      "taken_down": "Taken down",
+      "rejected": "Rejected",
+      "closed": "Closed",
+      "reinstated": "Reinstated"
+    },
+    "kindsShort": {
+      "copyright": "Copyright",
+      "content": "Content",
+      "privacy": "Privacy"
+    },
+    "open": "Open contribution",
+    "decided": "Decision recorded."
+  },
+  "google": {
+    "continue": "Continue with Google",
+    "errors": {
+      "google_failed": "Google sign-in did not complete. Please try again.",
+      "google_denied": "Google sign-in was cancelled.",
+      "google_disabled": "This account is disabled.",
+      "google_email_unverified": "Google could not confirm that email address, so we cannot sign you in with it."
     }
   }
 }

@@ -16,7 +16,15 @@ use uuid::Uuid;
 pub const PASSWORD: &str = "correct horse battery staple";
 
 pub fn app(pool: PgPool) -> App {
-    let config = Config {
+    app_with(pool, |_| {})
+}
+
+pub fn router_with(pool: &PgPool, tweak: impl FnOnce(&mut Config)) -> Router {
+    api::router(app_with(pool.clone(), tweak))
+}
+
+pub fn app_with(pool: PgPool, tweak: impl FnOnce(&mut Config)) -> App {
+    let mut config = Config {
         database_url: "postgres://unused/lyrics_test".into(),
         bind_addr: "127.0.0.1:0".parse().unwrap(),
         app_base_url: "http://localhost:3000/".parse().unwrap(),
@@ -25,7 +33,19 @@ pub fn app(pool: PgPool) -> App {
         db_max_connections: 5,
         dev_mailbox_dir: None,
         search_rate_per_min: 600,
+        auth_rate_per_min: 100_000,
+        metrics_token: Some("test-metrics-token-0123".into()),
+        smtp_url: None,
+        mail_from: None,
+        revalidate_url: None,
+        revalidate_secret: None,
+        admin_email: None,
+        admin_password: None,
+        admin_display_name: "Administrator".into(),
+        google_client_id: None,
+        google_client_secret: None,
     };
+    tweak(&mut config);
     App::new(pool, Arc::new(config))
 }
 
@@ -89,7 +109,7 @@ pub async fn raw(r: &Router, req: Request<Body>) -> Res {
     let body = if bytes.is_empty() {
         Value::Null
     } else {
-        serde_json::from_slice(&bytes).unwrap()
+        serde_json::from_slice(&bytes).unwrap_or_else(|_| Value::String(String::from_utf8_lossy(&bytes).into_owned()))
     };
     Res { status, headers, body }
 }

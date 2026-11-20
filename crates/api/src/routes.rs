@@ -165,7 +165,7 @@ pub async fn readyz(State(app): State<App>) -> Response {
 
 // ---------- auth ----------
 
-fn session_cookie(app: &App, value: String, max_age_hours: i64) -> Cookie<'static> {
+pub(crate) fn session_cookie(app: &App, value: String, max_age_hours: i64) -> Cookie<'static> {
     Cookie::build((SESSION_COOKIE, value))
         .path("/")
         .http_only(true)

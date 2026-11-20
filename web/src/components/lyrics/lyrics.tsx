@@ -1,5 +1,6 @@
 "use client";
 
+import { CommunitySection } from "../community/community";
 import { useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { api, call } from "@/api/client";
@@ -297,6 +298,7 @@ export function ContributionDetail({ id }: { id: string }) {
             ) : (
               <p className="muted">{t("noPublished")}</p>
             )}
+            {c.published && <CommunitySection contributionId={c.id} />}
             {c.has_unpublished_changes && c.head && (
               <section className="alert alert-warning" data-state="pending-changes">
                 <h2>{t("latestRevision")}</h2>

@@ -173,10 +173,22 @@ pub async fn login(app: &App, meta: &RequestMeta, input: LoginInput) -> Result<N
         _ => return Err(AppError::Forbidden),
     }
 
-    let (token, token_hash) = security::new_token();
     let mut tx = AppTx::begin(&app.pool).await?;
+    let session = start_session(&mut tx, app, meta, user).await?;
+    tx.commit().await?;
+    Ok(session)
+}
+
+/// Issues a session inside the caller's transaction and audits it. Shared by every sign-in method.
+pub(crate) async fn start_session(
+    tx: &mut AppTx,
+    app: &App,
+    meta: &RequestMeta,
+    user: repo::UserRow,
+) -> Result<NewSession, AppError> {
+    let (token, token_hash) = security::new_token();
     let session_id = repo::insert_session(
-        &mut tx,
+        tx,
         user.id,
         &token_hash,
         app.config.session_ttl_hours,
@@ -184,7 +196,7 @@ pub async fn login(app: &App, meta: &RequestMeta, input: LoginInput) -> Result<N
     )
     .await?;
     audit::record(
-        &mut tx,
+        tx,
         AuditEntry {
             actor_id: Some(user.id),
             request_id: meta.request_id.as_deref(),
@@ -193,8 +205,7 @@ pub async fn login(app: &App, meta: &RequestMeta, input: LoginInput) -> Result<N
         },
     )
     .await?;
-    let roles = repo::roles(&mut tx, user.id).await?;
-    tx.commit().await?;
+    let roles = repo::roles(tx, user.id).await?;
     Ok(NewSession {
         token,
         user: UserView {

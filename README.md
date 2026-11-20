@@ -49,5 +49,5 @@ git pull && docker compose -f deploy/docker-compose.yml up -d --build
 All per-server values live in `deploy/.env` (gitignored); `docker-compose.yml` never needs editing.
 Until SMTP exists, verification/reset emails are written to the `mailbox` volume:
 `docker compose -f deploy/docker-compose.yml exec worker sh -c 'cat /data/mailbox/*.json'`.
-To make the first admin:
-`docker compose -f deploy/docker-compose.yml exec db psql -U lyrics -d lyrics_prod -c "INSERT INTO user_roles (user_id, role) SELECT id, 'admin' FROM users WHERE email = 'you@example.com'"`.
+The first admin is created from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `deploy/.env` when the API starts (an existing account with that email is promoted and keeps its password).
+Google sign-in is enabled by `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`; register `<APP_PUBLIC_URL>/api/v1/auth/google/callback` as the redirect URI.

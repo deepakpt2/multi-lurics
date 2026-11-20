@@ -1,24 +1,31 @@
 //! HTTP adapter: routing, extractors, problem+json, OpenAPI. No business rules here.
 
 pub mod catalogue;
+pub mod community;
 pub mod entities;
 pub mod extract;
+pub mod legal;
 pub mod localization;
 pub mod lyrics;
+pub mod metrics;
 pub mod middleware;
+pub mod oauth;
 pub mod problem;
 pub mod ratelimit;
 pub mod routes;
 pub mod search;
+pub mod seo;
 
 use application::App;
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use catalogue as cat;
+use community as com;
 use entities as ent;
 use localization as loc;
 use lyrics as lyr;
 use search as srch;
+use seo as seo_api;
 use tower_http::trace::TraceLayer;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
 use utoipa::{Modify, OpenApi};
@@ -30,6 +37,7 @@ use utoipa::{Modify, OpenApi};
         routes::healthz, routes::readyz,
         routes::register, routes::verify_email, routes::login, routes::logout,
         routes::request_password_reset, routes::confirm_password_reset,
+        oauth::providers, oauth::google_start, oauth::google_callback,
         routes::me, routes::list_audit_events,
         catalogue::list_artists, catalogue::create_artist, catalogue::get_artist, catalogue::update_artist,
         catalogue::list_compositions, catalogue::create_composition, catalogue::get_composition,
@@ -48,6 +56,18 @@ use utoipa::{Modify, OpenApi};
         ent::suggest, ent::create_proposal, ent::proposal_queue, ent::approve_proposal, ent::reject_proposal,
         ent::merge_entities,
         srch::search, srch::suggest, srch::suggestion_accepted, srch::metrics,
+        seo_api::get_page, seo_api::sitemap,
+        com::resolve, com::save_comparison, com::list_saved, com::get_saved, com::delete_saved,
+        com::engagement, com::put_rating, com::delete_rating, com::put_reaction, com::delete_reaction,
+        com::put_bookmark, com::delete_bookmark, com::my_bookmarks,
+        com::list_comments, com::my_comments, com::create_comment, com::edit_comment, com::remove_comment,
+        com::get_profile, com::put_profile, com::my_reputation,
+        com::create_report, com::report_queue, com::resolve_report, com::hide_comment,
+        com::create_note, com::list_notes,
+        com::create_appeal, com::my_appeals, com::appeal_queue, com::decide_appeal,
+        com::get_settings, com::put_settings,
+        legal::file_legal_notice, legal::legal_notice_queue, legal::decide_legal_notice, legal::file_takedown_appeal,
+        legal::takedown_appeal_queue, legal::decide_takedown_appeal,
     ),
     modifiers(&SessionCookie),
 )]
@@ -92,6 +112,67 @@ pub fn router(app: App) -> Router {
         )
         .layer(axum::middleware::from_fn(middleware::no_store));
 
+    // Comparison and community: caller-specific or must reflect unpublishing at once.
+    let community = Router::new()
+        .route("/comparisons/resolve", get(com::resolve))
+        .route("/me/comparisons", get(com::list_saved).post(com::save_comparison))
+        .route("/me/comparisons/{id}", get(com::get_saved).delete(com::delete_saved))
+        .route("/contributions/{id}/engagement", get(com::engagement))
+        .route(
+            "/contributions/{id}/rating",
+            axum::routing::put(com::put_rating).delete(com::delete_rating),
+        )
+        .route(
+            "/contributions/{id}/reactions/{kind}",
+            axum::routing::put(com::put_reaction).delete(com::delete_reaction),
+        )
+        .route(
+            "/contributions/{id}/bookmark",
+            axum::routing::put(com::put_bookmark).delete(com::delete_bookmark),
+        )
+        .route("/me/bookmarks", get(com::my_bookmarks))
+        .route(
+            "/contributions/{id}/comments",
+            get(com::list_comments).post(com::create_comment),
+        )
+        .route("/me/comments", get(com::my_comments))
+        .route(
+            "/comments/{id}",
+            axum::routing::patch(com::edit_comment).delete(com::remove_comment),
+        )
+        .route("/users/{id}/profile", get(com::get_profile))
+        .route("/me/profile", axum::routing::put(com::put_profile))
+        .route("/me/reputation", get(com::my_reputation))
+        .route("/reports", post(com::create_report))
+        .route("/moderation/reports", get(com::report_queue))
+        .route("/moderation/reports/{id}/resolve", post(com::resolve_report))
+        .route("/moderation/comments/{id}/hide", post(com::hide_comment))
+        .route("/moderation/notes", get(com::list_notes).post(com::create_note))
+        .route("/appeals", post(com::create_appeal))
+        .route("/me/appeals", get(com::my_appeals))
+        .route("/moderation/appeals", get(com::appeal_queue))
+        .route("/moderation/appeals/{id}/decide", post(com::decide_appeal))
+        .route(
+            "/admin/community-settings",
+            get(com::get_settings).put(com::put_settings),
+        )
+        .layer(axum::middleware::from_fn(middleware::no_store));
+
+    // Legal: filing is public but throttled per client; staff and appeal steps are caller-specific.
+    let legal_limiter = std::sync::Arc::new(ratelimit::RateLimiter::new(app.config.auth_rate_per_min));
+    let legal = Router::new()
+        .route("/legal/notices", post(legal::file_legal_notice))
+        .route_layer(axum::middleware::from_fn_with_state(legal_limiter, ratelimit::limit))
+        .route("/legal/notices/{id}/appeal", post(legal::file_takedown_appeal))
+        .route("/moderation/legal/notices", get(legal::legal_notice_queue))
+        .route(
+            "/moderation/legal/notices/{id}/decide",
+            post(legal::decide_legal_notice),
+        )
+        .route("/admin/legal/appeals", get(legal::takedown_appeal_queue))
+        .route("/admin/legal/appeals/{id}/decide", post(legal::decide_takedown_appeal))
+        .layer(axum::middleware::from_fn(middleware::no_store));
+
     // Typeahead is public and cheap to abuse: a per-client bucket sits in front of it.
     let limiter = std::sync::Arc::new(ratelimit::RateLimiter::new(app.config.search_rate_per_min));
     let typeahead = Router::new()
@@ -99,13 +180,22 @@ pub fn router(app: App) -> Router {
         .route("/search/suggest/accepted", post(srch::suggestion_accepted))
         .route_layer(axum::middleware::from_fn_with_state(limiter, ratelimit::limit));
 
-    let v1 = Router::new()
+    // Credential endpoints get their own per-client bucket (guessing, enumeration, mail flooding).
+    let auth_limiter = std::sync::Arc::new(ratelimit::RateLimiter::new(app.config.auth_rate_per_min));
+    let auth = Router::new()
         .route("/auth/register", post(routes::register))
         .route("/auth/verify-email", post(routes::verify_email))
         .route("/auth/login", post(routes::login))
-        .route("/auth/logout", post(routes::logout))
+        .route("/auth/providers", get(oauth::providers))
+        .route("/auth/google/start", get(oauth::google_start))
+        .route("/auth/google/callback", get(oauth::google_callback))
         .route("/auth/password-reset", post(routes::request_password_reset))
         .route("/auth/password-reset/confirm", post(routes::confirm_password_reset))
+        .route_layer(axum::middleware::from_fn_with_state(auth_limiter, ratelimit::limit));
+
+    let v1 = Router::new()
+        .merge(auth)
+        .route("/auth/logout", post(routes::logout))
         .route("/me", get(routes::me))
         .route("/admin/audit-events", get(routes::list_audit_events))
         .route("/artists", get(cat::list_artists).post(cat::create_artist))
@@ -154,19 +244,25 @@ pub fn router(app: App) -> Router {
         .route("/entities/proposals/{id}/reject", post(ent::reject_proposal))
         .route("/entities/merges", post(ent::merge_entities))
         .route("/moderation/entity-proposals", get(ent::proposal_queue))
+        .route("/pages/{scope}/{slug}", get(seo_api::get_page))
+        .route("/sitemap", get(seo_api::sitemap))
         .route("/search", get(srch::search))
         .route("/admin/search/metrics", get(srch::metrics))
         .route("/openapi.json", get(|| async { Json(ApiDoc::openapi()) }))
         .merge(typeahead)
+        .merge(community)
+        .merge(legal)
         .merge(lyrics);
 
     Router::new()
         .route("/healthz", get(routes::healthz))
         .route("/readyz", get(routes::readyz))
+        .route("/metrics", get(metrics::scrape))
         .nest("/api/v1", v1)
         .fallback(routes::not_found)
         .method_not_allowed_fallback(routes::method_not_allowed)
         .layer(axum::middleware::from_fn(middleware::csrf))
+        .layer(axum::middleware::from_fn(metrics::track))
         .layer(
             TraceLayer::new_for_http().make_span_with(|req: &axum::http::Request<_>| {
                 let rid = req

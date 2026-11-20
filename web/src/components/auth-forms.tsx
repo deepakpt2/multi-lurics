@@ -19,6 +19,37 @@ function Success({ title, children }: { title?: string; children: React.ReactNod
   );
 }
 
+const GOOGLE_ERRORS = ["google_failed", "google_denied", "google_disabled", "google_email_unverified"];
+
+/** "Continue with Google", shown only when the server has it configured. Full-page navigation: the flow is redirect-based. */
+export function SocialSignIn() {
+  const t = useTranslations();
+  const locale = useLocale();
+  const [google, setGoogle] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const e = new URLSearchParams(window.location.search).get("error");
+    if (e !== null) setError(GOOGLE_ERRORS.includes(e) ? e : "google_failed");
+    void api.GET("/api/v1/auth/providers").then((r) => setGoogle(r.data?.google === true));
+  }, []);
+  return (
+    <>
+      {error !== null && (
+        <div className="alert alert-error" role="alert" data-state="error">
+          <p>{t(`google.errors.${error}`)}</p>
+        </div>
+      )}
+      {google && (
+        <p>
+          <a className="button" href={`/api/v1/auth/google/start?locale=${locale}`}>
+            {t("google.continue")}
+          </a>
+        </p>
+      )}
+    </>
+  );
+}
+
 export function RegisterForm() {
   const t = useTranslations();
   const locale = useLocale();
@@ -32,6 +63,7 @@ export function RegisterForm() {
   if (s.state.status === "success") return <Success title={t("register.successTitle")}>{t("register.success")}</Success>;
   return (
     <form noValidate onSubmit={(e) => (e.preventDefault(), s.submit(formValues(e.currentTarget)))}>
+      <SocialSignIn />
       {s.error !== undefined && <ProblemAlert error={s.error} />}
       <Field name="email" type="email" autoComplete="email" dir="ltr" fieldErrors={s.fieldErrors} />
       <Field name="display_name" autoComplete="nickname" dir="auto" hint={t("hints.display_name")} fieldErrors={s.fieldErrors} />
@@ -61,6 +93,7 @@ export function LoginForm() {
   });
   return (
     <form noValidate onSubmit={(e) => (e.preventDefault(), s.submit(formValues(e.currentTarget)))}>
+      <SocialSignIn />
       {s.error !== undefined && <ProblemAlert error={s.error} />}
       <Field name="email" type="email" autoComplete="email" dir="ltr" fieldErrors={s.fieldErrors} />
       <Field name="password" type="password" autoComplete="current-password" fieldErrors={s.fieldErrors} />

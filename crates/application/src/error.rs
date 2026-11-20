@@ -44,6 +44,12 @@ pub enum AppError {
     /// Likely duplicates exist; the caller must look at them and confirm. Never decided silently.
     #[error("{code}")]
     Ambiguous { code: &'static str, candidates: Vec<Uuid> },
+    /// A rule the caller does not meet yet (for example a reputation threshold): 403 with a stable code.
+    #[error("{code}")]
+    Restricted { code: &'static str },
+    /// Too many recent actions; `retry_after_secs` says when to try again.
+    #[error("rate limited")]
+    RateLimited { retry_after_secs: u64 },
     #[error("service unavailable")]
     Unavailable,
     #[error(transparent)]

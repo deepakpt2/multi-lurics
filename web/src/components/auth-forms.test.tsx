@@ -20,12 +20,15 @@ describe("auth forms", () => {
   });
 
   it("register sends the UI locale and shows neutral success", async () => {
-    const { calls } = mockFetch({ "POST /api/v1/auth/register": () => new Response(null, { status: 202 }) });
+    const { calls } = mockFetch({
+      "GET /api/v1/auth/providers": () => json(200, { google: false }),
+      "POST /api/v1/auth/register": () => new Response(null, { status: 202 }),
+    });
     renderIntl(<RegisterForm />, "ar");
     await userEvent.type(screen.getByLabelText("البريد الإلكتروني"), "a@b.co");
     await userEvent.click(screen.getByRole("button", { name: "إنشاء الحساب" }));
     expect(await screen.findByRole("status")).toHaveTextContent("تحقّق من بريدك الإلكتروني");
-    expect(await calls[0].json()).toMatchObject({ email: "a@b.co", locale: "ar" });
+    expect(await calls.find((c) => c.method === "POST")!.json()).toMatchObject({ email: "a@b.co", locale: "ar" });
   });
 
   it("login failure shows the localized problem; success navigates", async () => {
@@ -47,15 +50,27 @@ describe("auth forms", () => {
   it("disables submit while in flight (no double submit)", async () => {
     let release!: () => void;
     const gate = new Promise<void>((r) => (release = r));
-    const { spy } = mockFetch({ "POST /api/v1/auth/login": () => new Response(null, { status: 401 }) });
-    spy.mockImplementation(async () => (await gate, new Response(null, { status: 401 })));
+    const { spy } = mockFetch({ "GET /api/v1/auth/providers": () => json(200, { google: false }) });
+    spy.mockImplementation(async (req) =>
+      (req as Request).method === "GET" ? json(200, { google: false }) : (await gate, new Response(null, { status: 401 })),
+    );
     renderIntl(<LoginForm />);
     const btn = screen.getByRole("button", { name: "Sign in" });
     await userEvent.click(btn);
     expect(screen.getByRole("button", { name: "Please wait…" })).toBeDisabled();
     release();
     expect(await screen.findByRole("alert")).toBeInTheDocument();
-    expect(spy).toHaveBeenCalledOnce();
+    expect(spy.mock.calls.filter(([r]) => (r as Request).method === "POST")).toHaveLength(1);
+  });
+
+  it("offers Google only when the server enables it, and explains a failed attempt", async () => {
+    window.history.pushState({}, "", "/en/login?error=google_denied");
+    mockFetch({ "GET /api/v1/auth/providers": () => json(200, { google: true }) });
+    renderIntl(<LoginForm />);
+    const link = await screen.findByRole("link", { name: "Continue with Google" });
+    expect(link).toHaveAttribute("href", "/api/v1/auth/google/start?locale=en");
+    expect(screen.getByRole("alert")).toHaveTextContent("Google sign-in was cancelled.");
+    window.history.pushState({}, "", "/");
   });
 
   it("verify-email reads the token from the URL fragment and submits it once", async () => {
