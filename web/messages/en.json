@@ -143,7 +143,13 @@
     "must_accept": "You must confirm this to continue.",
     "no_target": "This notice is not about a specific contribution.",
     "invalid_value": "Choose one of the listed options.",
-    "devotional_only": "Only devotional songs have a religion or deity."
+    "devotional_only": "Only devotional songs have a religion or deity.",
+    "unsupported_type": "Use a JPEG, PNG, WebP or GIF image.",
+    "corrupt": "This image could not be read. Try another file.",
+    "dimensions_too_small": "This image is too small.",
+    "dimensions_too_large": "This image is too large in pixels.",
+    "must_confirm": "Please confirm you may share this photo.",
+    "unknown_image": "This uploaded photo is no longer available. Upload it again."
   },
   "errors": {
     "title": "Something went wrong",
@@ -195,7 +201,14 @@
     "comment_not_visible": "This comment is already hidden.",
     "slow_down": "You are doing that too often. Please wait a moment.",
     "not_published": "This contribution is not published, so there is nothing to take down.",
-    "own_account": "You cannot change your own account. Ask another admin."
+    "own_account": "You cannot change your own account. Ask another admin.",
+    "image_pending": "You already have a photo waiting for review for this.",
+    "image_already_current": "This photo is already the current one.",
+    "too_many_unsent_images": "You have several uploaded photos not yet used. Remove one first.",
+    "too_many_pending_images": "You have many photos waiting for review. Please wait until some are reviewed.",
+    "decided_with_proposal": "This photo is decided together with its new-entry suggestion.",
+    "payload_too_large": "That file is too large.",
+    "malformed_request": "The upload could not be read. Try a different file."
   },
   "conflict": {
     "title": "Someone else changed this",
@@ -940,5 +953,47 @@
       "allSongs": "All songs"
     },
     "errorTitle": "Could not load the list"
+  },
+  "images": {
+    "placeholder": "No photo of {name} yet",
+    "add": "Add a photo of {name}",
+    "change": "Suggest a different photo of {name}",
+    "dialogTitle": "Photo of {name}",
+    "signIn": "Sign in to add a photo",
+    "file": "Choose a photo",
+    "limits": "JPEG, PNG, WebP or GIF. Up to {max}, at least {min} pixels on each side.",
+    "tooBig": "This file is larger than {max}.",
+    "credit": "Credit or source (optional)",
+    "creditHint": "Who took the photo, or where it comes from.",
+    "rights": "I took this photo, or I have permission to share it here.",
+    "upload": "Upload photo",
+    "uploading": "Uploading…",
+    "cancel": "Cancel",
+    "close": "Close",
+    "published": "Thank you. The photo is now live.",
+    "pending": "Thank you. The photo will appear once a moderator has reviewed it.",
+    "optionalTitle": "Photos (optional)",
+    "optionalIntro": "These have no photo yet. You can add one now; a moderator reviews it before it appears.",
+    "photoAdd": "Add a photo (optional)",
+    "photoAttach": "Attach photo",
+    "photoAttached": "Photo attached. It is reviewed together with this suggestion.",
+    "photoRemove": "Remove photo",
+    "photoHint": "Only if you took it or may share it.",
+    "queueTitle": "Photos to review",
+    "queueEmpty": "No photos are waiting for review.",
+    "proposed": "Proposed",
+    "current": "Current",
+    "proposedAlt": "Proposed photo of {name}",
+    "currentAlt": "Current photo of {name}",
+    "uploadedBy": "Uploaded by {name}",
+    "creditLine": "Credit:",
+    "withProposal": "This photo is decided together with its new-entry suggestion.",
+    "openProposals": "Open suggestions",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectReason": "Reason for rejecting",
+    "confirmReject": "Reject photo",
+    "loadMore": "Load more",
+    "dimensions": "{width}×{height} pixels"
   }
 }

@@ -1,4 +1,4 @@
-import { FileText, Flag, GitPullRequest, Scale } from "lucide-react";
+import { FileText, Flag, GitPullRequest, Image as ImageIcon, Scale } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ModerationQueue } from "@/components/localization/moderation";
@@ -9,6 +9,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const t = await getTranslations("localization");
   const tc = await getTranslations("community");
   const tl = await getTranslations("legal");
+  const ti = await getTranslations("images");
   return (
     <>
       <h1>{t("queueTitle")}</h1>
@@ -20,6 +21,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <Link href="/moderation/entities" className="hub-card">
           <GitPullRequest size={22} aria-hidden="true" />
           <span>{t("proposalsQueueLink")}</span>
+        </Link>
+        <Link href="/moderation/images" className="hub-card">
+          <ImageIcon size={22} aria-hidden="true" />
+          <span>{ti("queueTitle")}</span>
         </Link>
         <Link href="/moderation/community" className="hub-card">
           <Flag size={22} aria-hidden="true" />

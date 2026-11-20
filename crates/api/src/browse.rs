@@ -12,6 +12,7 @@ use axum::http::HeaderMap;
 use axum::response::Response;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
+use uuid::Uuid;
 
 /// Every kind of metadata songs can be browsed by. The same words are the filter parameter names.
 #[derive(Serialize, Deserialize, ToSchema, Clone, Copy, PartialEq, Eq)]
@@ -172,6 +173,9 @@ impl From<uc::ResolvedFilter> for BrowseFilter {
 
 #[derive(Serialize, ToSchema)]
 pub struct BrowseRef {
+    pub id: Uuid,
+    /// Public image of this artist or album, if it has one: `/api/v1/media/{image_id}/{width}`.
+    pub image_id: Option<Uuid>,
     /// Slug to filter by (`singer=…` or `album=…`).
     pub slug: String,
     pub name: Display,
@@ -250,6 +254,8 @@ pub async fn songs(State(app): State<App>, headers: HeaderMap, RawQuery(raw): Ra
                     .singers
                     .into_iter()
                     .map(|x| BrowseRef {
+                        id: x.id,
+                        image_id: x.image,
                         slug: x.slug,
                         name: x.name.into(),
                     })
@@ -258,6 +264,8 @@ pub async fn songs(State(app): State<App>, headers: HeaderMap, RawQuery(raw): Ra
                     .albums
                     .into_iter()
                     .map(|x| BrowseRef {
+                        id: x.id,
+                        image_id: x.image,
                         slug: x.slug,
                         name: x.name.into(),
                     })
@@ -286,6 +294,10 @@ pub async fn songs(State(app): State<App>, headers: HeaderMap, RawQuery(raw): Ra
 
 #[derive(Serialize, ToSchema)]
 pub struct BrowseFacetValue {
+    /// The entity's id (absent for plain values such as a religion); needed to add an image.
+    pub id: Option<Uuid>,
+    /// Public image of this entity, if it has one: `/api/v1/media/{image_id}/{width}`.
+    pub image_id: Option<Uuid>,
     /// Use as the filter value for this facet.
     pub slug: String,
     pub label: Display,
@@ -336,6 +348,8 @@ pub async fn facet(
             .items
             .into_iter()
             .map(|v| BrowseFacetValue {
+                id: v.id,
+                image_id: v.image,
                 slug: v.slug,
                 label: v.label.into(),
                 songs: v.songs,

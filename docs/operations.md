@@ -119,7 +119,7 @@ Error budget: under 0.5% non-429 errors per workload. Run-to-run variance on thi
 
 - **Sessions and CSRF:** opaque server-side session ids in an `HttpOnly; SameSite=Lax; Secure` cookie; state-changing requests also need `X-Requested-With` (a custom header cannot be sent cross-origin without a CORS preflight, which the API never grants); tested.
 - **Abuse:** per-client token bucket on login/register/verify/password reset and legal notices (`AUTH_RATE_PER_MIN`), typeahead (`SEARCH_RATE_PER_MIN`), per-user action limits with Postgres advisory locks for community writes, spam heuristics and length limits (configurable).
-- **Uploads:** the product accepts no file uploads (verified: no multipart handler exists), so there is no upload surface. If media is added, it needs its own review first (register item U1).
+- **Uploads:** one endpoint accepts files, `POST /api/v1/images` (signed-in, CSRF header, body limited to `MEDIA_MAX_BYTES`). The type is decided from the content (JPEG, PNG, WebP, GIF only; SVG and anything else is refused), dimensions are capped (`MEDIA_MAX_SIDE`, decoder memory limit), and the image is decoded and re-encoded to square JPEGs, so EXIF/GPS and embedded payloads are dropped. Stored names are server-generated UUIDs (never the uploaded name) and served with `nosniff` and a sandbox CSP. A person may hold 5 unsent and 10 pending images.
 - **Output escaping:** React escapes all text; JSON-LD is serialised with `<` escaped; lyric text is rendered as text with explicit `dir`/`lang`, never as HTML.
 - **Dependencies:** `npm audit --omit=dev` found a high PostCSS advisory (via Next); fixed with an `overrides` pin to PostCSS 8.5.33, now 0 findings. `cargo audit` reports two advisories that are in `Cargo.lock` only because `sqlx-macros` resolves every database driver (`rsa` via sqlx-mysql, `libsqlite3-sys` via sqlx-sqlite); `cargo tree -i` shows neither is compiled into any binary, so they are ignored in `.cargo/audit.toml` with that reason. `chrono` is flagged unmaintained (no fix exists; register item D1).
 - **Secrets:** SMTP credentials live only in `LYRICS_SMTP_URL`; the URL, session tokens, verification and reset links are never logged.
@@ -145,7 +145,7 @@ Automated: `web/src/test/a11y.test.tsx` runs axe-core (WCAG 2.0/2.1 A and AA plu
 | B2 | Restore drill measured at 3 MB / 45k rows (1 s); restore time at production size is unknown | RTO estimate unreliable | Re-run the drill on production-size data |
 | P1 | Load numbers come from one 5-core shared box with 300 songs | Production headroom unknown | Re-run `scripts/load.sh` with larger `SONGS` on production-like hardware |
 | P2 | Search and typeahead SLOs have little margin on this box | Possible misses on weaker hardware | See the Redis/search decision for next steps |
-| U1 | No upload or media pipeline | None today | Needs a security review before any file upload |
+| U1 | Images are stored on local disk (one host) | Not shared across hosts; a lost volume loses images | Swap `MediaStore` for an S3-compatible store before running API replicas on several hosts; no malware scan beyond re-encoding |
 | D1 | `chrono` unmaintained; two lockfile-only advisories ignored | None known | Revisit at each release |
 | A1 | Accessibility: no manual screen-reader or contrast audit | Unknown real-world issues | Before launch |
 | W1 | Reputation scores are computed on read (sum of events) | Cost grows with event count | Add a summary table + worker job only if profile reads become slow |
@@ -179,3 +179,16 @@ Public, read-only, published songs only. `GET /api/v1/browse/songs`, `/browse/fa
 
 ### Ragas, deities and tags are entities (migration 0015)
 A song's raga, deity and tags point at catalogue entities (`ragas`, `deities`, `tags`) that have localizations, transliterations, aliases and merge, like artists and albums. Saving a song with text still works: the text is matched to an existing entity by normalized name, verified localization or alias, or by a **phonetic key** (`lyrics_phonetic_key`: Malayalam, Devanagari, Tamil, Telugu and Kannada are romanized and loosely folded, so "Mohanam" and "മോഹനം" meet); only when nothing matches is a new entity created. The key is deliberately loose, so two names that no rule connects stay separate until a moderator merges them (`POST /entities/merges`, which moves the songs). The migration folded existing text values that sound alike into one entity each. Browse and typeahead use the same key, so typing in one script finds the other.
+
+## Images (migration 0016)
+
+Artists, albums, labels, publishers, genres, ragas and deities can have one public image. Anyone signed in can upload one from the browse lists, a song page's credits, or while proposing a new entity; it is reviewed like lyrics: moderators and contributors the lyrics trust policy auto-publishes are published immediately, everyone else waits in **Moderation → Images**. A new image never replaces the public one before approval; approving it retires the old one and deletes its files. Images sent with a new-entity proposal are decided with the proposal. Merging entities moves the merged entity's image to the survivor if the survivor has none.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `MEDIA_DIR` (`LYRICS_MEDIA_DIR`) | `/data/media` in compose | Where files live. Persistent volume; include it in backups. |
+| `MEDIA_MAX_BYTES` | 5242880 | Largest upload. |
+| `MEDIA_MAX_SIDE` | 8000 | Largest width or height accepted. |
+| `MEDIA_SIZES` | `96,240,640` | Square sizes generated per image (16–4096, at most 8). A request is served the smallest size that fits. Changing it affects new uploads only. |
+
+Files are at `<MEDIA_DIR>/<image id>/<size>.jpg`. `entity_images` is the record; a file without a row (a crash between the two) is harmless and can be deleted. Unsent drafts (uploaded but never attached to a proposal) are not purged automatically yet; they are capped at 5 per person.

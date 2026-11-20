@@ -149,6 +149,9 @@ pub struct ProposalCreate {
     /// Set after looking at the `409 likely_duplicates` candidates and deciding this is a different entity.
     #[serde(default)]
     pub confirm_distinct: bool,
+    /// Id of an image uploaded with `POST /api/v1/images` (no entity). It is reviewed with the proposal and
+    /// shown with the new entity once approved. Only for entity types that can have images.
+    pub image_id: Option<Uuid>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -171,6 +174,8 @@ pub struct Proposal {
     pub entity_id: Option<Uuid>,
     /// The existing entity a rejection pointed to.
     pub duplicate_of_id: Option<Uuid>,
+    /// The image proposed with it, awaiting the same decision.
+    pub image_id: Option<Uuid>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -203,6 +208,7 @@ impl From<ProposalRow> for Proposal {
             decision_note: r.decision_note,
             entity_id: r.entity_id,
             duplicate_of_id: r.duplicate_of_id,
+            image_id: None,
         }
     }
 }
@@ -232,14 +238,19 @@ pub async fn create_proposal(
             aliases: b.aliases,
             note: b.note,
             confirm_distinct: b.confirm_distinct,
+            image_id: b.image_id,
         },
     )
     .await?;
     let id = row.id;
+    let image_id = b.image_id;
     Ok((
         StatusCode::CREATED,
         [(header::LOCATION, format!("/api/v1/entities/proposals/{id}"))],
-        Json(Proposal::from(row)),
+        Json(Proposal {
+            image_id,
+            ..Proposal::from(row)
+        }),
     )
         .into_response())
 }
@@ -261,8 +272,17 @@ pub async fn proposal_queue(
     ApiQuery(q): ApiQuery<PageQuery>,
 ) -> ApiResult<Json<ProposalPage>> {
     let page = uc::proposal_queue(&app, &p, q.cursor.as_deref(), q.limit).await?;
+    let ids: Vec<Uuid> = page.items.iter().map(|r| r.id).collect();
+    let images = application::images::for_proposals(&app, &ids).await?;
     Ok(Json(ProposalPage {
-        items: page.items.into_iter().map(Into::into).collect(),
+        items: page
+            .items
+            .into_iter()
+            .map(|r| Proposal {
+                image_id: images.get(&r.id).copied(),
+                ..Proposal::from(r)
+            })
+            .collect(),
         next_cursor: page.next_cursor,
     }))
 }

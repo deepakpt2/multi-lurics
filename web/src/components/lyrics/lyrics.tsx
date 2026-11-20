@@ -10,6 +10,7 @@ import { Loaded, usePaged, useLoad } from "../catalogue/common";
 import { useFieldError, useSubmit } from "../form";
 import { Name, languageName } from "../localization/localized";
 import { SelectBox, languageLabel, listLanguages, listScripts, scriptLabel } from "../localization/names";
+import { PhotoSlots } from "../media/photo-slots";
 import { EmptyState, ErrorState, LoadingState, ProblemAlert } from "../states";
 
 type S = components["schemas"];
@@ -165,6 +166,7 @@ export function ContributionNew({ recordingId, query }: { recordingId: string; q
     router.push(`/contributions/${created.id}`);
   });
   return (
+    <>
     <Loaded load={refs}>
       {({ languages, scripts }) => {
         const lang = languages.find((l) => l.iso639_3 === language || l.iso639_1 === language);
@@ -222,6 +224,8 @@ export function ContributionNew({ recordingId, query }: { recordingId: string; q
         );
       }}
     </Loaded>
+    <PhotoSlots recordingId={recordingId} />
+    </>
   );
 }
 

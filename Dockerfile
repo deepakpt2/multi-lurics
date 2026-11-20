@@ -17,7 +17,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates curl \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --system --uid 10001 --home /nonexistent --shell /usr/sbin/nologin app \
- && mkdir -p /data/mailbox && chown app /data/mailbox
+ && mkdir -p /data/mailbox /data/media && chown app /data/mailbox /data/media
 COPY --from=build /usr/local/bin/lyrics-api /usr/local/bin/lyrics-worker /usr/local/bin/
 USER app
 ENV LYRICS_BIND_ADDR=0.0.0.0:8787 LYRICS_LOG_JSON=1

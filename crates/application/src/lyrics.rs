@@ -198,7 +198,7 @@ pub async fn set_trust_policy(
     Ok(policy)
 }
 
-async fn auto_publishes(conn: &mut PgConnection, p: &Principal) -> Result<bool, AppError> {
+pub(crate) async fn auto_publishes(conn: &mut PgConnection, p: &Principal) -> Result<bool, AppError> {
     let policy = load_policy(conn).await?;
     let count = if policy.auto_publish_min_published.is_some() {
         repo::published_count(conn, p.user_id).await?

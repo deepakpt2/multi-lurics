@@ -7,7 +7,7 @@
 
 use crate::localization::{names, resolve_requested, Display};
 use crate::seo::{pick_slug, Canonical};
-use crate::{App, AppError};
+use crate::{images, App, AppError};
 use domain::localization::EntityType;
 use domain::slug::normalize_incoming;
 use domain::Violations;
@@ -67,8 +67,11 @@ struct Resolved {
 
 #[derive(Debug, Clone)]
 pub struct Ref {
+    pub id: Uuid,
     pub slug: String,
     pub name: Display,
+    /// The entity's approved image, if it has one.
+    pub image: Option<Uuid>,
 }
 
 #[derive(Debug, Clone)]
@@ -348,6 +351,10 @@ pub async fn songs(
     let album_slugs = ensure_slugs(app, "album", &albums.iter().map(|a| a.id).collect::<Vec<_>>()).await?;
 
     let mut conn = app.pool.acquire().await?;
+    let singer_images =
+        images::current_for(&mut conn, "artist", &singers.iter().map(|s| s.id).collect::<Vec<_>>()).await?;
+    let album_images =
+        images::current_for(&mut conn, "album", &albums.iter().map(|a| a.id).collect::<Vec<_>>()).await?;
     let mut refs: Vec<(EntityType, Uuid, String)> = rows
         .iter()
         .map(|r| (EntityType::Composition, r.id, r.title.clone()))
@@ -381,8 +388,10 @@ pub async fn songs(
                     .filter(|s| s.song == r.id)
                     .filter_map(|s| {
                         Some(Ref {
+                            id: s.id,
                             slug: singer_slugs.get(&s.id)?.clone(),
                             name: shown.get(EntityType::Artist, s.id, &s.name),
+                            image: singer_images.get(&s.id).copied(),
                         })
                     })
                     .take(SINGERS_SHOWN)
@@ -392,8 +401,10 @@ pub async fn songs(
                     .filter(|a| a.song == r.id)
                     .filter_map(|a| {
                         Some(Ref {
+                            id: a.id,
                             slug: album_slugs.get(&a.id)?.clone(),
                             name: shown.get(EntityType::Album, a.id, &a.title),
+                            image: album_images.get(&a.id).copied(),
                         })
                     })
                     .take(ALBUMS_SHOWN)
@@ -414,9 +425,12 @@ pub async fn songs(
 
 #[derive(Debug, Clone)]
 pub struct Value_ {
+    /// The entity's id, for entity facets (needed to attach an image); `None` for plain values.
+    pub id: Option<Uuid>,
     pub slug: String,
     pub label: Display,
     pub songs: i64,
+    pub image: Option<Uuid>,
 }
 
 /// `GET /browse/{facet}`: the values of one kind of metadata (among songs matching the filters), paged.
@@ -456,15 +470,19 @@ pub async fn values(
                 .map(|r| (entity_of(entity_type), r.id, r.name.clone()))
                 .collect();
             let shown = names(&mut conn, &req, &refs).await?;
+            let pictures =
+                images::current_for(&mut conn, entity_type, &rows.iter().map(|r| r.id).collect::<Vec<_>>()).await?;
             drop(conn);
             let slugs = ensure_slugs(app, entity_type, &rows.iter().map(|r| r.id).collect::<Vec<_>>()).await?;
             let items = rows
                 .into_iter()
                 .filter_map(|r| {
                     Some(Value_ {
+                        id: Some(r.id),
                         slug: slugs.get(&r.id)?.clone(),
                         label: shown.get(entity_of(entity_type), r.id, &r.name),
                         songs: r.songs,
+                        image: pictures.get(&r.id).copied(),
                     })
                 })
                 .collect();
@@ -476,9 +494,11 @@ pub async fn values(
             (
                 rows.into_iter()
                     .map(|r| Value_ {
+                        id: None,
                         slug: r.value,
                         label: Display::base(&r.label),
                         songs: r.songs,
+                        image: None,
                     })
                     .collect(),
                 total,

@@ -815,6 +815,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/entities/{entity_type}/{entity_id}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["entity_images"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/entities/{entity_type}/{entity_id}/localizations": {
         parameters: {
             query?: never;
@@ -825,6 +841,86 @@ export interface paths {
         get: operations["list_entity_localizations"];
         put?: never;
         post: operations["create_localization"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/images/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["limits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/images/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["withdraw"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/images/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/images/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reject"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1087,6 +1183,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/media/{id}/{width}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["media"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/moderation/appeals": {
         parameters: {
             query?: never;
@@ -1159,6 +1271,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["proposal_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["queue"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1799,6 +1927,16 @@ export interface components {
             total_pages: number;
         };
         BrowseFacetValue: {
+            /**
+             * Format: uuid
+             * @description The entity's id (absent for plain values such as a religion); needed to add an image.
+             */
+            id?: string | null;
+            /**
+             * Format: uuid
+             * @description Public image of this entity, if it has one: `/api/v1/media/{image_id}/{width}`.
+             */
+            image_id?: string | null;
             label: components["schemas"]["Display"];
             /** @description Use as the filter value for this facet. */
             slug: string;
@@ -1827,6 +1965,13 @@ export interface components {
             slug: string;
         };
         BrowseRef: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Public image of this artist or album, if it has one: `/api/v1/media/{image_id}/{width}`.
+             */
+            image_id?: string | null;
             name: components["schemas"]["Display"];
             /** @description Slug to filter by (`singer=…` or `album=…`). */
             slug: string;
@@ -2139,6 +2284,14 @@ export interface components {
             rating_count: number;
             reactions: components["schemas"]["ReactionCount"][];
         };
+        EntityImageState: {
+            /**
+             * Format: uuid
+             * @description The public image, if any: show it at `/api/v1/media/{current}/{width}`.
+             */
+            current?: string | null;
+            mine_pending?: null | components["schemas"]["Image"];
+        };
         /** @description One candidate. Store `id`, never the name. */
         EntitySuggestion: {
             /** @description ISO code for languages and scripts. */
@@ -2179,6 +2332,69 @@ export interface components {
             /** Format: int64 */
             migration_version?: number | null;
             status: string;
+        };
+        Image: {
+            /** Format: date-time */
+            created_at: string;
+            credit?: string | null;
+            decision_note?: string | null;
+            /** Format: uuid */
+            entity_id?: string | null;
+            entity_type?: string | null;
+            /** Format: int32 */
+            height: number;
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["ImageStatus"];
+            /** Format: int32 */
+            width: number;
+        };
+        ImageDecision: {
+            /** @description Required when rejecting. */
+            note?: string | null;
+        };
+        ImageLimits: {
+            /** Format: int64 */
+            max_bytes: number;
+            /** Format: int32 */
+            max_side: number;
+            /** Format: int32 */
+            min_side: number;
+            /** @description Square sizes generated for every image. */
+            sizes: number[];
+            types: string[];
+        };
+        ImageReview: {
+            /**
+             * Format: uuid
+             * @description The image people see today, to compare with.
+             */
+            current_id?: string | null;
+            image: components["schemas"]["Image"];
+            /**
+             * Format: uuid
+             * @description Set when the image arrived with a new-entity proposal; it is decided with that proposal.
+             */
+            proposal_id?: string | null;
+            /** @description Name of the entity the image is for (or of the proposed entity). */
+            subject: string;
+            uploader: string;
+        };
+        ImageReviewPage: {
+            items: components["schemas"]["ImageReview"][];
+            next_cursor?: string | null;
+        };
+        /** @enum {string} */
+        ImageStatus: "draft" | "pending" | "approved" | "rejected" | "superseded";
+        /** @description Multipart form: `file` (required), `rights` (`true`, required), `credit`, and `entity_type` with `entity_id`. */
+        ImageUpload: {
+            credit?: string | null;
+            /** Format: uuid */
+            entity_id?: string | null;
+            entity_type?: string | null;
+            /** Format: binary */
+            file: string;
+            rights: boolean;
         };
         Language: {
             /** @description ISO 15924 code of the usual script. */
@@ -2611,6 +2827,11 @@ export interface components {
             entity_type: string;
             /** Format: uuid */
             id: string;
+            /**
+             * Format: uuid
+             * @description The image proposed with it, awaiting the same decision.
+             */
+            image_id?: string | null;
             kind?: string | null;
             name: string;
             note?: string | null;
@@ -2626,6 +2847,12 @@ export interface components {
             disambiguation?: string | null;
             /** @description `artist`, `album`, `label`, `publisher` or `genre`. */
             entity_type?: string;
+            /**
+             * Format: uuid
+             * @description Id of an image uploaded with `POST /api/v1/images` (no entity). It is reviewed with the proposal and
+             *     shown with the new entity once approved. Only for entity types that can have images.
+             */
+            image_id?: string | null;
             /** @description Required for artists (`person`, `group`, `other`) and albums (`album`, `single`, …). */
             kind?: string | null;
             name?: string;
@@ -6285,6 +6512,36 @@ export interface operations {
             };
         };
     };
+    entity_images: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_type: string;
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntityImageState"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     list_entity_localizations: {
         parameters: {
             query?: {
@@ -6364,6 +6621,245 @@ export interface operations {
                 };
             };
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["ImageUpload"];
+            };
+        };
+        responses: {
+            /** @description `approved` when the uploader may publish directly (moderators, trusted contributors), otherwise `pending`; `draft` when no entity was given */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Image"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `image_pending` or `image_already_current` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `file`: `required`, `too_large`, `unsupported_type`, `corrupt`, `dimensions_too_small`, `dimensions_too_large`; `rights`: `must_confirm` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    limits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description What an upload may be */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageLimits"];
+                };
+            };
+        };
+    };
+    withdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Withdrawn (only your own draft or pending images) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageDecision"];
+            };
+        };
+        responses: {
+            /** @description Now the entity's public image; the previous one is retired */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Image"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not pending, or decided with its proposal */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageDecision"];
+            };
+        };
+        responses: {
+            /** @description Rejected; the file is deleted. Also removes a public image. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Image"];
+                };
+            };
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7143,6 +7639,38 @@ export interface operations {
             };
         };
     };
+    media: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                /** @description Wanted width in pixels; the smallest generated size at least this wide is returned */
+                width: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A square JPEG. Approved images are immutable and cacheable for a year. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": unknown;
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     appeal_queue: {
         parameters: {
             query?: {
@@ -7370,6 +7898,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProposalPage"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    queue: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                /** @description Page size, 1–100 (default 25). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Images waiting for review, oldest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageReviewPage"];
                 };
             };
             401: {

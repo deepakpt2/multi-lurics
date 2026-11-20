@@ -4900,6 +4900,55 @@
         ]
       }
     },
+    "/api/v1/entities/{entity_type}/{entity_id}/images": {
+      "get": {
+        "tags": [
+          "images"
+        ],
+        "operationId": "entity_images",
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityImageState"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/entities/{entity_type}/{entity_id}/localizations": {
       "get": {
         "tags": [
@@ -5042,6 +5091,332 @@
             }
           },
           "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/images": {
+      "post": {
+        "tags": [
+          "images"
+        ],
+        "operationId": "upload",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageUpload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "`approved` when the uploader may publish directly (moderators, trusted contributors), otherwise `pending`; `draft` when no entity was given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Image"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`image_pending` or `image_already_current`",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`file`: `required`, `too_large`, `unsupported_type`, `corrupt`, `dimensions_too_small`, `dimensions_too_large`; `rights`: `must_confirm`",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/images/limits": {
+      "get": {
+        "tags": [
+          "images"
+        ],
+        "operationId": "limits",
+        "responses": {
+          "200": {
+            "description": "What an upload may be",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageLimits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/images/{id}": {
+      "delete": {
+        "tags": [
+          "images"
+        ],
+        "operationId": "withdraw",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Withdrawn (only your own draft or pending images)"
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/images/{id}/approve": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "approve",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageDecision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Now the entity's public image; the previous one is retired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Image"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Not pending, or decided with its proposal",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/images/{id}/reject": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "reject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageDecision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected; the file is deleted. Also removes a public image.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Image"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "",
             "content": {
               "application/problem+json": {
@@ -6225,6 +6600,54 @@
         ]
       }
     },
+    "/api/v1/media/{id}/{width}": {
+      "get": {
+        "tags": [
+          "images"
+        ],
+        "operationId": "media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "width",
+            "in": "path",
+            "description": "Wanted width in pixels; the smallest generated size at least this wide is returned",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A square JPEG. Approved images are immutable and cacheable for a year.",
+            "content": {
+              "image/jpeg": {}
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/moderation/appeals": {
       "get": {
         "tags": [
@@ -6573,6 +6996,72 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProposalPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/moderation/images": {
+      "get": {
+        "tags": [
+          "moderation"
+        ],
+        "operationId": "queue",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, 1–100 (default 25).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Images waiting for review, oldest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageReviewPage"
                 }
               }
             }
@@ -9427,6 +9916,22 @@
           "songs"
         ],
         "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The entity's id (absent for plain values such as a religion); needed to add an image."
+          },
+          "image_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Public image of this entity, if it has one: `/api/v1/media/{image_id}/{width}`."
+          },
           "label": {
             "$ref": "#/components/schemas/Display"
           },
@@ -9501,10 +10006,23 @@
       "BrowseRef": {
         "type": "object",
         "required": [
+          "id",
           "slug",
           "name"
         ],
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "image_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Public image of this artist or album, if it has one: `/api/v1/media/{image_id}/{width}`."
+          },
           "name": {
             "$ref": "#/components/schemas/Display"
           },
@@ -10586,6 +11104,30 @@
           }
         }
       },
+      "EntityImageState": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The public image, if any: show it at `/api/v1/media/{current}/{width}`."
+          },
+          "mine_pending": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Image",
+                "description": "The signed-in person's own image waiting for review."
+              }
+            ]
+          }
+        }
+      },
       "EntitySuggestion": {
         "type": "object",
         "description": "One candidate. Store `id`, never the name.",
@@ -10694,6 +11236,218 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "Image": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "width",
+          "height",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "credit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "decision_note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "entity_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "entity_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ImageStatus"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ImageDecision": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Required when rejecting."
+          }
+        }
+      },
+      "ImageLimits": {
+        "type": "object",
+        "required": [
+          "max_bytes",
+          "min_side",
+          "max_side",
+          "sizes",
+          "types"
+        ],
+        "properties": {
+          "max_bytes": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "max_side": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "min_side": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            },
+            "description": "Square sizes generated for every image."
+          },
+          "types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ImageReview": {
+        "type": "object",
+        "required": [
+          "image",
+          "uploader",
+          "subject"
+        ],
+        "properties": {
+          "current_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The image people see today, to compare with."
+          },
+          "image": {
+            "$ref": "#/components/schemas/Image"
+          },
+          "proposal_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Set when the image arrived with a new-entity proposal; it is decided with that proposal."
+          },
+          "subject": {
+            "type": "string",
+            "description": "Name of the entity the image is for (or of the proposed entity)."
+          },
+          "uploader": {
+            "type": "string"
+          }
+        }
+      },
+      "ImageReviewPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageReview"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ImageStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "pending",
+          "approved",
+          "rejected",
+          "superseded"
+        ]
+      },
+      "ImageUpload": {
+        "type": "object",
+        "description": "Multipart form: `file` (required), `rights` (`true`, required), `credit`, and `entity_type` with `entity_id`.",
+        "required": [
+          "file",
+          "rights"
+        ],
+        "properties": {
+          "credit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "entity_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "entity_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "file": {
+            "type": "string",
+            "format": "binary"
+          },
+          "rights": {
+            "type": "boolean"
           }
         }
       },
@@ -12021,6 +12775,14 @@
             "type": "string",
             "format": "uuid"
           },
+          "image_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The image proposed with it, awaiting the same decision."
+          },
           "kind": {
             "type": [
               "string",
@@ -12072,6 +12834,14 @@
           "entity_type": {
             "type": "string",
             "description": "`artist`, `album`, `label`, `publisher` or `genre`."
+          },
+          "image_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Id of an image uploaded with `POST /api/v1/images` (no entity). It is reviewed with the proposal and\nshown with the new entity once approved. Only for entity types that can have images."
           },
           "kind": {
             "type": [

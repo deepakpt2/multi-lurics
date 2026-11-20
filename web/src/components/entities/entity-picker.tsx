@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { ApiProblem, api, call } from "@/api/client";
 import type { components } from "@/api/schema";
 import { Name } from "../localization/localized";
+import { IMAGE_TYPES, mediaSources, withdrawImage, type Image } from "@/lib/images";
+import { ImageUpload } from "../media/image-upload";
 import { ProblemAlert } from "../states";
 
 export type Suggestion = components["schemas"]["EntitySuggestion"];
@@ -202,9 +204,12 @@ export function ProposeEntity({
 }) {
   const t = useTranslations("entities");
   const tc = useTranslations("catalogue");
+  const tp = useTranslations("images");
   const [name, setName] = useState(initialName);
   const [kind, setKind] = useState(type === "album" ? "album" : "person");
   const [disambiguation, setDisambiguation] = useState("");
+  const [image, setImage] = useState<Image | null>(null);
+  const [addingImage, setAddingImage] = useState(false);
   const [step, setStep] = useState<Step>({ name: "form" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>();
@@ -223,6 +228,7 @@ export function ProposeEntity({
             kind: type === "artist" || type === "album" ? kind : null,
             disambiguation: type === "artist" && disambiguation.trim() ? disambiguation.trim() : null,
             confirm_distinct: confirm,
+            image_id: image?.id ?? null,
           },
         }),
       );
@@ -298,6 +304,34 @@ export function ProposeEntity({
             <div className="field">
               <label htmlFor="artist-p-dis">{t("proposeDisambiguation")}</label>
               <input id="artist-p-dis" dir="auto" value={disambiguation} onChange={(e) => setDisambiguation(e.target.value)} onKeyDown={(e) => e.key === "Enter" && e.preventDefault()} />
+            </div>
+          )}
+          {(IMAGE_TYPES as readonly string[]).includes(type) && (
+            <div className="field">
+              {image ? (
+                <div className="attached-image">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img {...mediaSources(image.id, 48)} alt="" width={48} height={48} style={{ borderRadius: 8 }} />
+                  <span>{tp("photoAttached")}</span>
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() => {
+                      void withdrawImage(image.id).catch(() => undefined);
+                      setImage(null);
+                    }}
+                  >
+                    {tp("photoRemove")}
+                  </button>
+                </div>
+              ) : addingImage ? (
+                <ImageUpload onUploaded={(img) => (setImage(img), setAddingImage(false))} onCancel={() => setAddingImage(false)} submitLabel={tp("photoAttach")} />
+              ) : (
+                <button type="button" className="button" onClick={() => setAddingImage(true)}>
+                  {tp("photoAdd")}
+                </button>
+              )}
+              <p className="muted small">{tp("photoHint")}</p>
             </div>
           )}
           <p className="actions">

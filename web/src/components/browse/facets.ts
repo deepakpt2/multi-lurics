@@ -1,5 +1,6 @@
 import { Album, BookOpenText, Languages, Mic2, Music, Music2, PenLine, Sparkles, Tag, Users, Waves, type LucideIcon } from "lucide-react";
 import type { FacetKey } from "@/lib/browse";
+import type { ImageEntity } from "@/lib/images";
 
 /** How each kind of metadata looks. Which kinds exist comes from the API; this only dresses them. */
 export const FACET_ICON: Record<FacetKey, LucideIcon> = {
@@ -18,3 +19,14 @@ export const FACET_ICON: Record<FacetKey, LucideIcon> = {
 
 /** Facets whose value is a fixed code the UI translates, rather than a name. */
 export const CODED: ReadonlySet<FacetKey> = new Set(["religion", "category"]);
+
+/** Facets whose values are entities that can have a picture (people of every role share artists' pictures). */
+export const IMAGE_OF: Partial<Record<FacetKey, ImageEntity>> = {
+  artist: "artist",
+  singer: "artist",
+  lyricist: "artist",
+  composer: "artist",
+  album: "album",
+  raga: "raga",
+  deity: "deity",
+};

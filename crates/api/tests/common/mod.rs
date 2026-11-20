@@ -44,6 +44,13 @@ pub fn app_with(pool: PgPool, tweak: impl FnOnce(&mut Config)) -> App {
         admin_display_name: "Administrator".into(),
         google_client_id: None,
         google_client_secret: None,
+        media_dir: std::env::temp_dir()
+            .join(format!("lyrics-media-{}", Uuid::new_v4()))
+            .to_string_lossy()
+            .into_owned(),
+        media_max_bytes: 1024 * 1024,
+        media_max_side: 4000,
+        media_sizes: vec![32, 64, 128],
     };
     tweak(&mut config);
     App::new(pool, Arc::new(config))

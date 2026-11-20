@@ -7,6 +7,7 @@ pub mod community;
 pub mod config;
 pub mod db;
 pub mod entities;
+pub mod images;
 pub mod legal;
 pub mod localization;
 pub mod lyrics;

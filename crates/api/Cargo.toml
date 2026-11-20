@@ -36,6 +36,7 @@ http-body-util.workspace = true
 tower.workspace = true
 worker = { path = "../worker" }
 unicode-normalization = "0.1"
+image.workspace = true
 async-trait.workspace = true
 
 [lints]

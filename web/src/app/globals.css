@@ -316,7 +316,7 @@ button.link { background: none; border: 0; padding: 0; color: inherit; text-deco
 .results-title { font-size: 1.1rem; margin-block: 0.5rem; }
 [data-pending] .song-list, [data-pending] .facet-values { opacity: 0.55; transition: opacity 0.15s; }
 .song-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
-.song-card { padding-block: 0.75rem; padding-inline: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.song-card { display: flex; gap: 0.85rem; align-items: flex-start; padding-block: 0.75rem; padding-inline: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .song-card h2 { margin-block: 0 0.4rem; font-size: 1.15rem; }
 .song-meta { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; margin: 0; }
 .song-meta > div { display: flex; gap: 0.4rem; min-inline-size: 0; }
@@ -324,7 +324,7 @@ button.link { background: none; border: 0; padding: 0; color: inherit; text-deco
 .song-meta dt::after { content: ":"; }
 .song-meta dd { margin: 0; }
 .facet-values { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.5rem; }
-.facet-values li { display: flex; justify-content: space-between; gap: 0.5rem; align-items: baseline; padding-block: 0.5rem; padding-inline: 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.facet-values li { display: flex; justify-content: space-between; gap: 0.6rem; align-items: center; padding-block: 0.5rem; padding-inline: 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .pager { display: grid; gap: 0.5rem; justify-items: center; margin-block: 1.25rem; }
 .pager ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; justify-content: center; }
 .pager .button[aria-disabled="true"] { opacity: 0.45; pointer-events: none; }
@@ -333,3 +333,27 @@ button.link { background: none; border: 0; padding: 0; color: inherit; text-deco
 .pager-options label { display: inline-flex; gap: 0.4rem; align-items: center; }
 .menu-label { padding-block: 0.25rem; padding-inline: 0.75rem; font-size: 0.8rem; color: var(--muted); }
 @media (max-width: 40rem) { .song-meta { display: grid; } .clear-all { margin-inline-start: 0; } }
+
+/* Pictures that go with names (artists, albums, ragas, deities) */
+.song-card-body { flex: 1; min-inline-size: 0; }
+.facet-values li > a { flex: 1; min-inline-size: 0; overflow-wrap: anywhere; }
+.entity-image { position: relative; display: inline-block; flex: none; }
+.entity-image img, .entity-image-ph { display: block; inline-size: 100%; block-size: 100%; border-radius: 12px; object-fit: cover; background: var(--accent-soft); }
+.entity-image-ph { display: grid; place-items: center; color: var(--accent); border: 1px dashed var(--border); box-sizing: border-box; }
+.entity-image-edit { position: absolute; inset-block-end: -4px; inset-inline-end: -4px; inline-size: 24px; block-size: 24px; padding: 0; display: grid; place-items: center; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--accent); cursor: pointer; box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+.entity-image-edit:hover { background: var(--accent-soft); }
+.image-dialog { max-inline-size: min(32rem, 92vw); padding: 1.25rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: inherit; }
+.image-dialog::backdrop { background: rgb(0 0 0 / 0.4); }
+.image-dialog h2 { margin-block: 0 0.75rem; font-size: 1.15rem; }
+.image-upload { display: grid; gap: 0.75rem; }
+.image-upload-preview { border-radius: 12px; object-fit: cover; }
+.check { display: flex; gap: 0.5rem; align-items: flex-start; }
+.photos-section { margin-block-start: 1.5rem; padding-block-start: 1rem; border-block-start: 1px solid var(--border); }
+.photo-slots { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.photo-slots li { display: flex; align-items: center; gap: 0.75rem; }
+.review-images { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+.review-image { display: grid; gap: 0.75rem; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.review-pair { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+.review-pair figure { margin: 0; display: grid; gap: 0.25rem; justify-items: start; }
+.review-pair img { border-radius: 12px; }
+.attached-image { display: flex; align-items: center; gap: 0.75rem; }

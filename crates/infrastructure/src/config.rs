@@ -30,6 +30,14 @@ pub struct Config {
     /// Google sign-in (OpenID Connect). Both or neither; the feature is off when unset.
     pub google_client_id: Option<String>,
     pub google_client_secret: Option<String>,
+    /// Where uploaded images are stored (local disk). Must be on a persistent volume.
+    pub media_dir: String,
+    /// Largest accepted upload, in bytes.
+    pub media_max_bytes: u64,
+    /// Largest accepted width or height of an uploaded image, in pixels (guards against decompression bombs).
+    pub media_max_side: u32,
+    /// Square sizes (pixels) generated for every image, ascending. Requests are served the smallest one that fits.
+    pub media_sizes: Vec<u32>,
 }
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -176,6 +184,24 @@ impl Config {
             errs.push("LYRICS_GOOGLE_CLIENT_ID and LYRICS_GOOGLE_CLIENT_SECRET must be set together".into());
         }
 
+        let media_dir = get("LYRICS_MEDIA_DIR").unwrap_or_else(|| "./media-data".into());
+        let media_max_bytes: u64 = parse_or(
+            &mut errs,
+            get("LYRICS_MEDIA_MAX_BYTES"),
+            "LYRICS_MEDIA_MAX_BYTES",
+            "5242880",
+        )
+        .unwrap_or(0);
+        if !(10_240..=50 * 1024 * 1024).contains(&media_max_bytes) {
+            errs.push("LYRICS_MEDIA_MAX_BYTES must be between 10240 (10 KB) and 52428800 (50 MB)".into());
+        }
+        let media_max_side: u32 =
+            parse_or(&mut errs, get("LYRICS_MEDIA_MAX_SIDE"), "LYRICS_MEDIA_MAX_SIDE", "8000").unwrap_or(0);
+        if !(64..=20_000).contains(&media_max_side) {
+            errs.push("LYRICS_MEDIA_MAX_SIDE must be between 64 and 20000".into());
+        }
+        let media_sizes = parse_sizes(&mut errs, get("LYRICS_MEDIA_SIZES").as_deref().unwrap_or("96,240,640"));
+
         if !errs.is_empty() {
             return Err(ConfigError(errs));
         }
@@ -199,7 +225,28 @@ impl Config {
             admin_display_name,
             google_client_id,
             google_client_secret,
+            media_dir,
+            media_max_bytes,
+            media_max_side,
+            media_sizes,
         })
+    }
+}
+
+fn parse_sizes(errs: &mut Vec<String>, raw: &str) -> Vec<u32> {
+    let parsed: Result<Vec<u32>, _> = raw.split(',').map(|p| p.trim().parse::<u32>()).collect();
+    match parsed {
+        Ok(mut v) if !v.is_empty() && v.len() <= 8 && v.iter().all(|s| (16..=4096).contains(s)) => {
+            v.sort_unstable();
+            v.dedup();
+            v
+        }
+        _ => {
+            errs.push(format!(
+                "LYRICS_MEDIA_SIZES must be 1-8 comma-separated pixel sizes between 16 and 4096 (got '{raw}')"
+            ));
+            Vec::new()
+        }
     }
 }
 
@@ -238,6 +285,21 @@ mod tests {
         assert_eq!(c.bind_addr.to_string(), "127.0.0.1:8787");
         assert_eq!(c.session_ttl_hours, 336);
         assert!(c.cookie_secure);
+    }
+
+    #[test]
+    fn media_defaults_and_validation() {
+        let c = cfg(OK).unwrap();
+        assert_eq!(c.media_max_bytes, 5 * 1024 * 1024);
+        assert_eq!(c.media_sizes, vec![96, 240, 640]);
+        let mut bad = OK.to_vec();
+        bad.extend([("LYRICS_MEDIA_SIZES", "640, 96,96"), ("LYRICS_MEDIA_MAX_BYTES", "10")]);
+        let ConfigError(errs) = cfg(&bad).unwrap_err();
+        assert!(errs.iter().any(|e| e.contains("LYRICS_MEDIA_MAX_BYTES")));
+        assert!(
+            !errs.iter().any(|e| e.contains("LYRICS_MEDIA_SIZES")),
+            "unsorted/duplicate sizes are tidied: {errs:?}"
+        );
     }
 
     #[test]

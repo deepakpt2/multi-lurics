@@ -7,6 +7,7 @@ import type { components } from "@/api/schema";
 import { usePaged } from "../catalogue/common";
 import { EmptyState, LoadingState, ProblemAlert } from "../states";
 import { Name } from "../localization/localized";
+import { mediaSources } from "@/lib/images";
 import { suggest, type Suggestion } from "./entity-picker";
 
 type Proposal = components["schemas"]["Proposal"];
@@ -52,6 +53,10 @@ function Row({ p, onDone }: { p: Proposal; onDone: () => void }) {
         </strong>{" "}
         <span className="muted small">{t(`types.${p.entity_type as "artist"}`)}</span>
       </p>
+      {p.image_id && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img {...mediaSources(p.image_id, 96)} alt="" width={96} height={96} style={{ borderRadius: 12 }} />
+      )}
       {p.disambiguation && (
         <p className="muted small" dir="auto">
           {p.disambiguation}

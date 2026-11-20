@@ -5,7 +5,7 @@
 use crate::catalogue::{record, settle, snapshot};
 use crate::localization::{names, resolve_requested, Display};
 use crate::pagination::{self, Cursor, Page};
-use crate::{authz, App, AppError, RequestMeta};
+use crate::{authz, images, App, AppError, RequestMeta};
 use domain::localization::EntityType;
 use domain::{catalogue as dc, localization as dl, Principal, Role, Violations};
 use infrastructure::entities::{self as repo, Moved, ProposalRow};
@@ -205,6 +205,8 @@ pub struct ProposalInput {
     pub note: Option<String>,
     /// The proposer has seen the likely matches and says this is a different entity.
     pub confirm_distinct: bool,
+    /// An unsent image upload to show with the new entity once the proposal is approved.
+    pub image_id: Option<Uuid>,
 }
 
 fn opt_text(v: &mut Violations, field: &'static str, raw: Option<&str>, max: usize) -> Option<String> {
@@ -275,9 +277,19 @@ pub async fn propose(app: &App, p: &Principal, meta: &RequestMeta, i: ProposalIn
             if aliases.len() > 10 {
                 v.push("aliases", "too_many");
             }
+            if i.image_id.is_some() && kind.is_some_and(|k| !infrastructure::images::TYPES.contains(&k)) {
+                v.push("image_id", "not_applicable");
+            }
             let mut tx = AppTx::begin(&app.pool).await?;
             if name.is_some() && !repo::has_key(&mut tx, &i.name).await? {
                 v.push("name", "no_letters");
+            }
+            if let Some(img) = i.image_id {
+                match images::check_draft(&mut tx, p, img).await {
+                    Ok(()) => {}
+                    Err(AppError::Validation(_)) => v.push("image_id", "unknown_image"),
+                    Err(e) => return Err(e),
+                }
             }
             v.finish()?;
             let (kind, name, sub) = (kind.expect("valid"), name.expect("valid"), sub.flatten());
@@ -309,6 +321,9 @@ pub async fn propose(app: &App, p: &Principal, meta: &RequestMeta, i: ProposalIn
                 },
             )
             .await?;
+            if let Some(img) = i.image_id {
+                images::attach_to_proposal(&mut tx, img, row.id).await?;
+            }
             record(
                 &mut tx,
                 p,
@@ -375,6 +390,7 @@ pub async fn decide_proposal(
                     current_revision_id: None,
                 });
             }
+            let mut dropped_image = None;
             let (status, entity_id, duplicate_of) = match verdict {
                 ProposalVerdict::Approve { confirm_distinct } => {
                     let likely = likely_matches(&mut tx, &before.entity_type, &before.name).await?;
@@ -385,6 +401,9 @@ pub async fn decide_proposal(
                         });
                     }
                     let created = create_entity(&mut tx, p, meta, &before).await?;
+                    if infrastructure::images::TYPES.contains(&before.entity_type.as_str()) {
+                        images::publish_for_new_entity(&mut tx, p, meta, id, &before.entity_type, created).await?;
+                    }
                     ("approved", Some(created), None)
                 }
                 ProposalVerdict::Reject { duplicate_of } => {
@@ -393,6 +412,7 @@ pub async fn decide_proposal(
                             return Err(domain::DomainError::invalid("duplicate_of_id", "unknown_entity").into());
                         }
                     }
+                    dropped_image = images::reject_for_proposal(&mut tx, p, meta, id).await?;
                     ("rejected", None, duplicate_of)
                 }
             };
@@ -414,6 +434,9 @@ pub async fn decide_proposal(
             )
             .await?;
             tx.commit().await?;
+            if let Some(img) = dropped_image {
+                let _ = app.media.delete_prefix(&img.to_string()).await;
+            }
             Ok(row)
         }
         .await,
@@ -562,6 +585,7 @@ pub async fn merge(app: &App, p: &Principal, meta: &RequestMeta, i: MergeInput) 
                 return Err(conflict("track_conflict"));
             }
             let moved = repo::merge_into(&mut tx, kind, from, into, p.user_id, note.as_deref()).await?;
+            let retired_images = images::on_merge(&mut tx, kind, from.id, into.id).await?;
             record(
                 &mut tx,
                 p,
@@ -574,6 +598,9 @@ pub async fn merge(app: &App, p: &Principal, meta: &RequestMeta, i: MergeInput) 
             )
             .await?;
             tx.commit().await?;
+            for img in retired_images {
+                let _ = app.media.delete_prefix(&img.to_string()).await;
+            }
             Ok(MergeResult {
                 entity_type: kind.to_owned(),
                 from_id: from.id,

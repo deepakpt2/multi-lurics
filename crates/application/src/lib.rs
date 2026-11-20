@@ -10,9 +10,11 @@ pub mod community;
 pub mod comparison;
 pub mod entities;
 pub mod error;
+pub mod images;
 pub mod legal;
 pub mod localization;
 pub mod lyrics;
+pub mod media;
 pub mod oauth;
 pub mod pagination;
 pub mod search;
@@ -39,17 +41,21 @@ pub struct App {
     pub search: Arc<dyn search::SearchService>,
     /// Google sign-in backend; `None` when not configured. Swappable so tests need no network.
     pub google: Option<Arc<dyn oauth::IdentityProvider>>,
+    /// Where image files live; local disk by default, swappable (see `media::MediaStore`).
+    pub media: Arc<dyn media::MediaStore>,
 }
 
 impl App {
     pub fn new(pool: PgPool, config: Arc<Config>) -> Self {
         let search = Arc::new(search::PgSearch::new(pool.clone()));
         let google = oauth::GoogleHttp::from_config(&config).map(|g| Arc::new(g) as Arc<dyn oauth::IdentityProvider>);
+        let media = Arc::new(media::LocalStore::new(&config.media_dir));
         Self {
             pool,
             config,
             search,
             google,
+            media,
         }
     }
 

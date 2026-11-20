@@ -3,3 +3,7 @@
 .mailbox/
 node_modules/
 /deploy/.env
+
+# Uploaded images (local media store) and crash dumps
+/media-data/
+core.*

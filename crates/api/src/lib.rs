@@ -5,6 +5,7 @@ pub mod catalogue;
 pub mod community;
 pub mod entities;
 pub mod extract;
+pub mod images;
 pub mod legal;
 pub mod localization;
 pub mod lyrics;
@@ -24,6 +25,7 @@ use browse as brw;
 use catalogue as cat;
 use community as com;
 use entities as ent;
+use images as img;
 use localization as loc;
 use lyrics as lyr;
 use search as srch;
@@ -59,6 +61,7 @@ use utoipa::{Modify, OpenApi};
         ent::suggest, ent::create_proposal, ent::proposal_queue, ent::approve_proposal, ent::reject_proposal,
         ent::merge_entities,
         brw::songs, brw::facet, brw::suggest,
+        img::limits, img::upload, img::withdraw, img::entity_images, img::media, img::queue, img::approve, img::reject,
         srch::search, srch::suggest, srch::suggestion_accepted, srch::metrics,
         seo_api::get_page, seo_api::sitemap,
         com::resolve, com::save_comparison, com::list_saved, com::get_saved, com::delete_saved,
@@ -259,6 +262,19 @@ pub fn router(app: App) -> Router {
         .route("/pages/{scope}/{slug}", get(seo_api::get_page))
         .route("/sitemap", get(seo_api::sitemap))
         .route("/search", get(srch::search))
+        .route("/images/limits", get(img::limits))
+        .route(
+            "/images",
+            post(img::upload).layer(axum::extract::DefaultBodyLimit::max(
+                app.config.media_max_bytes as usize + 64 * 1024,
+            )),
+        )
+        .route("/images/{id}", axum::routing::delete(img::withdraw))
+        .route("/images/{id}/approve", post(img::approve))
+        .route("/images/{id}/reject", post(img::reject))
+        .route("/entities/{entity_type}/{entity_id}/images", get(img::entity_images))
+        .route("/media/{id}/{width}", get(img::media))
+        .route("/moderation/images", get(img::queue))
         .route("/browse/songs", get(brw::songs))
         .route("/browse/facets/{facet}", get(brw::facet))
         .route("/admin/search/metrics", get(srch::metrics))
