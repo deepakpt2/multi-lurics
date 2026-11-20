@@ -84,6 +84,9 @@ impl Facet {
         match self {
             Self::Artist | Self::Singer | Self::Lyricist | Self::Composer => Kind::Entity("artist"),
             Self::Album => Kind::Entity("album"),
+            Self::Raga => Kind::Entity("raga"),
+            Self::Deity => Kind::Entity("deity"),
+            Self::Tag => Kind::Entity("tag"),
             _ => Kind::Text,
         }
     }
@@ -104,20 +107,11 @@ impl Facet {
             Self::Album => {
                 "SELECT r.composition_id AS song, t.album_id AS v FROM album_tracks t JOIN recordings r ON r.id = t.recording_id"
             }
-            Self::Raga => {
-                "SELECT c.id AS song, replace(lyrics_search_key(c.raga), ' ', '-') AS v, c.raga AS label
-                 FROM compositions c WHERE c.raga IS NOT NULL"
-            }
-            Self::Deity => {
-                "SELECT c.id AS song, replace(lyrics_search_key(c.deity), ' ', '-') AS v, c.deity AS label
-                 FROM compositions c WHERE c.deity IS NOT NULL"
-            }
+            Self::Raga => "SELECT c.id AS song, c.raga_id AS v FROM compositions c WHERE c.raga_id IS NOT NULL",
+            Self::Deity => "SELECT c.id AS song, c.deity_id AS v FROM compositions c WHERE c.deity_id IS NOT NULL",
             Self::Religion => "SELECT c.id AS song, c.religion AS v, c.religion AS label FROM compositions c WHERE c.religion IS NOT NULL",
             Self::Category => "SELECT c.id AS song, c.category AS v, c.category AS label FROM compositions c",
-            Self::Tag => {
-                "SELECT c.id AS song, replace(lyrics_search_key(g), ' ', '-') AS v, g AS label
-                 FROM compositions c, unnest(c.tags) AS g"
-            }
+            Self::Tag => "SELECT composition_id AS song, tag_id AS v FROM composition_tags",
             Self::Language => {
                 "SELECT r.composition_id AS song, lower(l.iso639_3) AS v, coalesce(l.endonym, l.name_en) AS label
                  FROM contributions x JOIN recordings r ON r.id = x.recording_id JOIN languages l ON l.id = x.language_id
@@ -156,22 +150,16 @@ fn push_filters(qb: &mut QueryBuilder<'_, Postgres>, filters: &[Filter]) {
         qb.push(" AND ");
         match f.facet {
             Facet::Raga => {
-                qb.push("replace(lyrics_search_key(c.raga), ' ', '-') = ");
+                qb.push("c.raga_id = ");
             }
             Facet::Deity => {
-                qb.push("replace(lyrics_search_key(c.deity), ' ', '-') = ");
+                qb.push("c.deity_id = ");
             }
             Facet::Religion => {
                 qb.push("c.religion = ");
             }
             Facet::Category => {
                 qb.push("c.category = ");
-            }
-            Facet::Tag => {
-                qb.push("EXISTS (SELECT 1 FROM unnest(c.tags) g WHERE replace(lyrics_search_key(g), ' ', '-') = ");
-                push_value(qb, &f.value);
-                qb.push(")");
-                continue;
             }
             // Entity and language facets: the song has a link row with this value.
             _ => {
@@ -234,6 +222,9 @@ pub async fn sync_slug(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> 
     let sql = match entity_type {
         "artist" => "SELECT name FROM artists WHERE id = $1",
         "album" => "SELECT title FROM albums WHERE id = $1",
+        "raga" => "SELECT name FROM ragas WHERE id = $1",
+        "deity" => "SELECT name FROM deities WHERE id = $1",
+        "tag" => "SELECT name FROM tags WHERE id = $1",
         _ => return Ok(None),
     };
     let Some(name): Option<String> = sqlx::query_scalar(sql).bind(id).fetch_optional(&mut *conn).await? else {
@@ -297,19 +288,11 @@ pub async fn sync_slug(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> 
 pub async fn text_label(conn: &mut PgConnection, facet: Facet, v: &str) -> Res<Option<String>> {
     let sql = match facet {
         Facet::Religion | Facet::Category => {
-            return Ok((RELIGIONS.contains(&v) && facet == Facet::Religion || CATEGORIES.contains(&v) && facet == Facet::Category)
+            return Ok((RELIGIONS.contains(&v) && facet == Facet::Religion
+                || CATEGORIES.contains(&v) && facet == Facet::Category)
                 .then(|| v.to_owned()));
         }
         Facet::Language => "SELECT coalesce(endonym, name_en) FROM languages WHERE lower(iso639_3) = $1",
-        Facet::Raga => {
-            "SELECT raga FROM compositions WHERE raga IS NOT NULL AND replace(lyrics_search_key(raga), ' ', '-') = $1 LIMIT 1"
-        }
-        Facet::Deity => {
-            "SELECT deity FROM compositions WHERE deity IS NOT NULL AND replace(lyrics_search_key(deity), ' ', '-') = $1 LIMIT 1"
-        }
-        Facet::Tag => {
-            "SELECT g FROM compositions c, unnest(c.tags) g WHERE c.tags @> ARRAY[g] AND replace(lyrics_search_key(g), ' ', '-') = $1 LIMIT 1"
-        }
         _ => return Ok(None),
     };
     sqlx::query_scalar(sql).bind(v).fetch_optional(conn).await
@@ -467,10 +450,12 @@ pub async fn list_entities(
     let Kind::Entity(entity_type) = facet.kind() else {
         return Ok(Vec::new());
     };
-    let (table, name) = if entity_type == "album" {
-        ("albums", "e.title")
-    } else {
-        ("artists", "e.name")
+    let (table, name) = match entity_type {
+        "album" => ("albums", "e.title"),
+        "raga" => ("ragas", "e.name"),
+        "deity" => ("deities", "e.name"),
+        "tag" => ("tags", "e.name"),
+        _ => ("artists", "e.name"),
     };
     // Counting happens inside (one row per entity), names and paging outside, so `count(*) OVER()`
     // is the number of entities, not of songs.
@@ -571,13 +556,18 @@ pub async fn suggest_names(
         .push_bind(q.to_owned())
         .push("), ' ', '') AS c, lower(btrim(")
         .push_bind(q.to_owned())
-        .push(")) AS raw),
+        .push(")) AS raw, lyrics_phonetic_key(")
+        .push_bind(q.to_owned())
+        .push(") AS p, lyrics_phonetic_key(")
+        .push_bind(q.to_owned())
+        .push(", false) AS pp),
          cand AS (
            SELECT d.entity_id, d.origin, d.display, d.popularity,
                   CASE WHEN lower(d.display) = q.raw THEN 'exact'
                        WHEN d.key = q.k OR d.compact = q.c THEN 'normalized'
                        WHEN d.key LIKE q.k || '%' OR d.compact LIKE q.c || '%' THEN 'prefix'
                        WHEN d.key LIKE '% ' || q.k || '%' THEN 'word'
+                       WHEN length(q.pp) >= 3 AND (d.phon LIKE q.p || '%' OR d.phon LIKE q.pp || '%') THEN 'phonetic'
                        ELSE 'fuzzy' END AS class,
                   similarity(d.key, q.k)::float8 AS sim
            FROM search_documents d, q
@@ -585,7 +575,8 @@ pub async fn suggest_names(
         .push_bind(doc_type.to_owned())
         .push(
             " AND q.c <> '' AND d.origin <> 'metadata'
-              AND (d.key LIKE q.k || '%' OR d.key LIKE '% ' || q.k || '%' OR d.compact LIKE q.c || '%' OR d.key % q.k)
+              AND (d.key LIKE q.k || '%' OR d.key LIKE '% ' || q.k || '%' OR d.compact LIKE q.c || '%' OR d.key % q.k
+                   OR (length(q.pp) >= 3 AND (d.phon LIKE q.p || '%' OR d.phon LIKE q.pp || '%')))
               AND (d.origin = 'name'
                    OR (d.origin = 'alias' AND EXISTS (SELECT 1 FROM entity_aliases a WHERE a.id = d.source_id AND a.verification_state = 'verified'))
                    OR (d.origin IN ('localization', 'transliteration') AND EXISTS (
@@ -609,6 +600,20 @@ pub async fn suggest_names(
             push_filters(&mut qb, filters);
             qb.push(")");
         }
+        "raga" | "deity" | "tag" => {
+            let (from, cond) = match doc_type {
+                "raga" => ("compositions c", "c.raga_id = d.entity_id"),
+                "deity" => ("compositions c", "c.deity_id = d.entity_id"),
+                _ => (
+                    "composition_tags ct JOIN compositions c ON c.id = ct.composition_id",
+                    "ct.tag_id = d.entity_id",
+                ),
+            };
+            qb.push(format!("EXISTS (SELECT 1 FROM {from} WHERE {cond} AND "))
+                .push(PUBLISHED);
+            push_filters(&mut qb, filters);
+            qb.push(")");
+        }
         _ => {
             qb.push("(");
             for (i, role) in ["singer", "lyricist", "composer"].into_iter().enumerate() {
@@ -625,8 +630,9 @@ pub async fn suggest_names(
     qb.push(
         "),
          scored AS (
-           SELECT cand.*, (w.j->'class_weights'->>(CASE WHEN cand.class = 'word' THEN 'prefix' ELSE cand.class END))::float8
-                    * CASE WHEN cand.class = 'word' THEN 0.9 WHEN cand.class = 'fuzzy' THEN cand.sim ELSE 1 END
+           SELECT cand.*, (w.j->'class_weights'->>(CASE WHEN cand.class IN ('word', 'phonetic') THEN 'prefix' ELSE cand.class END))::float8
+                    * CASE WHEN cand.class = 'word' THEN 0.9 WHEN cand.class = 'phonetic' THEN 0.8
+                           WHEN cand.class = 'fuzzy' THEN cand.sim ELSE 1 END
                     * (w.j->'origin_multipliers'->>cand.origin)::float8
                   + LEAST((w.j->>'popularity_cap')::float8, (w.j->>'popularity_weight')::float8 * ln(1 + cand.popularity::float8)) AS score
            FROM cand, (SELECT ",
@@ -674,33 +680,7 @@ pub async fn suggest_values(conn: &mut PgConnection, q: &str, filters: &[Filter]
             .map(|c| (*c).to_owned())
             .collect()
     };
-    let key_match = |qb: &mut QueryBuilder<'_, Postgres>, col: &str| {
-        qb.push(format!(" AND ({col} LIKE lyrics_search_key("))
-            .push_bind(q.to_owned())
-            .push(format!(") || '%' OR {col} LIKE '% ' || lyrics_search_key("))
-            .push_bind(q.to_owned())
-            .push(") || '%')");
-    };
-    let mut qb = QueryBuilder::new("");
-    for (i, (facet, col, expr)) in [
-        ("raga", "lyrics_search_key(c.raga)", "c.raga"),
-        ("deity", "lyrics_search_key(c.deity)", "c.deity"),
-    ]
-    .into_iter()
-    .enumerate()
-    {
-        if i > 0 {
-            qb.push(" UNION ALL ");
-        }
-        qb.push(format!(
-            "(SELECT '{facet}' AS facet, replace({col}, ' ', '-') AS value, min({expr}) AS label, count(*)::bigint AS songs
-              FROM compositions c WHERE {expr} IS NOT NULL AND "
-        ))
-        .push(PUBLISHED);
-        key_match(&mut qb, col);
-        push_filters(&mut qb, filters);
-        qb.push(format!(" GROUP BY 2 ORDER BY songs DESC, 2 LIMIT {per_kind})"));
-    }
+    let mut qb = QueryBuilder::new("(SELECT 'x' AS facet, '' AS value, '' AS label, 0::bigint AS songs WHERE FALSE)");
     for (facet, col, list) in [
         ("religion", "c.religion", codes(&RELIGIONS)),
         ("category", "c.category", codes(&CATEGORIES)),

@@ -21,6 +21,7 @@ closed_enum!(
     EntityType {
         Composition => "composition", Recording => "recording", Artist => "artist", Album => "album",
         Label => "label", Publisher => "publisher", Genre => "genre", CreditRole => "credit_role",
+        Raga => "raga", Deity => "deity", Tag => "tag",
     }
 );
 
@@ -36,6 +37,9 @@ impl EntityType {
             Self::Publisher => "publishers",
             Self::Genre => "genres",
             Self::CreditRole => "credit_roles",
+            Self::Raga => "ragas",
+            Self::Deity => "deities",
+            Self::Tag => "tags",
         }
     }
 

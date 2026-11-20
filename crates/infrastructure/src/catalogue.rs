@@ -261,63 +261,148 @@ impl CompositionRow {
     }
 }
 
+/// A song's raga, deity and tags are catalogue entities; reads show their canonical names.
 const COMPOSITION: &str =
-    "id, title, iswc, year, category, raga, religion, deity, tags, version, created_by, created_at, updated_at";
+    "compositions.id, compositions.title, compositions.iswc, compositions.year, compositions.category,
+    (SELECT r.name FROM ragas r WHERE r.id = compositions.raga_id) AS raga, compositions.religion,
+    (SELECT d.name FROM deities d WHERE d.id = compositions.deity_id) AS deity,
+    ARRAY(SELECT g.name FROM composition_tags ct JOIN tags g ON g.id = ct.tag_id
+          WHERE ct.composition_id = compositions.id ORDER BY ct.position, g.id) AS tags,
+    compositions.version, compositions.created_by, compositions.created_at, compositions.updated_at";
 
-pub async fn insert_composition(conn: &mut PgConnection, d: &CompositionData, by: Uuid) -> Res<CompositionRow> {
-    sqlx::query_as(&format!(
-        "INSERT INTO compositions (title, iswc, year, category, raga, religion, deity, tags, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING {COMPOSITION}"
-    ))
+/// Which entities a song's raga, deity and tags are.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Terms {
+    pub raga_id: Option<Uuid>,
+    pub deity_id: Option<Uuid>,
+    pub tag_ids: Vec<Uuid>,
+}
+
+pub async fn insert_composition(
+    conn: &mut PgConnection,
+    d: &CompositionData,
+    t: &Terms,
+    by: Uuid,
+) -> Res<CompositionRow> {
+    let id: Uuid = sqlx::query_scalar(
+        "INSERT INTO compositions (title, iswc, year, category, raga_id, religion, deity_id, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+    )
     .bind(&d.title)
     .bind(&d.iswc)
     .bind(d.year)
     .bind(&d.category)
-    .bind(&d.raga)
+    .bind(t.raga_id)
     .bind(&d.religion)
-    .bind(&d.deity)
-    .bind(&d.tags)
+    .bind(t.deity_id)
     .bind(by)
-    .fetch_one(conn)
-    .await
+    .fetch_one(&mut *conn)
+    .await?;
+    set_tags(conn, id, &t.tag_ids).await?;
+    Ok(get_composition(conn, id, false).await?.expect("just inserted"))
 }
 
-pub async fn update_composition(conn: &mut PgConnection, id: Uuid, d: &CompositionData) -> Res<CompositionRow> {
-    sqlx::query_as(&format!(
-        "UPDATE compositions SET title = $2, iswc = $3, year = $4, category = $5, raga = $6, religion = $7,
-                deity = $8, tags = $9, version = version + 1, updated_at = now()
-         WHERE id = $1 RETURNING {COMPOSITION}"
-    ))
+pub async fn update_composition(
+    conn: &mut PgConnection,
+    id: Uuid,
+    d: &CompositionData,
+    t: &Terms,
+) -> Res<CompositionRow> {
+    sqlx::query(
+        "UPDATE compositions SET title = $2, iswc = $3, year = $4, category = $5, raga_id = $6, religion = $7,
+                deity_id = $8, version = version + 1, updated_at = now()
+         WHERE id = $1",
+    )
     .bind(id)
     .bind(&d.title)
     .bind(&d.iswc)
     .bind(d.year)
     .bind(&d.category)
-    .bind(&d.raga)
+    .bind(t.raga_id)
     .bind(&d.religion)
-    .bind(&d.deity)
-    .bind(&d.tags)
-    .fetch_one(conn)
-    .await
+    .bind(t.deity_id)
+    .execute(&mut *conn)
+    .await?;
+    set_tags(conn, id, &t.tag_ids).await?;
+    Ok(get_composition(conn, id, false).await?.expect("just updated"))
+}
+
+/// Replaces a song's tags, keeping the order given.
+async fn set_tags(conn: &mut PgConnection, id: Uuid, tags: &[Uuid]) -> Res<()> {
+    sqlx::query("DELETE FROM composition_tags WHERE composition_id = $1 AND NOT (tag_id = ANY($2))")
+        .bind(id)
+        .bind(tags)
+        .execute(&mut *conn)
+        .await?;
+    for (i, tag) in tags.iter().enumerate() {
+        sqlx::query(
+            "INSERT INTO composition_tags (composition_id, tag_id, position) VALUES ($1, $2, $3)
+             ON CONFLICT (composition_id, tag_id) DO UPDATE SET position = EXCLUDED.position",
+        )
+        .bind(id)
+        .bind(tag)
+        .bind(i as i32)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(())
 }
 
 pub async fn get_composition(conn: &mut PgConnection, id: Uuid, lock: bool) -> Res<Option<CompositionRow>> {
-    let lock = if lock { " FOR UPDATE" } else { "" };
+    let lock = if lock { " FOR UPDATE OF compositions" } else { "" };
     sqlx::query_as(&format!("SELECT {COMPOSITION} FROM compositions WHERE id = $1{lock}"))
         .bind(id)
         .fetch_optional(conn)
         .await
 }
 
-/// The spelling already in use for a raga or deity (case-insensitive match), so "mohanam" and "Mohanam"
-/// do not become two values. `column` is a fixed internal name, never user input.
-pub async fn existing_spelling(conn: &mut PgConnection, column: &'static str, value: &str) -> Res<Option<String>> {
-    debug_assert!(matches!(column, "raga" | "deity"));
-    sqlx::query_scalar(&format!(
-        "SELECT {column} FROM compositions WHERE lower({column}) = lower($1) GROUP BY {column} ORDER BY count(*) DESC, {column} LIMIT 1"
+/// The entity a typed raga, deity or tag stands for. Matches by normalized name, verified localization or
+/// alias, and by phonetic key, so "Mohanam" and "മോഹനം" are the same one. Nothing matches: a new entity is
+/// created from the text as written. `kind` is a fixed internal name, never user input.
+pub async fn resolve_term(conn: &mut PgConnection, kind: &'static str, text: &str, by: Uuid) -> Res<(Uuid, String)> {
+    debug_assert!(matches!(kind, "raga" | "deity" | "tag"));
+    let table = match kind {
+        "raga" => "ragas",
+        "deity" => "deities",
+        _ => "tags",
+    };
+    // One writer at a time per kind, so two songs saved together cannot create the same entity twice.
+    sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))")
+        .bind(format!("term:{kind}"))
+        .execute(&mut *conn)
+        .await?;
+    let found: Option<(Uuid, String)> = sqlx::query_as(&format!(
+        "WITH q AS (SELECT replace(lyrics_search_key($2), ' ', '') AS c, lyrics_phonetic_key($2) AS p)
+         SELECT e.id, e.name FROM search_keys s JOIN {table} e ON e.id = s.entity_id, q
+         WHERE s.entity_type = $1 AND q.c <> '' AND (s.compact = q.c OR (q.p <> '' AND s.phon = q.p))
+         ORDER BY (s.compact = q.c) DESC, (s.origin = 'name') DESC, e.created_at, e.id LIMIT 1"
     ))
-    .bind(value)
-    .fetch_optional(conn)
+    .bind(kind)
+    .bind(text)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some(hit) = found {
+        return Ok(hit);
+    }
+    sqlx::query_as(&format!(
+        "INSERT INTO {table} (name, created_by) VALUES ($1, $2) RETURNING id, name"
+    ))
+    .bind(text)
+    .bind(by)
+    .fetch_one(conn)
+    .await
+}
+
+/// The entity ids a raga, deity or tag filter text stands for (same matching as `resolve_term`, never creates).
+pub async fn find_terms(conn: &mut PgConnection, kind: &'static str, text: &str) -> Res<Vec<Uuid>> {
+    sqlx::query_scalar(
+        "WITH q AS (SELECT replace(lyrics_search_key($2), ' ', '') AS c, lyrics_phonetic_key($2) AS p)
+         SELECT DISTINCT s.entity_id FROM search_keys s, q
+         WHERE s.entity_type = $1 AND q.c <> '' AND (s.compact = q.c OR (q.p <> '' AND s.phon = q.p))",
+    )
+    .bind(kind)
+    .bind(text)
+    .fetch_all(conn)
     .await
 }
 
@@ -339,16 +424,29 @@ pub async fn list_compositions(
     limit: i64,
 ) -> Res<Vec<CompositionRow>> {
     let (ts, id) = after.unzip();
+    // Filter text means the entities it names, whatever the spelling or script.
+    let raga = match &f.raga {
+        Some(t) => Some(find_terms(conn, "raga", t).await?),
+        None => None,
+    };
+    let deity = match &f.deity {
+        Some(t) => Some(find_terms(conn, "deity", t).await?),
+        None => None,
+    };
+    let tag = match &f.tag {
+        Some(t) => Some(find_terms(conn, "tag", t).await?),
+        None => None,
+    };
     sqlx::query_as(&format!(
-        "SELECT {COMPOSITION} FROM compositions c
-         WHERE ($1::uuid IS NULL OR EXISTS (SELECT 1 FROM credits k WHERE k.composition_id = c.id AND k.artist_id = $1))
+        "SELECT {COMPOSITION} FROM compositions
+         WHERE ($1::uuid IS NULL OR EXISTS (SELECT 1 FROM credits k WHERE k.composition_id = compositions.id AND k.artist_id = $1))
            AND ($2::text IS NULL OR iswc = $2)
            AND ($3::text IS NULL OR lower(title) LIKE $3)
            AND ($4::timestamptz IS NULL OR (created_at, id) < ($4, $5))
            AND ($7::text IS NULL OR category = $7)
-           AND ($8::text IS NULL OR lower(raga) = lower($8))
-           AND ($9::text IS NULL OR lower(deity) = lower($9))
-           AND ($10::text IS NULL OR EXISTS (SELECT 1 FROM unnest(tags) t WHERE lower(t) = lower($10)))
+           AND ($8::uuid[] IS NULL OR raga_id = ANY($8))
+           AND ($9::uuid[] IS NULL OR deity_id = ANY($9))
+           AND ($10::uuid[] IS NULL OR EXISTS (SELECT 1 FROM composition_tags ct WHERE ct.composition_id = compositions.id AND ct.tag_id = ANY($10)))
          ORDER BY created_at DESC, id DESC LIMIT $6"
     ))
     .bind(f.artist_id)
@@ -358,9 +456,9 @@ pub async fn list_compositions(
     .bind(id)
     .bind(limit)
     .bind(&f.category)
-    .bind(&f.raga)
-    .bind(&f.deity)
-    .bind(&f.tag)
+    .bind(raga)
+    .bind(deity)
+    .bind(tag)
     .fetch_all(conn)
     .await
 }

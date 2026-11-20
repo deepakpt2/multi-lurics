@@ -18,9 +18,20 @@ use std::collections::HashMap;
 use uuid::Uuid;
 
 /// Every type the picker can search. Languages and scripts are governed reference data.
-pub const SUGGEST_TYPES: [&str; 7] = ["artist", "album", "label", "publisher", "genre", "language", "script"];
+pub const SUGGEST_TYPES: [&str; 10] = [
+    "artist",
+    "album",
+    "label",
+    "publisher",
+    "genre",
+    "raga",
+    "deity",
+    "tag",
+    "language",
+    "script",
+];
 /// Types that can be proposed and merged.
-pub const EDITABLE_TYPES: [&str; 5] = ["artist", "album", "label", "publisher", "genre"];
+pub const EDITABLE_TYPES: [&str; 8] = ["artist", "album", "label", "publisher", "genre", "raga", "deity", "tag"];
 /// Similarity at or above which an existing entity counts as a likely match.
 const LIKELY: f32 = 0.5;
 const SUGGEST_DEFAULT: i64 = 8;

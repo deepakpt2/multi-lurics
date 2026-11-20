@@ -620,15 +620,33 @@ fn composition_data(
     })
 }
 
-/// Reuses the spelling an earlier song already used for the same raga or deity (ignoring case).
-async fn canonical_spellings(tx: &mut AppTx, mut d: CompositionData) -> Result<CompositionData, AppError> {
-    if let Some(r) = d.raga.take() {
-        d.raga = Some(repo::existing_spelling(tx, "raga", &r).await?.unwrap_or(r));
+/// Settles which entities a song's raga, deity and tags are: an existing one when the text means it (any
+/// spelling, script, localization or alias), otherwise a new one. The data then carries the canonical names.
+async fn canonical_spellings(
+    tx: &mut AppTx,
+    mut d: CompositionData,
+    by: Uuid,
+) -> Result<(CompositionData, repo::Terms), AppError> {
+    let mut t = repo::Terms::default();
+    if let Some(text) = d.raga.take() {
+        let (id, name) = repo::resolve_term(tx, "raga", &text, by).await?;
+        (t.raga_id, d.raga) = (Some(id), Some(name));
     }
-    if let Some(x) = d.deity.take() {
-        d.deity = Some(repo::existing_spelling(tx, "deity", &x).await?.unwrap_or(x));
+    if let Some(text) = d.deity.take() {
+        let (id, name) = repo::resolve_term(tx, "deity", &text, by).await?;
+        (t.deity_id, d.deity) = (Some(id), Some(name));
     }
-    Ok(d)
+    let mut names = Vec::new();
+    for text in std::mem::take(&mut d.tags) {
+        let (id, name) = repo::resolve_term(tx, "tag", &text, by).await?;
+        // "bhajan" and "ഭജൻ" in one song are one tag.
+        if !t.tag_ids.contains(&id) {
+            t.tag_ids.push(id);
+            names.push(name);
+        }
+    }
+    d.tags = names;
+    Ok((d, t))
 }
 
 pub async fn create_composition(
@@ -650,9 +668,9 @@ pub async fn create_composition(
             )
             .await?;
             v.finish()?;
-            let d = canonical_spellings(&mut tx, d.expect("valid when no violations")).await?;
+            let (d, terms) = canonical_spellings(&mut tx, d.expect("valid when no violations"), p.user_id).await?;
             guard_identifier(&mut tx, Identifier::CompositionIswc, d.iswc.as_deref(), None).await?;
-            let row = repo::insert_composition(&mut tx, &d, p.user_id).await?;
+            let row = repo::insert_composition(&mut tx, &d, &terms, p.user_id).await?;
             record(
                 &mut tx,
                 p,
@@ -698,7 +716,7 @@ pub async fn update_composition(
                 None => None,
             };
             v.finish()?;
-            let d = canonical_spellings(&mut tx, d.expect("valid when no violations")).await?;
+            let (d, terms) = canonical_spellings(&mut tx, d.expect("valid when no violations"), p.user_id).await?;
             let owner = CreditOwner::Composition(id);
             let credits_before = match &credits {
                 Some(c) => credits_changed(&mut tx, owner, c).await?,
@@ -708,7 +726,7 @@ pub async fn update_composition(
                 return Ok(());
             }
             guard_identifier(&mut tx, Identifier::CompositionIswc, d.iswc.as_deref(), Some(id)).await?;
-            let row = repo::update_composition(&mut tx, id, &d).await?;
+            let row = repo::update_composition(&mut tx, id, &d, &terms).await?;
             if d != cur.data() {
                 record(
                     &mut tx,

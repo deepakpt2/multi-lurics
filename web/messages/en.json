@@ -427,7 +427,10 @@
       "label": "Label",
       "publisher": "Publisher",
       "genre": "Genre",
-      "credit_role": "Credit role"
+      "credit_role": "Credit role",
+      "raga": "Raga",
+      "deity": "Deity",
+      "tag": "Tag"
     },
     "queueTitle": "Review queue",
     "queueEmpty": "Nothing is waiting for review.",
@@ -505,7 +508,10 @@
       "publisher": "publisher",
       "genre": "genre",
       "language": "language",
-      "script": "script"
+      "script": "script",
+      "raga": "raga",
+      "deity": "deity",
+      "tag": "tag"
     },
     "separator": ", ",
     "searching": "Searching…",

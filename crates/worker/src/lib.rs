@@ -132,7 +132,7 @@ impl<H: Handler> Handler for SearchIndexer<H> {
         }
         if !matches!(
             e.aggregate_type.as_str(),
-            "composition" | "recording" | "artist" | "album"
+            "composition" | "recording" | "artist" | "album" | "raga" | "deity" | "tag"
         ) {
             anyhow::bail!("cannot index aggregate type '{}'", e.aggregate_type);
         }
@@ -145,7 +145,7 @@ impl<H: Handler> Handler for SearchIndexer<H> {
             Vec::new()
         };
         // Browse filters address artists and albums by a name-based slug; a rename retires the old one.
-        if matches!(e.aggregate_type.as_str(), "artist" | "album") {
+        if matches!(e.aggregate_type.as_str(), "artist" | "album" | "raga" | "deity" | "tag") {
             infrastructure::browse::sync_slug(&mut tx, &e.aggregate_type, e.aggregate_id).await?;
         }
         let cfg = infrastructure::seo::load_config(&mut tx).await?;

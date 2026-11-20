@@ -316,7 +316,7 @@ pub struct Core {
 
 pub async fn core(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> Res<Option<Core>> {
     let sql = match entity_type {
-        "composition" => "SELECT title, year, iswc AS code, NULL::text AS kind, NULL::text AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, category, raga, religion, deity, tags, updated_at FROM compositions WHERE id = $1",
+        "composition" => "SELECT title, year, iswc AS code, NULL::text AS kind, NULL::text AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, category, (SELECT r.name FROM ragas r WHERE r.id = raga_id) AS raga, religion, (SELECT d.name FROM deities d WHERE d.id = deity_id) AS deity, ARRAY(SELECT g.name FROM composition_tags ct JOIN tags g ON g.id = ct.tag_id WHERE ct.composition_id = compositions.id ORDER BY ct.position, g.id) AS tags, updated_at FROM compositions WHERE id = $1",
         "recording" => "SELECT title, year, isrc AS code, NULL::text AS kind, NULL::text AS detail, duration_ms, composition_id AS parent_id, NULL::text AS category, NULL::text AS raga, NULL::text AS religion, NULL::text AS deity, '{}'::text[] AS tags, updated_at FROM recordings WHERE id = $1",
         _ => "SELECT name AS title, NULL::smallint AS year, isni AS code, kind, disambiguation AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, NULL::text AS category, NULL::text AS raga, NULL::text AS religion, NULL::text AS deity, '{}'::text[] AS tags, updated_at FROM artists WHERE id = $1",
     };

@@ -17,6 +17,9 @@ pub fn table_of(kind: &str) -> Option<(&'static str, &'static str)> {
         "label" => ("labels", "name"),
         "publisher" => ("publishers", "name"),
         "genre" => ("genres", "name"),
+        "raga" => ("ragas", "name"),
+        "deity" => ("deities", "name"),
+        "tag" => ("tags", "name"),
         _ => return None,
     })
 }
@@ -34,15 +37,17 @@ pub struct Hit {
 
 pub async fn suggest(conn: &mut PgConnection, kind: &str, q: &str, limit: i64) -> Res<Vec<Hit>> {
     sqlx::query_as(
-        "WITH q AS (SELECT lyrics_search_key($2) AS k, replace(lyrics_search_key($2), ' ', '') AS c)
+        "WITH q AS (SELECT lyrics_search_key($2) AS k, replace(lyrics_search_key($2), ' ', '') AS c, lyrics_phonetic_key($2) AS p, lyrics_phonetic_key($2, false) AS pp)
          SELECT entity_id, origin, score FROM (
              SELECT DISTINCT ON (s.entity_id) s.entity_id, s.origin,
                     (CASE WHEN s.compact = q.c THEN 1.0
                           WHEN s.key LIKE q.k || '%' THEN 0.9
+                          WHEN length(q.p) >= 3 AND s.phon = q.p THEN 0.85
+                          WHEN length(q.pp) >= 3 AND s.phon LIKE q.pp || '%' THEN 0.8
                           ELSE similarity(s.key, q.k) END)::float4 AS score
              FROM search_keys s, q
              WHERE s.entity_type = $1 AND q.c <> ''
-               AND (s.compact = q.c OR s.key LIKE q.k || '%' OR s.key % q.k)
+               AND (s.compact = q.c OR s.key LIKE q.k || '%' OR s.key % q.k OR (length(q.p) >= 3 AND s.phon = q.p) OR (length(q.pp) >= 3 AND s.phon LIKE q.pp || '%'))
              ORDER BY s.entity_id, 3 DESC
          ) h ORDER BY score DESC, entity_id LIMIT $3",
     )
@@ -80,6 +85,9 @@ pub async fn facts(conn: &mut PgConnection, kind: &str, ids: &[Uuid]) -> Res<Vec
         "label" => "SELECT id, name, NULL::text AS kind, NULL::text AS detail, NULL::smallint AS year, NULL::text AS code FROM labels WHERE id = ANY($1)",
         "publisher" => "SELECT id, name, NULL::text AS kind, NULL::text AS detail, NULL::smallint AS year, NULL::text AS code FROM publishers WHERE id = ANY($1)",
         "genre" => "SELECT id, name, NULL::text AS kind, NULL::text AS detail, NULL::smallint AS year, NULL::text AS code FROM genres WHERE id = ANY($1)",
+        "raga" => "SELECT id, name, NULL::text AS kind, NULL::text AS detail, NULL::smallint AS year, NULL::text AS code FROM ragas WHERE id = ANY($1)",
+        "deity" => "SELECT id, name, NULL::text AS kind, NULL::text AS detail, NULL::smallint AS year, NULL::text AS code FROM deities WHERE id = ANY($1)",
+        "tag" => "SELECT id, name, NULL::text AS kind, NULL::text AS detail, NULL::smallint AS year, NULL::text AS code FROM tags WHERE id = ANY($1)",
         "language" => "SELECT id, name_en AS name, NULL::text AS kind, endonym AS detail, NULL::smallint AS year, iso639_3 AS code FROM languages WHERE id = ANY($1)",
         "script" => "SELECT id, name_en AS name, NULL::text AS kind, NULL::text AS detail, NULL::smallint AS year, iso15924 AS code FROM scripts WHERE id = ANY($1)",
         _ => return Ok(Vec::new()),
@@ -269,6 +277,9 @@ pub async fn lock_pair(conn: &mut PgConnection, kind: &str, a: Uuid, b: Uuid) ->
         "label" => "SELECT id, version, NULL::text AS kind, NULL::text AS strong_id, name, to_jsonb(t) AS snapshot FROM labels t WHERE id = ANY($1) ORDER BY id FOR UPDATE",
         "publisher" => "SELECT id, version, NULL::text AS kind, NULL::text AS strong_id, name, to_jsonb(t) AS snapshot FROM publishers t WHERE id = ANY($1) ORDER BY id FOR UPDATE",
         "genre" => "SELECT id, version, NULL::text AS kind, NULL::text AS strong_id, name, to_jsonb(t) AS snapshot FROM genres t WHERE id = ANY($1) ORDER BY id FOR UPDATE",
+        "raga" => "SELECT id, version, NULL::text AS kind, NULL::text AS strong_id, name, to_jsonb(t) AS snapshot FROM ragas t WHERE id = ANY($1) ORDER BY id FOR UPDATE",
+        "deity" => "SELECT id, version, NULL::text AS kind, NULL::text AS strong_id, name, to_jsonb(t) AS snapshot FROM deities t WHERE id = ANY($1) ORDER BY id FOR UPDATE",
+        "tag" => "SELECT id, version, NULL::text AS kind, NULL::text AS strong_id, name, to_jsonb(t) AS snapshot FROM tags t WHERE id = ANY($1) ORDER BY id FOR UPDATE",
         _ => return Ok(Vec::new()),
     };
     sqlx::query_as(sql).bind(vec![a, b]).fetch_all(conn).await
@@ -376,6 +387,36 @@ pub async fn merge_into(
                 .await?
                 .rows_affected();
         }
+    }
+
+    // Songs that used the merged raga, deity or tag now use the survivor (a tag a song already has is not doubled).
+    match kind {
+        "raga" | "deity" => {
+            let col = if kind == "raga" { "raga_id" } else { "deity_id" };
+            sqlx::query(&format!(
+                "UPDATE compositions SET {col} = $2, updated_at = now() WHERE {col} = $1"
+            ))
+            .bind(f)
+            .bind(i)
+            .execute(&mut *conn)
+            .await?;
+        }
+        "tag" => {
+            sqlx::query(
+                "DELETE FROM composition_tags d USING composition_tags k
+                 WHERE d.tag_id = $1 AND k.tag_id = $2 AND k.composition_id = d.composition_id",
+            )
+            .bind(f)
+            .bind(i)
+            .execute(&mut *conn)
+            .await?;
+            sqlx::query("UPDATE composition_tags SET tag_id = $2 WHERE tag_id = $1")
+                .bind(f)
+                .bind(i)
+                .execute(&mut *conn)
+                .await?;
+        }
+        _ => {}
     }
 
     // Localizations. A slot the survivor already holds is kept as retired history on the survivor,

@@ -11,7 +11,7 @@ import { ProblemAlert } from "../states";
 import { languageName } from "./localized";
 
 type S = components["schemas"];
-export type EntityType = "composition" | "recording" | "artist" | "album" | "label" | "publisher" | "genre" | "credit_role";
+export type EntityType = "composition" | "recording" | "artist" | "album" | "label" | "publisher" | "genre" | "raga" | "deity" | "tag" | "credit_role";
 export const PROVENANCES = ["original", "human_translation", "transliteration", "community", "imported", "machine"] as const satisfies readonly S["Provenance"][];
 
 export const listLanguages = () => call(api.GET("/api/v1/languages", { params: { query: { limit: 100 } } }));

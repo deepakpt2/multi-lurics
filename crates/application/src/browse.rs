@@ -205,7 +205,7 @@ async fn resolve(
     }
     // Current slugs and display names of the resolved entities.
     let mut current: HashMap<(&'static str, Uuid), String> = HashMap::new();
-    for entity_type in ["artist", "album"] {
+    for entity_type in ["artist", "album", "raga", "deity", "tag"] {
         let ids: Vec<Uuid> = pending
             .iter()
             .filter(|(f, ..)| f.kind() == Kind::Entity(entity_type))
@@ -255,18 +255,22 @@ async fn resolve(
 }
 
 fn entity_of(entity_type: &str) -> EntityType {
-    if entity_type == "album" {
-        EntityType::Album
-    } else {
-        EntityType::Artist
+    match entity_type {
+        "album" => EntityType::Album,
+        "raga" => EntityType::Raga,
+        "deity" => EntityType::Deity,
+        "tag" => EntityType::Tag,
+        _ => EntityType::Artist,
     }
 }
 
 async fn entity_name(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> Result<String, AppError> {
-    let sql = if entity_type == "album" {
-        "SELECT title FROM albums WHERE id = $1"
-    } else {
-        "SELECT name FROM artists WHERE id = $1"
+    let sql = match entity_type {
+        "album" => "SELECT title FROM albums WHERE id = $1",
+        "raga" => "SELECT name FROM ragas WHERE id = $1",
+        "deity" => "SELECT name FROM deities WHERE id = $1",
+        "tag" => "SELECT name FROM tags WHERE id = $1",
+        _ => "SELECT name FROM artists WHERE id = $1",
     };
     Ok(sqlx::query_scalar(sql)
         .bind(id)
@@ -453,12 +457,7 @@ pub async fn values(
                 .collect();
             let shown = names(&mut conn, &req, &refs).await?;
             drop(conn);
-            let slugs = ensure_slugs(
-                app,
-                if entity_type == "album" { "album" } else { "artist" },
-                &rows.iter().map(|r| r.id).collect::<Vec<_>>(),
-            )
-            .await?;
+            let slugs = ensure_slugs(app, entity_type, &rows.iter().map(|r| r.id).collect::<Vec<_>>()).await?;
             let items = rows
                 .into_iter()
                 .filter_map(|r| {
@@ -582,8 +581,15 @@ pub async fn suggest(
             Ok::<_, AppError>(repo::suggest_values(&mut c, &q, &filters, PER_KIND).await?)
         }
     };
-    let (songs, albums, artists, values) =
-        tokio::try_join!(fetch("composition"), fetch("album"), fetch("artist"), values)?;
+    let (songs, albums, artists, ragas, deities, tags, values) = tokio::try_join!(
+        fetch("composition"),
+        fetch("album"),
+        fetch("artist"),
+        fetch("raga"),
+        fetch("deity"),
+        fetch("tag"),
+        values
+    )?;
 
     let mut conn = app.pool.acquire().await?;
     let mut refs: Vec<(EntityType, Uuid, String)> = Vec::new();
@@ -592,10 +598,16 @@ pub async fn suggest(
         (EntityType::Composition, &songs),
         (EntityType::Album, &albums),
         (EntityType::Artist, &artists),
+        (EntityType::Raga, &ragas),
+        (EntityType::Deity, &deities),
+        (EntityType::Tag, &tags),
     ] {
         let table = match t {
             EntityType::Composition => "SELECT id, title FROM compositions WHERE id = ANY($1)",
             EntityType::Album => "SELECT id, title FROM albums WHERE id = ANY($1)",
+            EntityType::Raga => "SELECT id, name FROM ragas WHERE id = ANY($1)",
+            EntityType::Deity => "SELECT id, name FROM deities WHERE id = ANY($1)",
+            EntityType::Tag => "SELECT id, name FROM tags WHERE id = ANY($1)",
             _ => "SELECT id, name FROM artists WHERE id = ANY($1)",
         };
         let ids: Vec<Uuid> = hits.iter().map(|h| h.entity_id).collect();
@@ -675,6 +687,32 @@ pub async fn suggest(
                 via: via(&h.origin),
                 score: h.score,
             });
+        }
+    }
+    for (hits, facet, kind, et, slug_kind) in [
+        (&ragas, Facet::Raga, "raga", EntityType::Raga, "raga"),
+        (&deities, Facet::Deity, "deity", EntityType::Deity, "deity"),
+        (&tags, Facet::Tag, "tag", EntityType::Tag, "tag"),
+    ] {
+        let slugs = ensure_slugs(app, slug_kind, &hits.iter().map(|h| h.entity_id).collect::<Vec<_>>()).await?;
+        for h in hits {
+            let (Some(slug), base) = (
+                slugs.get(&h.entity_id),
+                bases.get(&h.entity_id).cloned().unwrap_or_default(),
+            ) else {
+                continue;
+            };
+            if !taken(facet, slug) {
+                out.push(Suggestion {
+                    kind,
+                    slug: slug.clone(),
+                    locale: None,
+                    label: shown.get(et, h.entity_id, &base),
+                    matched: h.display.clone(),
+                    via: via(&h.origin),
+                    score: h.score,
+                });
+            }
         }
     }
     for h in &artists {

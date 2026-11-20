@@ -591,3 +591,47 @@ async fn browse_is_public_cacheable_and_suggested_songs_open_their_page(pool: Pg
     assert_eq!(page.status, StatusCode::OK);
     assert_eq!(page.body["id"], d.song1);
 }
+
+#[sqlx::test(migrator = "infrastructure::MIGRATOR")]
+async fn raga_deity_and_tags_are_one_entity_across_scripts_in_suggestions_and_filters(pool: PgPool) {
+    let w = world(&pool).await;
+    let yesudas = artist(&w, "Yesudas").await;
+    song(
+        &w,
+        "Latin Song",
+        &[&yesudas],
+        json!([]),
+        json!({ "category": "devotional", "deity": "Krishna", "raga": "Mohanam", "tags": ["Bhajan"] }),
+        None,
+    )
+    .await;
+    song(
+        &w,
+        "Malayalam Song",
+        &[&yesudas],
+        json!([]),
+        json!({ "category": "devotional", "deity": "കൃഷ്ണ", "raga": "മോഹനം", "tags": ["ഭജൻ"] }),
+        None,
+    )
+    .await;
+    index(&pool).await;
+    // Typing in either script offers the one raga, deity and tag.
+    for q in ["mohan", "മോഹ"] {
+        let b = ok(&w, &format!("/api/v1/browse/suggest?q={}", enc(q))).await;
+        let ragas: Vec<&Value> = b["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|x| x["kind"] == "raga")
+            .collect();
+        assert_eq!(ragas.len(), 1, "{q}: {b}");
+        assert_eq!(ragas[0]["slug"], "mohanam");
+    }
+    let b = ok(&w, "/api/v1/browse/suggest?q=krish").await;
+    assert!(kinds(&b).contains(&("deity".into(), "Krishna".into())), "{b}");
+    // One filter finds the songs of both spellings.
+    let both = ok(&w, "/api/v1/browse/songs?raga=mohanam&deity=krishna&tag=bhajan").await;
+    assert_eq!(titles(&both), vec!["Latin Song", "Malayalam Song"]);
+    assert_eq!(both["filters"][0]["label"]["text"], "Mohanam");
+    assert_eq!(ok(&w, "/api/v1/browse/facets/raga").await["total"], 1);
+}

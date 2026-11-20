@@ -8,11 +8,11 @@ import { Name } from "../localization/localized";
 import { ProblemAlert } from "../states";
 
 export type Suggestion = components["schemas"]["EntitySuggestion"];
-export type EntityType = Suggestion["type"] extends string ? "artist" | "album" | "label" | "publisher" | "genre" | "language" | "script" : never;
+export type EntityType = Suggestion["type"] extends string ? "artist" | "album" | "label" | "publisher" | "genre" | "raga" | "deity" | "tag" | "language" | "script" : never;
 export type Picked = { id: string; label: string; note?: string };
 
 /** Types a person may propose; languages and scripts are governed reference data. */
-const PROPOSABLE: readonly EntityType[] = ["artist", "album", "label", "publisher", "genre"];
+const PROPOSABLE: readonly EntityType[] = ["artist", "album", "label", "publisher", "genre", "raga", "deity", "tag"];
 export const DEBOUNCE_MS = 250;
 
 export const suggest = (type: EntityType, q: string, signal?: AbortSignal) =>

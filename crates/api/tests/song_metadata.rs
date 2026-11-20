@@ -194,10 +194,11 @@ async fn only_editors_may_change_metadata(pool: PgPool) {
         send(&r, Method::PATCH, &uri, Some(body), Some(&moderator)).await.status,
         StatusCode::OK
     );
-    let deity: Option<String> = sqlx::query_scalar("SELECT deity FROM compositions")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    let deity: Option<String> =
+        sqlx::query_scalar("SELECT d.name FROM compositions c JOIN deities d ON d.id = c.deity_id")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!(deity.as_deref(), Some("Murugan"));
 }
 
@@ -216,10 +217,11 @@ async fn concurrent_edits_with_the_same_version_conflict(pool: PgPool) {
     let mut s = [a.status, b.status];
     s.sort();
     assert_eq!(s, [StatusCode::OK, StatusCode::CONFLICT], "{} / {}", a.body, b.body);
-    let (version, raga): (i32, Option<String>) = sqlx::query_as("SELECT version, raga FROM compositions")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    let (version, raga): (i32, Option<String>) =
+        sqlx::query_as("SELECT c.version, r.name FROM compositions c JOIN ragas r ON r.id = c.raga_id")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!(version, 2);
     assert!(matches!(raga.as_deref(), Some("Kalyani" | "Todi")));
 }
@@ -304,7 +306,7 @@ async fn raga_and_deity_reuse_the_spelling_already_in_use(pool: PgPool) {
     )
     .await;
     assert_eq!(b.body["raga"], "Mohanam");
-    let n: i64 = sqlx::query_scalar("SELECT count(DISTINCT raga) FROM compositions")
+    let n: i64 = sqlx::query_scalar("SELECT count(DISTINCT raga_id) FROM compositions")
         .fetch_one(&pool)
         .await
         .unwrap();
@@ -323,4 +325,104 @@ async fn the_database_refuses_religion_on_a_mainstream_song(pool: PgPool) {
         direct.is_err(),
         "constraint compositions_devotional_check must hold below the API too"
     );
+}
+
+/// "Mohanam" and "മോഹനം" are one raga however they are typed, and so are the other kinds of metadata.
+#[sqlx::test(migrator = "infrastructure::MIGRATOR")]
+async fn a_raga_deity_or_tag_typed_in_another_script_links_to_the_same_entity(pool: PgPool) {
+    let r = router(&pool);
+    let (_, c) = signed_in(&pool, &r, "ed@example.com", None).await;
+    let a = post(
+        &r,
+        "/api/v1/compositions",
+        json!({ "title": "A", "category": "devotional", "raga": "Mohanam", "deity": "Krishna", "tags": ["Bhajan"] }),
+        Some(&c),
+    )
+    .await;
+    assert_eq!(a.status, StatusCode::CREATED, "{}", a.body);
+    for (title, raga, deity, tag) in [
+        ("B", "മോഹനം", "കൃഷ്ണ", "ഭജൻ"),
+        ("C", "मोहनम", "कृष्ण", "भजन"),
+        ("D", "MOHANAM", "krishna", "bhajan"),
+    ] {
+        let b = post(
+            &r,
+            "/api/v1/compositions",
+            json!({ "title": title, "category": "devotional", "raga": raga, "deity": deity, "tags": [tag, tag] }),
+            Some(&c),
+        )
+        .await;
+        assert_eq!(b.status, StatusCode::CREATED, "{title}: {}", b.body);
+        // The song shows the one canonical name, whichever spelling was typed.
+        assert_eq!(
+            (b.body["raga"].clone(), b.body["deity"].clone(), b.body["tags"].clone()),
+            (json!("Mohanam"), json!("Krishna"), json!(["Bhajan"])),
+            "{title}"
+        );
+    }
+    for table in ["ragas", "deities", "tags"] {
+        let n: i64 = sqlx::query_scalar(&format!("SELECT count(*) FROM {table}"))
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert_eq!(n, 1, "{table}: one entity, not one per spelling");
+    }
+    // A different raga stays different.
+    let other = post(
+        &r,
+        "/api/v1/compositions",
+        json!({ "title": "E", "raga": "Kalyani" }),
+        Some(&c),
+    )
+    .await;
+    assert_eq!(other.body["raga"], "Kalyani");
+    // The list filter finds every song under any spelling.
+    for q in ["mohanam", "മോഹനം", "मोहनम"] {
+        let l = get(&r, &format!("/api/v1/compositions?raga={}", q), Some(&c)).await;
+        assert_eq!(l.body["items"].as_array().unwrap().len(), 4, "{q}: {}", l.body);
+    }
+}
+
+/// Two spellings that no rule connects start as two entities; merging them moves every song, and browsing
+/// (including the retired slug) follows. Typing a spelling in another script is suggested across scripts.
+#[sqlx::test(migrator = "infrastructure::MIGRATOR")]
+async fn merging_two_ragas_moves_their_songs_and_old_slugs_keep_working(pool: PgPool) {
+    let r = router(&pool);
+    let (_, c) = signed_in(&pool, &r, "ed@example.com", None).await;
+    let (_, moderator) = signed_in(&pool, &r, "adm@example.com", Some(Role::Admin)).await;
+    for (title, raga) in [("A", "Sankarabharanam"), ("B", "Shankarabharanam Raga")] {
+        let res = post(
+            &r,
+            "/api/v1/compositions",
+            json!({ "title": title, "raga": raga }),
+            Some(&c),
+        )
+        .await;
+        assert_eq!(res.status, StatusCode::CREATED, "{}", res.body);
+    }
+    let ids: Vec<String> = sqlx::query_scalar("SELECT id::text FROM ragas ORDER BY name")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        ids.len(),
+        2,
+        "different spellings with no link are separate until merged"
+    );
+    let merged = post(
+        &r,
+        "/api/v1/entities/merges",
+        json!({ "entity_type": "raga", "from_id": ids[1], "into_id": ids[0], "expected_from_version": 1, "expected_into_version": 1 }),
+        Some(&moderator),
+    )
+    .await;
+    assert!(merged.status.is_success(), "{}", merged.body);
+    let n: i64 = sqlx::query_scalar("SELECT count(DISTINCT raga_id) FROM compositions")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(n, 1);
+    // Both songs now carry the surviving name.
+    let l = get(&r, "/api/v1/compositions?raga=Sankarabharanam", Some(&c)).await;
+    assert_eq!(l.body["items"].as_array().unwrap().len(), 2, "{}", l.body);
 }
