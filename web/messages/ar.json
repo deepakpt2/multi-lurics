@@ -1418,5 +1418,10 @@
   },
   "captcha": {
     "unavailable": "The check could not be loaded. Reload the page or try again later."
+  },
+  "languagePicker": {
+    "placeholder": "Type a language, for example Sanskrit",
+    "hint": "Start typing and choose from the list.",
+    "none": "No language matches. Choose one from the suggestions."
   }
 }

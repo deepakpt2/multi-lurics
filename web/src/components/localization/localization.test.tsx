@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { json, mockFetch, problem, renderIntl } from "@/test/utils";
+import { json, mockFetch, problem, renderIntl, pickLanguage } from "@/test/utils";
 import { setDisplayLanguage } from "@/api/client";
 import { CompositionDetail } from "../catalogue/compositions";
 import { ArtistDetail } from "../catalogue/artists";
@@ -115,10 +115,10 @@ describe("language-aware localization form", () => {
     });
     const onSaved = () => {};
     renderIntl(<LocalizationForm entityType="composition" entityId="c1" onSaved={onSaved} />);
-    const language = await screen.findByLabelText("Language");
+    await screen.findByLabelText("Language");
     const name = screen.getByLabelText("Name");
     expect(name).toHaveAttribute("dir", "ltr");
-    await userEvent.selectOptions(language, "ara");
+    await pickLanguage(screen, "ara", /Arabic/);
     expect(name).toHaveAttribute("dir", "rtl");
     expect(name).toHaveAttribute("lang", "ar");
     await userEvent.selectOptions(screen.getByLabelText("Script"), "Latn");
@@ -140,7 +140,7 @@ describe("language-aware localization form", () => {
         problem(422, "validation_failed", { errors: [{ field: "source", code: "required" }] }),
     });
     renderIntl(<LocalizationForm entityType="artist" entityId="a1" onSaved={() => {}} />);
-    await userEvent.selectOptions(await screen.findByLabelText("Language"), "mal");
+    await pickLanguage(screen, "mal", /Malayalam/);
     expect(screen.queryByRole("option", { name: "Machine" })).not.toBeInTheDocument();
     expect(screen.getByText(/never machine-translated/)).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText("Name"), "യേശുദാസ്");
@@ -156,7 +156,7 @@ describe("language-aware localization form", () => {
         n++ === 0 ? problem(401, "unauthenticated") : problem(409, "localization_slot_taken", { existing_id: "n9" }),
     });
     renderIntl(<LocalizationForm entityType="composition" entityId="c1" onSaved={() => {}} />);
-    await userEvent.selectOptions(await screen.findByLabelText("Language"), "eng");
+    await pickLanguage(screen, "eng", /English/);
     await userEvent.type(screen.getByLabelText("Name"), "X");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
     expect(await screen.findByText("Please sign in to continue.")).toBeInTheDocument();

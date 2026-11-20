@@ -561,3 +561,8 @@ progress { inline-size: min(100%, 20rem); vertical-align: middle; }
 .article-picture-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
 .lyric-feedback { margin-block-start: 0.5rem; font-size: 0.95rem; }
 .lyric-feedback > summary { cursor: pointer; color: var(--muted); }
+
+.language-picker { position: relative; }
+.language-list li { padding: 0.45rem 0.6rem; border-radius: 8px; cursor: pointer; }
+.language-list li.active, .language-list li:hover { background: var(--accent-soft); }
+.language-list li[aria-disabled="true"] { cursor: default; background: transparent; }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { json, mockFetch, problem, renderIntl } from "@/test/utils";
+import { json, mockFetch, problem, renderIntl, pickLanguage } from "@/test/utils";
 import { push } from "@/test/setup";
 import { ContributionDetail, ContributionEdit, ContributionHistory, ContributionNew, LyricsQueue, LyricsSection } from "./lyrics";
 
@@ -42,7 +42,7 @@ describe("lyric editor: new contribution", () => {
     renderIntl(<ContributionNew recordingId="rec1" query={{}} />);
     const bodyField = await screen.findByLabelText("Lyrics");
     expect(bodyField).toHaveAttribute("dir", "ltr");
-    await userEvent.selectOptions(screen.getByLabelText("Language"), "ara");
+    await pickLanguage(screen, "ara", /Arabic/);
     // Language only suggests a usual script; both stay independent fields.
     expect(screen.getByLabelText("Script")).toHaveValue("Arab");
     expect(bodyField).toHaveAttribute("dir", "rtl");

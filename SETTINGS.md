@@ -159,6 +159,10 @@ Whole-text lyric matches are ranked in code below title matches: opening line 60
 
 ---
 
+### Languages for lyrics and titles
+
+These are rows in the `languages` and `scripts` tables (seeded by migrations `0004` and `0019`, including Sanskrit with Devanagari as its usual script). Language pickers search them as you type (`GET /api/v1/languages?q=sans`), and only a language chosen from the suggestions is accepted. To add one, add a migration that inserts the language and its usual script; no code change is needed. Adding a language the *site itself* is shown in (menus, `/ml/...` pages) is a separate, larger change: see `web/src/i18n/routing.ts` and the `seo` setting above.
+
 ## 4. Fixed in code (not configurable)
 
 Changing these needs a code change and a release.

@@ -6438,9 +6438,18 @@
         "operationId": "list_languages",
         "parameters": [
           {
+            "name": "q",
+            "in": "query",
+            "description": "Search instead of paging: a language code or part of its English name or its own name\n(`sans` finds Sanskrit). Best matches first, no `next_cursor`. An empty value lists by name.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "cursor",
             "in": "query",
-            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "description": "Opaque cursor from a previous page's `next_cursor` (ignored when searching).",
             "required": false,
             "schema": {
               "type": "string"

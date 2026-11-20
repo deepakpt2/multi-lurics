@@ -35,3 +35,16 @@ export function mockFetch(routes: Record<string, () => Response>) {
 }
 
 export { json };
+
+/** Chooses a language the way a person does: types some of its name, then picks it from the suggestions. */
+export async function pickLanguage(root: { findByLabelText: (t: string) => Promise<HTMLElement> }, typed: string, name: RegExp) {
+  const { default: userEvent } = await import("@testing-library/user-event");
+  const { within, waitFor } = await import("@testing-library/react");
+  await userEvent.type(await root.findByLabelText("Language"), typed);
+  const list = await waitFor(() => {
+    const el = document.querySelector<HTMLElement>(".language-list");
+    if (!el) throw new Error("no suggestions yet");
+    return el;
+  });
+  await userEvent.click(await within(list).findByRole("option", { name }));
+}

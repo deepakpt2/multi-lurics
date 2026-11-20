@@ -218,6 +218,16 @@ pub async fn list_languages(
     }))
 }
 
+/// Suggestions for a language picker: no cursor, at most `limit` (default 25, up to 100) best matches.
+pub async fn search_languages(app: &App, q: &str, limit: Option<i64>) -> Result<Vec<LanguageRow>, AppError> {
+    let limit = pagination::limit(limit)?;
+    if q.chars().count() > 80 {
+        return Ok(Vec::new());
+    }
+    let mut conn = app.pool.acquire().await?;
+    Ok(repo::search_languages(&mut conn, q, limit).await?)
+}
+
 pub async fn list_scripts(app: &App, cursor: Option<&str>, limit: Option<i64>) -> Result<Page<ScriptRow>, AppError> {
     let limit = pagination::limit(limit)?;
     let after = after(cursor)?;

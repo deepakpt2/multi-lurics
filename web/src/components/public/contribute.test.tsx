@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { json, mockFetch, problem, renderIntl } from "@/test/utils";
+import { json, mockFetch, problem, renderIntl, pickLanguage } from "@/test/utils";
 import { ContributeButton } from "./contribute";
 
 const me = { id: "u1", email: "u@example.com", display_name: "U", roles: [], email_verified: true };
@@ -28,7 +28,7 @@ describe("contribute button", () => {
 
     const dialog = await screen.findByRole("dialog", { name: "Add lyrics: Kannum" });
     expect(within(dialog).getByRole("radio", { name: "Transliteration" })).toBeChecked();
-    await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "eng");
+    await pickLanguage(within(dialog), "eng", /English/);
     await userEvent.type(within(dialog).getByLabelText("Lyrics"), "kannum kannum");
     await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
     expect(await screen.findByText(/once a moderator has checked them/)).toBeInTheDocument();

@@ -5,7 +5,9 @@ import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
 import { ENGLISH, type Block } from "@/lib/contribute";
 import { useLoad } from "../catalogue/common";
-import { languageLabel, listLanguages, listScripts, scriptLabel } from "../localization/names";
+import type { components } from "@/api/schema";
+import { LanguagePicker } from "../localization/language-picker";
+import { languageLabel, listScripts, scriptLabel } from "../localization/names";
 import { ProblemAlert } from "../states";
 
 const TYPES = ["original", "translation", "transliteration"] as const;
@@ -32,7 +34,8 @@ export function LyricsDialog({
   const tl = useTranslations("lyrics");
   const tc = useTranslations("contribute");
   const id = useId();
-  const refs = useLoad("refs", async () => ({ languages: (await listLanguages()).items, scripts: (await listScripts()).items }));
+  const refs = useLoad("scripts", async () => (await listScripts()).items);
+  const [chosen, setChosen] = useState<components["schemas"]["Language"] | null>(null);
   const [type, setType] = useState<Block["type"]>(initial?.type ?? "original");
   const [language, setLanguage] = useState(initial?.language ?? "");
   const [script, setScript] = useState(initial?.script ?? "");
@@ -42,7 +45,7 @@ export function LyricsDialog({
   const [gap, setGap] = useState<"language" | "title" | "lyrics" | null>(null);
   const [busy, setBusy] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const first = useRef<HTMLSelectElement>(null);
+  const first = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
@@ -54,9 +57,8 @@ export function LyricsDialog({
     };
   }, []);
 
-  const languages = refs.state.status === "ready" ? refs.state.data.languages : [];
-  const scripts = refs.state.status === "ready" ? refs.state.data.scripts : [];
-  const rtl = languages.find((l) => l.iso639_3 === language)?.is_rtl ?? false;
+  const scripts = refs.state.status === "ready" ? refs.state.data : [];
+  const rtl = chosen?.is_rtl ?? false;
 
   const save = async () => {
     const g = !language ? "language" : language !== ENGLISH && !songTitle.trim() ? "title" : !body.trim() ? "lyrics" : null;
@@ -119,22 +121,17 @@ export function LyricsDialog({
         </div>
         <div className="field">
           <label htmlFor={`${id}-lang`}>{tc("fields.language")}</label>
-          <select
+          <LanguagePicker
             id={`${id}-lang`}
-            ref={first}
+            inputRef={first}
             value={language}
-            onChange={(e) => {
-              setLanguage(e.target.value);
-              setScript(languages.find((l) => l.iso639_3 === e.target.value)?.default_script ?? "");
+            onLoaded={setChosen}
+            onChange={(code, l) => {
+              setLanguage(code);
+              setChosen(l ?? null);
+              setScript(l?.default_script ?? "");
             }}
-          >
-            <option value="">{tc("choose")}</option>
-            {languages.map((l) => (
-              <option key={l.id} value={l.iso639_3}>
-                {languageLabel(l)}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         {language && (
           <>
@@ -151,7 +148,7 @@ export function LyricsDialog({
             </div>
             {language !== ENGLISH && (
               <div className="field">
-                <label htmlFor={`${id}-title`}>{t("titleIn", { language: (() => { const l = languages.find((x) => x.iso639_3 === language); return l ? languageLabel(l) : language; })() })}</label>
+                <label htmlFor={`${id}-title`}>{t("titleIn", { language: chosen ? languageLabel(chosen) : language })}</label>
                 <input id={`${id}-title`} dir={rtl ? "rtl" : "auto"} lang={language} translate="no" value={songTitle} onChange={(e) => setSongTitle(e.target.value)} />
                 <p className="muted small">{t("titleInHint")}</p>
               </div>

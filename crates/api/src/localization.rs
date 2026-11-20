@@ -176,11 +176,32 @@ pub struct ScriptPage {
     pub next_cursor: Option<String>,
 }
 
-#[utoipa::path(get, path = "/api/v1/languages", tag = "localization", params(PageQuery), responses(
+#[derive(Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
+pub struct LanguageQuery {
+    /// Search instead of paging: a language code or part of its English name or its own name
+    /// (`sans` finds Sanskrit). Best matches first, no `next_cursor`. An empty value lists by name.
+    pub q: Option<String>,
+    /// Opaque cursor from a previous page's `next_cursor` (ignored when searching).
+    pub cursor: Option<String>,
+    /// Page size, 1–100 (default 25).
+    pub limit: Option<i64>,
+}
+
+#[utoipa::path(get, path = "/api/v1/languages", tag = "localization", params(LanguageQuery), responses(
     (status = 200, body = LanguagePage),
     (status = 422, body = Problem, content_type = "application/problem+json")))]
-pub async fn list_languages(State(app): State<App>, ApiQuery(q): ApiQuery<PageQuery>) -> ApiResult<Json<LanguagePage>> {
-    let page = uc::list_languages(&app, q.cursor.as_deref(), q.limit).await?;
+pub async fn list_languages(
+    State(app): State<App>,
+    ApiQuery(q): ApiQuery<LanguageQuery>,
+) -> ApiResult<Json<LanguagePage>> {
+    let page = match q.q.as_deref() {
+        Some(text) => application::pagination::Page {
+            items: uc::search_languages(&app, text, q.limit).await?,
+            next_cursor: None,
+        },
+        None => uc::list_languages(&app, q.cursor.as_deref(), q.limit).await?,
+    };
     Ok(Json(LanguagePage {
         items: page
             .items

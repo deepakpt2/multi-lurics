@@ -9,6 +9,7 @@ import { Field, formValues, useFieldError, useSubmit } from "../form";
 import { Loaded, useLoad } from "../catalogue/common";
 import { ProblemAlert } from "../states";
 import { languageName } from "./localized";
+import { LanguagePicker } from "./language-picker";
 
 type S = components["schemas"];
 export type EntityType = "composition" | "recording" | "artist" | "album" | "label" | "publisher" | "genre" | "raga" | "deity" | "tag" | "credit_role";
@@ -52,8 +53,9 @@ export function LocalizationForm({ entityType, entityId, onSaved }: { entityType
   const t = useTranslations("localization");
   const tf = useTranslations("fields");
   const ui = useTranslations();
-  const refs = useLoad("refs", async () => ({ languages: (await listLanguages()).items, scripts: (await listScripts()).items }));
+  const refs = useLoad("scripts", async () => ({ scripts: (await listScripts()).items }));
   const [language, setLanguage] = useState("");
+  const [lang, setLang] = useState<S["Language"] | undefined>();
   const [script, setScript] = useState("");
   const [provenance, setProvenance] = useState<S["Provenance"]>("original");
   const s = useSubmit(async (v: Record<string, string>) => {
@@ -76,8 +78,7 @@ export function LocalizationForm({ entityType, entityId, onSaved }: { entityType
   const [published, setPublished] = useState(false);
   return (
     <Loaded load={refs}>
-      {({ languages, scripts }) => {
-        const lang = languages.find((l) => l.iso639_3 === language);
+      {({ scripts }) => {
         const scr = scripts.find((x) => x.iso15924 === script);
         const rtl = scr?.is_rtl ?? lang?.is_rtl ?? false;
         const tag = lang ? (lang.iso639_1 ?? lang.iso639_3) : undefined;
@@ -89,14 +90,19 @@ export function LocalizationForm({ entityType, entityId, onSaved }: { entityType
                 <p>{published ? t("published") : t("submitted")}</p>
               </div>
             )}
-            <SelectBox name="language" label={tf("language")} value={language} onChange={setLanguage} fieldErrors={s.fieldErrors}>
-              <option value="">{t("choose")}</option>
-              {languages.map((l) => (
-                <option key={l.id} value={l.iso639_3}>
-                  {languageLabel(l)}
-                </option>
-              ))}
-            </SelectBox>
+            <div className="field">
+              <label htmlFor="loc-language">{tf("language")}</label>
+              <LanguagePicker
+                id="loc-language"
+                value={language}
+                invalid={s.fieldErrors.some((e) => e.field === "language")}
+                onChange={(code, l) => {
+                  setLanguage(code);
+                  setLang(l);
+                }}
+                onLoaded={setLang}
+              />
+            </div>
             <SelectBox name="script" label={tf("script")} value={script} onChange={setScript} fieldErrors={s.fieldErrors}>
               <option value="">{t("autoScript")}</option>
               {scripts.map((x) => (

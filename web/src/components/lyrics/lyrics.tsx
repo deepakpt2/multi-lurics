@@ -9,7 +9,8 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Loaded, usePaged, useLoad } from "../catalogue/common";
 import { useFieldError, useSubmit } from "../form";
 import { Name, languageName } from "../localization/localized";
-import { SelectBox, languageLabel, listLanguages, listScripts, scriptLabel } from "../localization/names";
+import { LanguagePicker } from "../localization/language-picker";
+import { SelectBox, listScripts, scriptLabel } from "../localization/names";
 import { PhotoSlots } from "../media/photo-slots";
 import { EmptyState, ErrorState, LoadingState, ProblemAlert } from "../states";
 
@@ -144,9 +145,10 @@ export function ContributionNew({ recordingId, query }: { recordingId: string; q
   const tf = useTranslations("fields");
   const router = useRouter();
   const key = useRef(newKey());
-  const refs = useLoad("refs", async () => ({ languages: (await listLanguages()).items, scripts: (await listScripts()).items }));
+  const refs = useLoad("scripts", async () => ({ scripts: (await listScripts()).items }));
   const [type, setType] = useState<string>(query.type ?? "original");
   const [language, setLanguage] = useState(query.language ?? "");
+  const [lang, setLang] = useState<{ is_rtl: boolean; iso639_1?: string | null; iso639_3: string; default_script?: string | null } | undefined>();
   const [script, setScript] = useState(query.script ?? "");
   const s = useSubmit(async (fd: FormData) => {
     const note = textOf(fd, "note").trim();
@@ -168,8 +170,7 @@ export function ContributionNew({ recordingId, query }: { recordingId: string; q
   return (
     <>
     <Loaded load={refs}>
-      {({ languages, scripts }) => {
-        const lang = languages.find((l) => l.iso639_3 === language || l.iso639_1 === language);
+      {({ scripts }) => {
         const scr = scripts.find((x) => x.iso15924 === script);
         const rtl = scr?.is_rtl ?? lang?.is_rtl ?? false;
         return (
@@ -182,25 +183,21 @@ export function ContributionNew({ recordingId, query }: { recordingId: string; q
                 </option>
               ))}
             </SelectBox>
-            <SelectBox
-              name="language"
-              label={tf("language")}
-              value={language}
-              onChange={(v) => {
-                setLanguage(v);
-                // Language and script are separate choices; the language only suggests a usual script.
-                const next = languages.find((l) => l.iso639_3 === v);
-                if (next?.default_script && !script) setScript(next.default_script);
-              }}
-              fieldErrors={s.fieldErrors}
-            >
-              <option value="">{t("choose")}</option>
-              {languages.map((l) => (
-                <option key={l.id} value={l.iso639_3}>
-                  {languageLabel(l)}
-                </option>
-              ))}
-            </SelectBox>
+            <div className="field">
+              <label htmlFor="contrib-language">{tf("language")}</label>
+              <LanguagePicker
+                id="contrib-language"
+                value={language}
+                invalid={s.fieldErrors.some((e) => e.field === "language")}
+                onChange={(code, l) => {
+                  setLanguage(code);
+                  setLang(l);
+                  // Language and script are separate choices; the language only suggests a usual script.
+                  if (l?.default_script && !script) setScript(l.default_script);
+                }}
+                onLoaded={setLang}
+              />
+            </div>
             <SelectBox name="script" label={tf("script")} value={script} onChange={setScript} fieldErrors={s.fieldErrors}>
               <option value="">{t("choose")}</option>
               {scripts.map((x) => (

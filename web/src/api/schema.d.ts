@@ -8198,7 +8198,12 @@ export interface operations {
     list_languages: {
         parameters: {
             query?: {
-                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                /**
+                 * @description Search instead of paging: a language code or part of its English name or its own name
+                 *     (`sans` finds Sanskrit). Best matches first, no `next_cursor`. An empty value lists by name.
+                 */
+                q?: string;
+                /** @description Opaque cursor from a previous page's `next_cursor` (ignored when searching). */
                 cursor?: string;
                 /** @description Page size, 1–100 (default 25). */
                 limit?: number;

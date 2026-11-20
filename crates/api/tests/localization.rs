@@ -1167,3 +1167,51 @@ async fn taxonomy_entities_are_localizable(pool: PgPool) {
         .await
         .assert_problem(StatusCode::UNPROCESSABLE_ENTITY, "validation_failed");
 }
+
+/// Language pickers search as you type: a code, or part of the English name or the name in the
+/// language's own script; best matches first; the whole list is reachable (no 100-row cut-off).
+#[sqlx::test(migrator = "infrastructure::MIGRATOR")]
+async fn languages_are_searched_by_what_is_typed(pool: PgPool) {
+    let r = router(&pool);
+    let names = |v: &serde_json::Value| -> Vec<String> {
+        v["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|l| l["name_en"].as_str().unwrap().to_owned())
+            .collect()
+    };
+    let by = |q: &str| {
+        let r = r.clone();
+        let uri = format!("/api/v1/languages?q={q}");
+        async move { get(&r, &uri, None).await.body }
+    };
+    let sans = by("sans").await;
+    assert_eq!(names(&sans)[0], "Sanskrit");
+    assert_eq!(sans["items"][0]["iso639_3"], "san");
+    assert_eq!(sans["items"][0]["default_script"], "Deva");
+    assert!(sans["next_cursor"].is_null());
+    // A code finds its language first; a name in its own script works too.
+    assert_eq!(names(&by("ml").await)[0], "Malayalam");
+    assert_eq!(
+        names(&by("%E0%B4%AE%E0%B4%B2%E0%B4%AF%E0%B4%BE%E0%B4%B3%E0%B4%82").await)[0],
+        "Malayalam"
+    );
+    // Names that merely contain the text come after those that start with it; wildcards are plain text.
+    assert!(
+        names(&by("hin").await).iter().position(|n| n == "Hindi")
+            < names(&by("hin").await)
+                .iter()
+                .position(|n| n == "Marathi")
+                .or(Some(usize::MAX))
+    );
+    assert!(by("%25").await["items"].as_array().unwrap().is_empty());
+    assert!(by("zzzzzz").await["items"].as_array().unwrap().is_empty());
+    // Empty text lists by name, limited.
+    let all = get(&r, "/api/v1/languages?q=&limit=5", None).await.body;
+    assert_eq!(all["items"].as_array().unwrap().len(), 5);
+    // The newer Indian and international languages are all there to find.
+    for q in ["odia", "assamese", "pali", "vietnamese", "tulu", "santali"] {
+        assert!(!by(q).await["items"].as_array().unwrap().is_empty(), "{q}");
+    }
+}

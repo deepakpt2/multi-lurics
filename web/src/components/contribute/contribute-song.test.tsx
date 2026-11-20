@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { json, mockFetch, problem, renderIntl } from "@/test/utils";
+import { json, mockFetch, problem, renderIntl, pickLanguage } from "@/test/utils";
 import { parsePrefill } from "@/lib/contribute";
 import { ContributeSong } from "./contribute-song";
 
@@ -49,7 +49,7 @@ describe("contribute a song", () => {
     expect(within(dialog).getByRole("alert")).toHaveTextContent("Please choose the language.");
     await userEvent.click(within(dialog).getByRole("radio", { name: "Transliteration" }));
     expect(within(dialog).getByText(/Someone else can add the original later/)).toBeInTheDocument();
-    await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "mal");
+    await pickLanguage(within(dialog), "mal", /Malayalam/);
     // A language other than English asks for the song's title in it.
     await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
     expect(await within(dialog).findByText("Please type the song title in this language.")).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe("contribute a song", () => {
     // The next one starts as a translation... unless nothing is an original yet: here none is, so original.
     expect(within(dialog).getByRole("radio", { name: "Original" })).toBeChecked();
     await userEvent.click(within(dialog).getByRole("radio", { name: "Translation" }));
-    await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "eng");
+    await pickLanguage(within(dialog), "eng", /English/);
     await userEvent.type(within(dialog).getByLabelText("Lyrics"), "eyes to eyes");
     await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
     expect(screen.getAllByRole("listitem").filter((li) => li.className === "lyric-entry")).toHaveLength(2);
@@ -91,7 +91,7 @@ describe("contribute a song", () => {
     await userEvent.type(await screen.findByLabelText("Song title in English"), "T");
     await userEvent.click(screen.getByRole("button", { name: /^Add lyrics$/ }));
     let dialog = await screen.findByRole("dialog");
-    await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "eng");
+    await pickLanguage(within(dialog), "eng", /English/);
     await userEvent.type(within(dialog).getByLabelText("Lyrics"), "first");
     await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
     await userEvent.click(screen.getByRole("button", { name: "Edit" }));
@@ -128,7 +128,7 @@ describe("contribute a song", () => {
     await userEvent.type(await screen.findByLabelText("Song title in English"), "T");
     await userEvent.click(screen.getByRole("button", { name: /^Add lyrics$/ }));
     const dialog = await screen.findByRole("dialog");
-    await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "eng");
+    await pickLanguage(within(dialog), "eng", /English/);
     await userEvent.type(within(dialog).getByLabelText("Lyrics"), "x");
     await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));

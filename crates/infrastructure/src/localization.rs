@@ -54,6 +54,34 @@ pub async fn list_languages(conn: &mut PgConnection, after: After, limit: i64) -
     .await
 }
 
+/// Languages matching what was typed: a code, or the start of (or a word in) the English name or the
+/// name in its own script. Best matches first (code, then name starts, then the rest). An empty `q`
+/// lists by name.
+pub async fn search_languages(conn: &mut PgConnection, q: &str, limit: i64) -> Res<Vec<LanguageRow>> {
+    let q = q.trim().to_lowercase();
+    // `%`, `_` and `\` in what was typed mean themselves.
+    let like = q.replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_");
+    sqlx::query_as(&format!(
+        "{LANGUAGE}
+         WHERE $1 = '' OR lower(l.iso639_3) = $1 OR lower(l.iso639_1) = $1
+            OR lower(l.name_en) LIKE '%' || $2 || '%' OR lower(l.endonym) LIKE '%' || $2 || '%'
+         ORDER BY CASE
+                    WHEN $1 = '' THEN 5
+                    WHEN lower(l.iso639_3) = $1 OR lower(l.iso639_1) = $1 THEN 0
+                    WHEN lower(l.name_en) LIKE $2 || '%' THEN 1
+                    WHEN lower(l.endonym) LIKE $2 || '%' THEN 2
+                    WHEN lower(l.name_en) LIKE '% ' || $2 || '%' THEN 3
+                    ELSE 4 END,
+                  l.name_en, l.id
+         LIMIT $3"
+    ))
+    .bind(&q)
+    .bind(&like)
+    .bind(limit)
+    .fetch_all(conn)
+    .await
+}
+
 pub async fn list_scripts(conn: &mut PgConnection, after: After, limit: i64) -> Res<Vec<ScriptRow>> {
     let (ts, id) = after.unzip();
     sqlx::query_as(
