@@ -509,3 +509,16 @@ progress { inline-size: min(100%, 20rem); vertical-align: middle; }
 .suggest-list button:hover, .suggest-list button[data-active] { background: var(--accent-soft); }
 .similar ul { margin: 0.25rem 0; padding-inline-start: 1.25rem; }
 .contribute-done { padding: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--ok-bg); }
+
+/* Modal window (lyrics) and the list of lyrics added so far */
+.modal-backdrop { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 1rem; background: rgb(30 20 10 / 55%); overflow: auto; }
+.modal { inline-size: min(100%, 40rem); max-block-size: calc(100dvh - 2rem); overflow: auto; display: grid; gap: 1rem; padding: 1.25rem; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); }
+.modal-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.modal-head h2 { margin: 0; font-size: 1.2rem; }
+.modal .field { margin: 0; }
+.modal select, .modal textarea { inline-size: 100%; }
+.lyric-entries { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.lyric-entry { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.7rem 0.9rem; border: 1px solid var(--border); border-radius: 10px; }
+.lyric-entry p { margin: 0.2rem 0 0; color: var(--muted); }
+.lyric-preview { overflow-wrap: anywhere; }
+.lyric-entry-tools { display: inline-flex; gap: 0.4rem; align-items: center; }

@@ -88,7 +88,7 @@ export function SearchBox() {
     };
   }, [q, enough, retry]);
 
-  const items = state.status === "done" ? state.items : [];
+  const items = state.status === "done" ? state.items.filter((i) => i.type !== "recording") : [];
   const choose = (item: SearchItem) => {
     // Fire and forget: acceptance counting must never delay or block navigation.
     void api.POST("/api/v1/search/suggest/accepted").catch(() => undefined);
@@ -223,7 +223,7 @@ export function SearchResults({ initialQuery }: { initialQuery: string }) {
     [q, more],
   );
 
-  const shown = state.status === "ready" ? state.groups.filter((g) => g.items.length > 0) : [];
+  const shown = state.status === "ready" ? state.groups.filter((g) => g.type !== "recordings" && g.items.length > 0) : [];
   return (
     <>
       <form

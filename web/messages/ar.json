@@ -33,7 +33,8 @@
     "catalogueTools": "أدوات الفهرس",
     "import": "Bulk import",
     "siteNav": "Site navigation",
-    "contribute": "Contribute"
+    "contribute": "Contribute",
+    "metadata": "Metadata values"
   },
   "localeNames": {
     "en": "English",
@@ -1020,7 +1021,30 @@
     "disable": "تعطيل الحساب",
     "enable": "تفعيل الحساب",
     "loadMore": "عرض المزيد",
-    "joined": "انضم في {date}"
+    "joined": "انضم في {date}",
+    "metadata": {
+      "title": "Metadata values",
+      "intro": "Create singers, albums, ragas, deities and tags ahead of time, so contributors choose them from the suggestions instead of making a second copy. A name that already exists is left alone.",
+      "kinds": {
+        "artist": "Artists",
+        "album": "Albums",
+        "raga": "Ragas",
+        "deity": "Deities",
+        "tag": "Tags"
+      },
+      "kind": "What to create",
+      "subKind": "Type",
+      "year": "Release year (all albums below)",
+      "names": "Names, one per line",
+      "namesHint": "Any script. Up to 200 at a time.",
+      "create": "Create",
+      "working": "Creating…",
+      "summary": "{created, plural, =0 {Nothing new was created} one {# created} other {# created}}, {existing} already existed, {failed} could not be made.",
+      "made": "Created",
+      "existing": "Already there",
+      "failed": "Could not be made",
+      "adminOnly": "Only admins can create metadata values."
+    }
   },
   "browse": {
     "title": "تصفح الأغاني",
@@ -1272,14 +1296,15 @@
       "composers": "The music director for a film song.",
       "occasions": "Separate with commas, e.g. Navratri, Ekadashi, morning.",
       "youtube": "Optional. Paste any YouTube link.",
-      "noOriginalNeeded": "You can add this without the original. Someone else can add the original later."
+      "noOriginalNeeded": "You can add this without the original. Someone else can add the original later.",
+      "titleFirst": "Enter the song title first."
     },
     "similar": {
       "title": "Songs that look similar are already here:",
       "hint": "If your song is one of them, open it and use Contribute there to add a translation or details instead."
     },
     "addAnother": "Add the same song in another language",
-    "removeBlock": "Remove this language",
+    "removeBlock": "Remove",
     "duplicate": "A song with this title is already on this album.",
     "duplicateAnyway": "Add it anyway",
     "reviewNote": "Lyrics from new contributors are checked by a moderator before they appear publicly.",
@@ -1295,7 +1320,10 @@
       "published": "Your song is published.",
       "pending": "Your song was received. Its lyrics will appear once a moderator has checked them.",
       "another": "Add another song",
-      "home": "Go to the home page"
+      "home": "Go to the home page",
+      "lyricsPublished": "Your lyrics are published.",
+      "lyricsPending": "Your lyrics were received. They will appear once a moderator has checked them.",
+      "ok": "OK"
     },
     "picker": {
       "suggestions": "Suggestions",
@@ -1303,6 +1331,21 @@
       "new": "new",
       "fixed": "fixed",
       "remove": "Remove {name}"
+    },
+    "lyricsEmpty": "No lyrics added yet.",
+    "addLyrics": "Add lyrics",
+    "addMoreLyrics": "Add more lyrics (another language, translation or transliteration)",
+    "edit": "Edit",
+    "dialog": {
+      "title": "Add lyrics",
+      "titleFor": "Add lyrics: {title}",
+      "close": "Close",
+      "save": "Save lyrics",
+      "cancel": "Cancel",
+      "missing": {
+        "language": "Please choose the language.",
+        "lyrics": "Please add the lyrics."
+      }
     }
   }
 }

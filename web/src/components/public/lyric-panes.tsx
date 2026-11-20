@@ -4,6 +4,7 @@ import { BookOpen, ExternalLink, Minus, Plus, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
+import { AddLyricsDialog } from "../contribute/add-lyrics";
 import {
   DEFAULT_READING,
   SIZES,
@@ -58,8 +59,8 @@ export function LyricPanes({
   pageLocale,
   initial,
   fullScreen,
-  recordingId,
-  sourceId,
+  songId,
+  title,
 }: {
   lyrics: Lyric[];
   /** The song page's path, e.g. `/song/kaatrin-mozhi`; the full-screen page lives under it. */
@@ -68,9 +69,9 @@ export function LyricPanes({
   /** Lyric ids to open with (the address of a full-screen view). */
   initial?: string[];
   fullScreen?: boolean;
-  /** The recording a lyric of a missing type is added to, and the original it can point back to. */
-  recordingId: string;
-  sourceId?: string;
+  /** The song a lyric of a missing type is added to. */
+  songId: string;
+  title?: string;
 }) {
   const t = useTranslations("public.panes");
   const tl = useTranslations("lyrics");
@@ -83,8 +84,7 @@ export function LyricPanes({
   const opener = useRef<HTMLElement | null>(null);
   const closer = useRef<HTMLButtonElement>(null);
   const id = useId();
-  const addHref = (type: LyricType) =>
-    `/recordings/${recordingId}/lyrics/new?type=${type}${sourceId && type !== "original" ? `&source=${sourceId}` : ""}`;
+  const [adding, setAdding] = useState<LyricType | null>(null);
 
   useEffect(() => setPrefs(loadReading()), []);
   // A full-screen view is addressable: the address always names the columns that are open.
@@ -212,7 +212,9 @@ export function LyricPanes({
               ) : same.length === 0 ? (
                 <p className="muted lyric-pane-empty">
                   {t("none", { type: tl(`types.${p.type}`).toLowerCase() })}{" "}
-                  <Link href={addHref(p.type)}>{t("addOne")}</Link>
+                  <button type="button" className="link" onClick={() => setAdding(p.type)}>
+                    {t("addOne")}
+                  </button>
                 </p>
               ) : (
                 <p className="muted lyric-pane-empty">{t("pick")}</p>
@@ -233,7 +235,14 @@ export function LyricPanes({
     </div>
   );
 
-  if (!reading) return body;
+  const dialog = adding && <AddLyricsDialog songId={songId} title={title} type={adding} onClose={() => setAdding(null)} />;
+  if (!reading)
+    return (
+      <>
+        {body}
+        {dialog}
+      </>
+    );
   return (
     <div className="reading" role="dialog" aria-modal="true" aria-label={t("reading")} data-theme={prefs.theme} style={{ ["--reading-size" as string]: `${SIZES[prefs.size]}rem` }}>
       <div className="reading-bar">
@@ -257,6 +266,7 @@ export function LyricPanes({
         </button>
       </div>
       <div className="reading-body">{body}</div>
+      {dialog}
     </div>
   );
 }

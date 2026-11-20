@@ -1,23 +1,22 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useState } from "react";
 import { ApiProblem, api, call } from "@/api/client";
 import type { components } from "@/api/schema";
 import { Link } from "@/i18n/navigation";
 import { buildSubmission, type Block, type Draft, type Prefill } from "@/lib/contribute";
 import { DEVOTIONAL_FORMS } from "../catalogue/compositions";
-import { Loaded, useLoad } from "../catalogue/common";
 import { useSubmit } from "../form";
-import { languageLabel, listLanguages, listScripts, scriptLabel } from "../localization/names";
+import { languageName } from "../localization/localized";
+import { LyricsDialog } from "./lyrics-dialog";
 import { useSession } from "../session";
 import { ProblemAlert } from "../states";
 import { DEBOUNCE_MS } from "../entities/entity-picker";
 import { NamePicker } from "./name-picker";
 
 type Made = components["schemas"]["SongMade"];
-const TYPES = ["original", "translation", "transliteration"] as const;
 const RELIGIONS = ["hindu", "sikh", "buddhist", "jain", "christian", "muslim", "other"] as const;
 let n = 0;
 const blockKey = () => `b${++n}`;
@@ -69,7 +68,8 @@ export function ContributeSong({ prefill }: { prefill: Prefill }) {
   const tc = useTranslations("catalogue");
   const id = useId();
   const { user } = useSession();
-  const refs = useLoad("refs", async () => ({ languages: (await listLanguages()).items, scripts: (await listScripts()).items }));
+  const locale = useLocale();
+  const [editing, setEditing] = useState<Block | "new" | null>(null);
   const lock = (k: string) => prefill.locked.has(k);
   const [d, setD] = useState<Draft>(() => ({
     title: "",
@@ -87,10 +87,9 @@ export function ContributeSong({ prefill }: { prefill: Prefill }) {
     occasions: "",
     tags: prefill.tags,
     youtube: "",
-    blocks: [{ key: blockKey(), language: prefill.language ?? "", script: "", type: "original", body: "" }],
+    blocks: [],
   }));
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((x) => ({ ...x, [k]: v }));
-  const setBlock = (key: string, patch: Partial<Block>) => set("blocks", d.blocks.map((b) => (b.key === key ? { ...b, ...patch } : b)));
   const [done, setDone] = useState<Made | null>(null);
   const [duplicate, setDuplicate] = useState(false);
   const [missing, setMissing] = useState<string | null>(null);
@@ -98,7 +97,7 @@ export function ContributeSong({ prefill }: { prefill: Prefill }) {
   const s = useSubmit(async (allow: boolean) => {
     setDuplicate(false);
     const blocks = d.blocks.filter((b) => b.body.trim());
-    const gap = !d.title.trim() ? "title" : blocks.length === 0 ? "lyrics" : blocks.some((b) => !b.language) ? "language" : null;
+    const gap = !d.title.trim() ? "title" : blocks.length === 0 ? "lyrics" : null;
     if (gap) {
       setMissing(gap);
       return;
@@ -132,7 +131,7 @@ export function ContributeSong({ prefill }: { prefill: Prefill }) {
         <p className="actions">
           <button type="button" className="button primary" onClick={() => {
               setDone(null);
-              setD((x) => ({ ...x, title: "", year: "", blocks: [{ key: blockKey(), language: prefill.language ?? "", script: "", type: "original", body: "" }] }));
+              setD((x) => ({ ...x, title: "", year: "", blocks: [] }));
             }}>
             {t("done.another")}
           </button>
@@ -145,8 +144,7 @@ export function ContributeSong({ prefill }: { prefill: Prefill }) {
   }
 
   return (
-    <Loaded load={refs}>
-      {({ languages, scripts }) => (
+    <>
         <form
           noValidate
           className="contribute-form"
@@ -229,79 +227,39 @@ export function ContributeSong({ prefill }: { prefill: Prefill }) {
             </div>
           </fieldset>
 
-          {d.blocks.map((b, i) => {
-            const rtl = languages.find((l) => l.iso639_3 === b.language)?.is_rtl ?? false;
-            return (
-              <fieldset key={b.key} className="contribute-section" data-block>
-                <legend>{i === 0 ? t("sections.lyrics") : t("sections.another", { n: i + 1 })}</legend>
-                <div className="field">
-                  <label htmlFor={`${id}-${b.key}-lang`}>{t("fields.language")}</label>
-                  <select
-                    id={`${id}-${b.key}-lang`}
-                    value={b.language}
-                    onChange={(e) => setBlock(b.key, { language: e.target.value, script: languages.find((l) => l.iso639_3 === e.target.value)?.default_script ?? "" })}
-                  >
-                    <option value="">{t("choose")}</option>
-                    {languages.map((l) => (
-                      <option key={l.id} value={l.iso639_3}>
-                        {languageLabel(l)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="field">
-                  <label htmlFor={`${id}-${b.key}-script`}>{t("fields.script")}</label>
-                  <select id={`${id}-${b.key}-script`} value={b.script} onChange={(e) => setBlock(b.key, { script: e.target.value })}>
-                    <option value="">{t("scriptAuto")}</option>
-                    {scripts.map((x) => (
-                      <option key={x.id} value={x.iso15924}>
-                        {scriptLabel(x)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="field" role="radiogroup" aria-label={t("fields.type")}>
-                  <span className="field-label">{t("fields.type")}</span>
-                  <div className="segmented">
-                    {TYPES.map((x) => (
-                      <button key={x} type="button" role="radio" aria-checked={b.type === x} onClick={() => setBlock(b.key, { type: x })}>
-                        {tl(`types.${x}`)}
+          <fieldset className="contribute-section">
+            <legend>{t("sections.lyrics")}</legend>
+            {d.blocks.length === 0 ? (
+              <p className="muted">{t("lyricsEmpty")}</p>
+            ) : (
+              <ul className="lyric-entries">
+                {d.blocks.map((b) => (
+                  <li key={b.key} className="lyric-entry">
+                    <div>
+                      <strong>{tl(`types.${b.type}`)}</strong> <span className="muted">{languageName(b.language, locale)}</span>
+                      <p className="lyric-preview" dir="auto" lang={b.language}>
+                        {b.body.trim().split("\n").slice(0, 2).join(" / ")}
+                      </p>
+                    </div>
+                    <span className="lyric-entry-tools">
+                      <button type="button" className="button" onClick={() => setEditing(b)}>
+                        {t("edit")}
                       </button>
-                    ))}
-                  </div>
-                  {b.type !== "original" && <p className="muted small">{t("hints.noOriginalNeeded")}</p>}
-                </div>
-                <div className="field">
-                  <label htmlFor={`${id}-${b.key}-body`}>{t("fields.lyrics")}</label>
-                  <textarea
-                    id={`${id}-${b.key}-body`}
-                    className="lyrics-input"
-                    rows={14}
-                    dir={rtl ? "rtl" : "ltr"}
-                    lang={b.language || undefined}
-                    translate="no"
-                    value={b.body}
-                    onChange={(e) => setBlock(b.key, { body: e.target.value })}
-                  />
-                  <p className="muted small">{tl("bodyHint")}</p>
-                </div>
-                {d.blocks.length > 1 && (
-                  <button type="button" className="button" onClick={() => set("blocks", d.blocks.filter((x) => x.key !== b.key))}>
-                    <Trash2 size={16} aria-hidden="true" /> {t("removeBlock")}
-                  </button>
-                )}
-              </fieldset>
-            );
-          })}
-          <p>
-            <button
-              type="button"
-              className="button"
-              onClick={() => set("blocks", [...d.blocks, { key: blockKey(), language: "", script: "", type: d.blocks.some((x) => x.type === "original") ? "translation" : "original", body: "" }])}
-            >
-              <Plus size={16} aria-hidden="true" /> {t("addAnother")}
-            </button>
-          </p>
+                      <button type="button" className="button" onClick={() => set("blocks", d.blocks.filter((x) => x.key !== b.key))}>
+                        <Trash2 size={16} aria-hidden="true" /> {t("removeBlock")}
+                      </button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p>
+              <button type="button" className="button primary" disabled={!d.title.trim()} onClick={() => setEditing("new")}>
+                <Plus size={16} aria-hidden="true" /> {d.blocks.length === 0 ? t("addLyrics") : t("addMoreLyrics")}
+              </button>
+            </p>
+            {!d.title.trim() && <p className="muted small">{t("hints.titleFirst")}</p>}
+          </fieldset>
 
           {duplicate && (
             <div className="alert alert-warning" role="alert">
@@ -315,12 +273,22 @@ export function ContributeSong({ prefill }: { prefill: Prefill }) {
           )}
           <p className="muted small">{t("reviewNote")}</p>
           <p className="actions">
-            <button className="button primary" type="submit" disabled={s.submitting} aria-busy={s.submitting}>
+            <button className="button primary" type="submit" disabled={s.submitting || !d.title.trim() || d.blocks.length === 0} aria-busy={s.submitting}>
               {s.submitting ? t("submitting") : t("submit")}
             </button>
           </p>
         </form>
-      )}
-    </Loaded>
+        {editing && (
+          <LyricsDialog
+            title={d.title.trim()}
+            initial={editing === "new" ? { language: prefill.language ?? "", type: d.blocks.some((x) => x.type === "original") ? "translation" : "original" } : editing}
+            onClose={() => setEditing(null)}
+            onSave={(b) => {
+              set("blocks", editing === "new" ? [...d.blocks, { key: blockKey(), ...b }] : d.blocks.map((x) => (x.key === editing.key ? { ...x, ...b } : x)));
+              setEditing(null);
+            }}
+          />
+        )}
+    </>
   );
 }

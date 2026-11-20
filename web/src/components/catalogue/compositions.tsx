@@ -9,6 +9,7 @@ import { NamesLink } from "../localization/names";
 import { MatchHint } from "./match-hint";
 import { Field, SelectField, formValues, useSubmit } from "../form";
 import { youtubeId } from "@/lib/youtube";
+import { ContributeButton } from "../public/contribute";
 import { CREDIT_ROLES, CreditList, FormActions, ListShell, Loaded, RefListEditor, SaveProblem, int, str, text, useLoad, usePaged, type S } from "./common";
 
 type Query = Record<string, string>;
@@ -173,31 +174,10 @@ export function CompositionDetail({ id }: { id: string }) {
               {t("edit")}
             </Link>
             <NamesLink entityType="composition" entityId={id} />
-            <Link className="button" href={`/recordings/new?composition_id=${id}`}>
-              {t("addRecording")}
-            </Link>
+            <ContributeButton target={{ kind: "song", id, title: c.title }} />
           </p>
           <h2>{t("credits")}</h2>
           <CreditList credits={c.credits} />
-          <h2>{t("recordingsOf", { count: c.recording_count })}</h2>
-          {c.recordings.length === 0 ? (
-            <p className="muted">{t("recordings.empty")}</p>
-          ) : (
-            <ul className="entity-list">
-              {c.recordings.map((r) => (
-                <li key={r.id}>
-                  <Link href={`/recordings/${r.id}`}>
-                    <Name display={r.display} />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-          {c.recording_count > c.recordings.length && (
-            <p>
-              <Link href={`/recordings?composition_id=${id}`}>{t("allRecordings")}</Link>
-            </p>
-          )}
         </article>
       )}
     </Loaded>

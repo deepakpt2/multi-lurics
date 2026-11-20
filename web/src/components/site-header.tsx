@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { Columns2, Disc3, FileUp, Flower2, PenLine, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, NotebookPen, ShieldCheck, UserPlus, UserRound, Users } from "lucide-react";
+import { Columns2, FileUp, Flower2, PenLine, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, NotebookPen, ShieldCheck, UserPlus, UserRound, Tags, Users } from "lucide-react";
 import { Menu as MenuIcon, X as CloseIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -93,12 +93,12 @@ export function SiteHeader() {
               <Dropdown.Separator className="menu-sep" />
               <Dropdown.Label className="menu-label">{t("nav.catalogueTools")}</Dropdown.Label>
               <MenuLink href="/compositions" icon={Library}>{t("nav.compositions")}</MenuLink>
-              <MenuLink href="/recordings" icon={Disc3}>{t("nav.recordings")}</MenuLink>
               <MenuLink href="/artists" icon={Mic2}>{t("nav.artists")}</MenuLink>
               <MenuLink href="/albums" icon={ListMusic}>{t("nav.albums")}</MenuLink>
               {(isModerator || isAdmin) && <Dropdown.Separator className="menu-sep" />}
               {isModerator && <MenuLink href="/moderation" icon={ShieldCheck}>{t("nav.moderation")}</MenuLink>}
               {isModerator && <MenuLink href="/import" icon={FileUp}>{t("nav.import")}</MenuLink>}
+              {isAdmin && <MenuLink href="/admin/metadata" icon={Tags}>{t("nav.metadata")}</MenuLink>}
               {isAdmin && <MenuLink href="/admin/users" icon={Users}>{t("nav.users")}</MenuLink>}
               <Dropdown.Separator className="menu-sep" />
               <Dropdown.Item className="menu-item" onSelect={() => void signOut()}>

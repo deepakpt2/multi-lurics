@@ -768,3 +768,126 @@ async fn a_member_adds_a_whole_song_in_one_form_even_with_only_a_transliteration
         assert!(problems(&res).contains(&(field.into(), code.into())), "{}", res.body);
     }
 }
+
+#[sqlx::test(migrator = "infrastructure::MIGRATOR")]
+async fn admins_create_metadata_in_advance_and_members_add_lyrics_to_any_song(pool: PgPool) {
+    let w = world(&pool).await;
+    let (_, admin) = signed_in(&pool, &w.r, "admin@example.com", Some(Role::Admin)).await;
+    let body = |kind: &str, names: Value| json!({ "kind": kind, "names": names });
+    assert_eq!(
+        post(
+            &w.r,
+            "/api/v1/admin/metadata",
+            body("raga", json!(["Mohanam"])),
+            Some(&w.moderator)
+        )
+        .await
+        .status,
+        StatusCode::FORBIDDEN
+    );
+    assert_eq!(
+        post(&w.r, "/api/v1/admin/metadata", body("raga", json!(["Mohanam"])), None)
+            .await
+            .status,
+        StatusCode::UNAUTHORIZED
+    );
+
+    for (kind, names) in [
+        ("raga", json!(["Mohanam", " Kalyani ", "mohanam", ""])),
+        ("deity", json!(["Hanuman"])),
+        ("tag", json!(["bhajan"])),
+        ("artist", json!(["Yesudas", "K. S. Chithra"])),
+        ("album", json!(["Kireedam"])),
+    ] {
+        let res = post(&w.r, "/api/v1/admin/metadata", body(kind, names), Some(&admin)).await;
+        assert_eq!(res.status, StatusCode::OK, "{kind}: {}", res.body);
+        if kind == "raga" {
+            let r: Vec<(bool, &str)> = res.body["results"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|x| (x["created"].as_bool().unwrap(), x["name"].as_str().unwrap()))
+                .collect();
+            assert_eq!(
+                r,
+                [(true, "Mohanam"), (true, "Kalyani"), (false, "mohanam")],
+                "blank skipped, repeats reported as existing"
+            );
+        }
+    }
+    let again = post(
+        &w.r,
+        "/api/v1/admin/metadata",
+        body("artist", json!(["yesudas"])),
+        Some(&admin),
+    )
+    .await;
+    assert_eq!(again.body["results"][0]["created"], false);
+    assert_eq!(
+        post(
+            &w.r,
+            "/api/v1/admin/metadata",
+            json!({ "kind": "song", "names": ["x"] }),
+            Some(&admin)
+        )
+        .await
+        .status,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    let n = |sql: &'static str| {
+        let pool = pool.clone();
+        async move { sqlx::query_scalar::<_, i64>(sql).fetch_one(&pool).await.unwrap() }
+    };
+    assert_eq!(
+        (
+            n("SELECT count(*) FROM ragas").await,
+            n("SELECT count(*) FROM artists").await,
+            n("SELECT count(*) FROM albums").await
+        ),
+        (2, 2, 1)
+    );
+
+    // A song made with a bare composition has no recording; adding lyrics makes one quietly.
+    let s = song(&w, json!({ "title": "Bare" })).await;
+    let uri = format!("/api/v1/compositions/{}/lyrics", id(&s));
+    let lyric = json!({ "type": "translation", "language": "en", "body": "words" });
+    assert_eq!(
+        post(&w.r, &uri, lyric.clone(), None).await.status,
+        StatusCode::UNAUTHORIZED
+    );
+    let added = post(&w.r, &uri, lyric.clone(), Some(&w.other)).await;
+    assert_eq!(added.status, StatusCode::CREATED, "{}", added.body);
+    assert_eq!(added.body["status"], "pending");
+    let more = post(
+        &w.r,
+        &uri,
+        json!({ "type": "transliteration", "language": "ml", "script": "Latn", "body": "x" }),
+        Some(&w.moderator),
+    )
+    .await;
+    assert_eq!(more.body["status"], "published");
+    assert_eq!(n("SELECT count(*) FROM recordings").await, 1, "one recording, reused");
+    assert_eq!(n("SELECT count(*) FROM contributions").await, 2);
+    assert_eq!(
+        post(
+            &w.r,
+            &format!("/api/v1/compositions/{}/lyrics", Uuid::nil()),
+            lyric,
+            Some(&w.other)
+        )
+        .await
+        .status,
+        StatusCode::NOT_FOUND
+    );
+    assert_eq!(
+        post(
+            &w.r,
+            &uri,
+            json!({ "type": "translation", "language": "zz", "body": "x" }),
+            Some(&w.other)
+        )
+        .await
+        .status,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+}

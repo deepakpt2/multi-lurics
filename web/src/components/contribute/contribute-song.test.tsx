@@ -26,27 +26,47 @@ describe("contribute a song", () => {
     expect(await screen.findByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
   });
 
-  it("takes details and a transliteration with no original, and suggests existing songs and albums while typing", async () => {
-    const { calls } = mockFetch(routes({ "POST /api/v1/contribute/song": () => json(201, { composition_id: "c9", recording_id: "r9", statuses: ["pending"] }) }));
+  it("shows the details first; lyrics are added in a window, one set at a time, and the song is submitted at the end", async () => {
+    const { calls } = mockFetch(routes({ "POST /api/v1/contribute/song": () => json(201, { composition_id: "c9", recording_id: "r9", statuses: ["pending", "pending"] }) }));
     renderIntl(<ContributeSong prefill={parsePrefill({})} />);
-    await userEvent.type(await screen.findByLabelText("Song title"), "Kannum Kannum");
+    // The details come first. Lyrics cannot be added, or the song submitted, before the title is there.
+    expect(await screen.findByRole("button", { name: /^Add lyrics$/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
+    await userEvent.type(screen.getByLabelText("Song title"), "Kannum Kannum");
     // Similar songs already in the catalogue are shown so the same song is not added twice.
     expect(await screen.findByText("Songs that look similar are already here:")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Kannum Kannum Existing" })).toBeInTheDocument();
-
-    // Albums are suggested; choosing one uses the existing record.
+    // Albums are suggested; choosing one uses the existing record. A new singer name is added as new.
     await userEvent.type(screen.getByLabelText("Album or film"), "Kire");
     await userEvent.click(await screen.findByRole("button", { name: "Kireedam" }));
-    // Singers: a new name is added as new.
     await userEvent.type(screen.getByLabelText("Singers"), "Somebody New{Enter}");
     expect(screen.getByText("Somebody New")).toBeInTheDocument();
 
-    await userEvent.selectOptions(screen.getByLabelText("Language"), "mal");
-    await userEvent.click(screen.getByRole("radio", { name: "Transliteration" }));
-    expect(screen.getByText(/Someone else can add the original later/)).toBeInTheDocument();
-    await userEvent.type(screen.getByLabelText("Lyrics"), "kannum kannum");
-    await userEvent.click(screen.getByRole("button", { name: "Submit" }));
+    // First lyrics: a transliteration, with no original.
+    await userEvent.click(screen.getByRole("button", { name: /^Add lyrics$/ }));
+    let dialog = await screen.findByRole("dialog", { name: "Add lyrics: Kannum Kannum" });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
+    expect(within(dialog).getByRole("alert")).toHaveTextContent("Please choose the language.");
+    await userEvent.click(within(dialog).getByRole("radio", { name: "Transliteration" }));
+    expect(within(dialog).getByText(/Someone else can add the original later/)).toBeInTheDocument();
+    await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "mal");
+    await userEvent.type(within(dialog).getByLabelText("Lyrics"), "kannum kannum");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
 
+    // Back on the page, the lyrics are listed, and more can be added for the same song.
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByText("kannum kannum")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /Add more lyrics/ }));
+    dialog = await screen.findByRole("dialog");
+    // The next one starts as a translation... unless nothing is an original yet: here none is, so original.
+    expect(within(dialog).getByRole("radio", { name: "Original" })).toBeChecked();
+    await userEvent.click(within(dialog).getByRole("radio", { name: "Translation" }));
+    await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "eng");
+    await userEvent.type(within(dialog).getByLabelText("Lyrics"), "eyes to eyes");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
+    expect(screen.getAllByRole("listitem").filter((li) => li.className === "lyric-entry")).toHaveLength(2);
+
+    await userEvent.click(screen.getByRole("button", { name: "Submit" }));
     expect(await screen.findByText("Thank you!")).toBeInTheDocument();
     expect(screen.getByText(/once a moderator has checked them/)).toBeInTheDocument();
     const sent = (await calls.find((c) => c.method === "POST")!.json()) as Record<string, unknown>;
@@ -54,22 +74,30 @@ describe("contribute a song", () => {
       title: "Kannum Kannum",
       album: { id: "al1", name: "Kireedam" },
       singers: [{ id: null, name: "Somebody New" }],
-      lyrics: [{ type: "transliteration", language: "mal", script: "Mlym", body: "kannum kannum" }],
+      lyrics: [
+        { type: "transliteration", language: "mal", script: "Mlym", body: "kannum kannum" },
+        { type: "translation", language: "eng", script: "Latn", body: "eyes to eyes" },
+      ],
     });
   });
 
-  it("another language adds a section; the song can have several", async () => {
+  it("an entry can be edited or removed before submitting", async () => {
     mockFetch(routes());
     renderIntl(<ContributeSong prefill={parsePrefill({})} />);
-    await screen.findByLabelText("Song title");
-    await userEvent.click(screen.getByRole("button", { name: "Add the same song in another language" }));
-    expect(screen.getAllByLabelText("Lyrics")).toHaveLength(2);
-    expect(screen.getByText("Lyrics in another language (2)")).toBeInTheDocument();
-    // The second section starts as a translation, since there is already an original.
-    const second = screen.getByText("Lyrics in another language (2)").closest("fieldset")!;
-    expect(within(second).getByRole("radio", { name: "Translation" })).toBeChecked();
-    await userEvent.click(within(second).getByRole("button", { name: "Remove this language" }));
-    expect(screen.getAllByLabelText("Lyrics")).toHaveLength(1);
+    await userEvent.type(await screen.findByLabelText("Song title"), "T");
+    await userEvent.click(screen.getByRole("button", { name: /^Add lyrics$/ }));
+    let dialog = await screen.findByRole("dialog");
+    await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "eng");
+    await userEvent.type(within(dialog).getByLabelText("Lyrics"), "first");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
+    await userEvent.click(screen.getByRole("button", { name: "Edit" }));
+    dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText("Lyrics")).toHaveValue("first");
+    await userEvent.type(within(dialog).getByLabelText("Lyrics"), " edited");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
+    expect(screen.getByText("first edited")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Remove" }));
+    expect(screen.getByText("No lyrics added yet.")).toBeInTheDocument();
   });
 
   it("from an album page the album is filled in and cannot be changed", async () => {
@@ -90,16 +118,15 @@ describe("contribute a song", () => {
     expect(screen.getByLabelText("Form")).toBeInTheDocument();
   });
 
-  it("needs a title, some lyrics and a language, and offers 'add anyway' for a duplicate on the album", async () => {
+  it("offers 'add anyway' for a duplicate on the album", async () => {
     const { calls } = mockFetch(routes({ "POST /api/v1/contribute/song": () => problem(409, "possible_duplicate", { candidates: ["c1"] }) }));
-    renderIntl(<ContributeSong prefill={parsePrefill({})} />);
-    await userEvent.click(await screen.findByRole("button", { name: "Submit" }));
-    expect(screen.getByRole("alert")).toHaveTextContent("Please enter the song title.");
-    await userEvent.type(screen.getByLabelText("Song title"), "T");
-    await userEvent.type(screen.getByLabelText("Lyrics"), "x");
-    await userEvent.click(screen.getByRole("button", { name: "Submit" }));
-    expect(screen.getByRole("alert")).toHaveTextContent("choose the language");
-    await userEvent.selectOptions(screen.getByLabelText("Language"), "eng");
+    renderIntl(<ContributeSong prefill={parsePrefill({ album: "al1", album_name: "Kireedam" })} />);
+    await userEvent.type(await screen.findByLabelText("Song title"), "T");
+    await userEvent.click(screen.getByRole("button", { name: /^Add lyrics$/ }));
+    const dialog = await screen.findByRole("dialog");
+    await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "eng");
+    await userEvent.type(within(dialog).getByLabelText("Lyrics"), "x");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
     expect(await screen.findByText("A song with this title is already on this album.")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Add it anyway" }));

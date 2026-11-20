@@ -74,9 +74,6 @@ export function publicPage(scope: Scope) {
     const tr = await getTranslations("catalogue");
     const tf = await getTranslations("fields");
     const others = p.alternates.filter((a) => a.locale !== p.locale);
-    const lead = p.lyrics[0];
-    const recordingId = p.scope === "recording" ? p.id : lead?.recording_id;
-    const sourceId = p.lyrics.find((l) => l.type === "original" && l.recording_id === recordingId)?.id;
     const songPath = `/${scope}/${encodeURIComponent(p.canonical.slug)}`;
     return (
       <article>
@@ -94,9 +91,11 @@ export function publicPage(scope: Scope) {
           )}
         </p>
         {(p.scope === "song" || p.scope === "artist") && <PageStats kind={p.scope} id={p.id} lyricIds={p.lyrics.map((l) => l.id)} />}
-        <p className="page-actions">
-          <ContributeButton target={p.scope === "artist" ? { kind: "artist", id: p.id } : { kind: p.scope === "song" ? "song" : "recording", id: p.id, recordingId, sourceId }} />
-        </p>
+        {p.scope !== "recording" && (
+          <p className="page-actions">
+            <ContributeButton target={p.scope === "artist" ? { kind: "artist", id: p.id } : { kind: "song", id: p.id, title: p.title.text }} />
+          </p>
+        )}
         {p.scope === "song" && (
           <dl className="facts">
             <dt>{tf("category")}</dt>
@@ -169,23 +168,11 @@ export function publicPage(scope: Scope) {
             </ul>
           </>
         )}
-        {p.recordings.length > 0 && (
-          <>
-            <h2>{t("recordings")}</h2>
-            <ul className="entity-list">
-              {p.recordings.map((r) => (
-                <li key={r.id}>
-                  <PageLinkItem link={r} />
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
         {p.youtube_id && <VideoEmbed id={p.youtube_id} title={p.title.text} />}
-        {p.lyrics.length > 0 && recordingId && (
+        {p.lyrics.length > 0 && p.scope === "song" && (
           <section aria-labelledby="lyrics-title">
             <h2 id="lyrics-title">{t("lyrics")}</h2>
-            <LyricPanes lyrics={p.lyrics} songPath={songPath} pageLocale={p.locale} recordingId={recordingId} sourceId={sourceId} />
+            <LyricPanes lyrics={p.lyrics} songPath={songPath} pageLocale={p.locale} songId={p.id} title={p.title.text} />
           </section>
         )}
         {p.related.length > 0 && (
@@ -234,10 +221,7 @@ export function publicLyricsPage(scope: "song" | "recording") {
     const { locale, page: p } = await load(scope, params, `/lyrics${l ? `?l=${encodeURIComponent(l)}` : ""}`);
     setRequestLocale(locale);
     const t = await getTranslations("public");
-    const lead = p.lyrics[0];
-    const recordingId = scope === "recording" ? p.id : lead?.recording_id;
-    if (!lead || !recordingId) notFound();
-    const sourceId = p.lyrics.find((l) => l.type === "original" && l.recording_id === recordingId)?.id;
+    if (p.lyrics.length === 0 || scope !== "song") notFound();
     const songPath = `/${scope}/${encodeURIComponent(p.canonical.slug)}`;
     return (
       <article className="full-lyrics">
@@ -253,8 +237,8 @@ export function publicLyricsPage(scope: "song" | "recording") {
           lyrics={p.lyrics}
           songPath={songPath}
           pageLocale={p.locale}
-          recordingId={recordingId}
-          sourceId={sourceId}
+          songId={p.id}
+          title={p.title.text}
           initial={parseIds(sp.l)}
           fullScreen
         />

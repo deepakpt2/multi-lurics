@@ -18,6 +18,7 @@ pub mod legal;
 pub mod localization;
 pub mod lyrics;
 pub mod media;
+pub mod metadata;
 pub mod oauth;
 pub mod pagination;
 pub mod search;

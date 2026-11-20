@@ -123,8 +123,8 @@ describe("results page", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Loading…");
     const songs = (await screen.findByRole("heading", { name: "Songs" })).closest("section")!;
     expect(within(songs).getByRole("link", { name: "Kaatrin Mozhi" })).toHaveAttribute("href", "/compositions/c1");
-    expect(screen.getByRole("heading", { name: "Recordings" })).toBeInTheDocument();
-    expect(screen.getByText("Recording of Kaatrin Mozhi", { exact: false })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Recordings" })).not.toBeInTheDocument(); // recordings are not shown to people
+    expect(screen.queryByText("Recording of Kaatrin Mozhi", { exact: false })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Albums" })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Load more" }));

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { renderIntl } from "@/test/utils";
+import { json, mockFetch, renderIntl } from "@/test/utils";
 import { READING_KEY, type Lyric } from "@/lib/lyric-panes";
 import { LyricPanes } from "./lyric-panes";
 
@@ -15,9 +15,15 @@ const lyrics = [
 ];
 
 const show = (props: Partial<React.ComponentProps<typeof LyricPanes>> = {}) =>
-  renderIntl(<LyricPanes lyrics={lyrics} songPath="/song/kaatrin-mozhi" pageLocale="en" recordingId="r1" sourceId="a" {...props} />);
+  renderIntl(<LyricPanes lyrics={lyrics} songPath="/song/kaatrin-mozhi" pageLocale="en" songId="s1" title="Kaatrin Mozhi" {...props} />);
 
-beforeEach(() => window.localStorage.clear());
+beforeEach(() => {
+  window.localStorage.clear();
+  mockFetch({
+    "GET /api/v1/languages": () => json(200, { items: [], next_cursor: null }),
+    "GET /api/v1/scripts": () => json(200, { items: [], next_cursor: null }),
+  });
+});
 
 describe("lyric columns", () => {
   it("opens with the song's main lyric and a + to add another column", () => {
@@ -73,12 +79,15 @@ describe("lyric columns", () => {
     await userEvent.click(screen.getByRole("button", { name: "Add a column" }));
     const second = screen.getByRole("article", { name: "Column 2" });
     expect(within(second).getByText(/There is no translation for this song yet/)).toBeInTheDocument();
-    expect(within(second).getByRole("link", { name: "Add one" })).toHaveAttribute("href", "/recordings/r1/lyrics/new?type=translation&source=a");
+    // "Add one" opens the lyrics window for that type, on this page.
     await userEvent.selectOptions(within(second).getByLabelText("Type"), "transliteration");
-    expect(within(second).getByRole("link", { name: "Add one" })).toHaveAttribute("href", "/recordings/r1/lyrics/new?type=transliteration&source=a");
+    await userEvent.click(within(second).getByRole("button", { name: "Add one" }));
+    const dialog = await screen.findByRole("dialog", { name: "Add lyrics: Kaatrin Mozhi" });
+    expect(within(dialog).getByRole("radio", { name: "Transliteration" })).toBeChecked();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
     // The original has a lyric to read, so no offer to add one.
     await userEvent.selectOptions(within(second).getByLabelText("Type"), "original");
-    expect(within(second).queryByRole("link", { name: "Add one" })).not.toBeInTheDocument();
+    expect(within(second).queryByRole("button", { name: "Add one" })).not.toBeInTheDocument();
   });
 
   it("a full-screen view opens the columns its address names and keeps the address up to date", async () => {

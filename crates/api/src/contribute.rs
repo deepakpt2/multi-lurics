@@ -139,3 +139,38 @@ pub async fn contribute_song(
         }),
     ))
 }
+
+#[derive(Serialize, ToSchema)]
+pub struct LyricAdded {
+    /// `published` or `pending` (waiting for review).
+    pub status: String,
+}
+
+#[utoipa::path(post, path = "/api/v1/compositions/{id}/lyrics", operation_id = "add_song_lyrics", tag = "contribute",
+    request_body = LyricBlock, params(("id" = Uuid, Path)), security(("session" = [])), responses(
+    (status = 201, body = LyricAdded),
+    (status = 401, body = Problem, content_type = "application/problem+json"),
+    (status = 404, body = Problem, content_type = "application/problem+json"),
+    (status = 422, body = Problem, content_type = "application/problem+json")))]
+pub async fn add_song_lyrics(
+    State(app): State<App>,
+    Meta(meta): Meta,
+    RequireUser(p): RequireUser,
+    crate::extract::ApiPath(id): crate::extract::ApiPath<Uuid>,
+    ApiJson(b): ApiJson<LyricBlock>,
+) -> ApiResult<(axum::http::StatusCode, Json<LyricAdded>)> {
+    let status = uc::lyric_for_song(
+        &app,
+        &p,
+        &meta,
+        id,
+        uc::LyricBlock {
+            kind: b.kind,
+            language: b.language,
+            script: b.script,
+            body: b.body,
+        },
+    )
+    .await?;
+    Ok((axum::http::StatusCode::CREATED, Json(LyricAdded { status })))
+}

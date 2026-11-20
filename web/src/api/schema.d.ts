@@ -68,6 +68,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["create_metadata"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/search/metrics": {
         parameters: {
             query?: never;
@@ -541,6 +557,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["update_composition"];
+        trace?: never;
+    };
+    "/api/v1/compositions/{id}/lyrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["add_song_lyrics"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/contribute/song": {
@@ -2764,6 +2796,10 @@ export interface components {
             email?: string;
             password?: string;
         };
+        LyricAdded: {
+            /** @description `published` or `pending` (waiting for review). */
+            status: string;
+        };
         LyricBlock: {
             body: string;
             /** @description `ml`, `hi`, `mal`… or the English name. */
@@ -2832,6 +2868,31 @@ export interface components {
             /** Format: uuid */
             into_id: string;
             moved: components["schemas"]["MergeMoved"];
+        };
+        MetadataCreate: {
+            /** @description `artist`, `album`, `raga`, `deity` or `tag`. */
+            kind: string;
+            /** @description One value per entry, at most 200. Blank entries are ignored. */
+            names: string[];
+            /** @description Artists: `person` (default), `group`, `other`. Albums: `album` (default), `soundtrack`, `single`, `ep`, `compilation`, `other`. */
+            sub_kind?: string | null;
+            /**
+             * Format: int32
+             * @description Albums: release year, for every album created.
+             */
+            year?: number | null;
+        };
+        MetadataResponse: {
+            results: components["schemas"]["MetadataResult"][];
+        };
+        MetadataResult: {
+            /** @description False when it was already in the catalogue (by name, alias or another script's spelling). */
+            created: boolean;
+            /** Format: uuid */
+            id?: string | null;
+            name: string;
+            /** @description Why this name could not be made (`too_long`, `invalid_value`…). */
+            problem?: string | null;
         };
         MetricsDay: {
             /** Format: double */
@@ -3958,6 +4019,53 @@ export interface operations {
             };
             /** @description `already_resolved` */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_metadata: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MetadataCreate"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5723,6 +5831,55 @@ export interface operations {
                 };
             };
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    add_song_lyrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LyricBlock"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LyricAdded"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

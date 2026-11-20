@@ -362,6 +362,71 @@
         ]
       }
     },
+    "/api/v1/admin/metadata": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "create_metadata",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetadataResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/search/metrics": {
       "get": {
         "tags": [
@@ -3192,6 +3257,82 @@
             }
           },
           "409": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/compositions/{id}/lyrics": {
+      "post": {
+        "tags": [
+          "contribute"
+        ],
+        "operationId": "add_song_lyrics",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LyricBlock"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LyricAdded"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
             "description": "",
             "content": {
               "application/problem+json": {
@@ -12671,6 +12812,18 @@
           }
         }
       },
+      "LyricAdded": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "`published` or `pending` (waiting for review)."
+          }
+        }
+      },
       "LyricBlock": {
         "type": "object",
         "required": [
@@ -12865,6 +13018,85 @@
           },
           "moved": {
             "$ref": "#/components/schemas/MergeMoved"
+          }
+        }
+      },
+      "MetadataCreate": {
+        "type": "object",
+        "required": [
+          "kind",
+          "names"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "description": "`artist`, `album`, `raga`, `deity` or `tag`."
+          },
+          "names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "One value per entry, at most 200. Blank entries are ignored."
+          },
+          "sub_kind": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Artists: `person` (default), `group`, `other`. Albums: `album` (default), `soundtrack`, `single`, `ep`, `compilation`, `other`."
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "Albums: release year, for every album created."
+          }
+        }
+      },
+      "MetadataResponse": {
+        "type": "object",
+        "required": [
+          "results"
+        ],
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetadataResult"
+            }
+          }
+        }
+      },
+      "MetadataResult": {
+        "type": "object",
+        "required": [
+          "name",
+          "created"
+        ],
+        "properties": {
+          "created": {
+            "type": "boolean",
+            "description": "False when it was already in the catalogue (by name, alias or another script's spelling)."
+          },
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "problem": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Why this name could not be made (`too_long`, `invalid_value`…)."
           }
         }
       },

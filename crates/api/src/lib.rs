@@ -12,6 +12,7 @@ pub mod import;
 pub mod legal;
 pub mod localization;
 pub mod lyrics;
+pub mod metadata;
 pub mod metrics;
 pub mod middleware;
 pub mod oauth;
@@ -34,6 +35,7 @@ use images as img;
 use import as imp;
 use localization as loc;
 use lyrics as lyr;
+use metadata as mdt;
 use search as srch;
 use seo as seo_api;
 use tower_http::trace::TraceLayer;
@@ -68,7 +70,7 @@ use utoipa::{Modify, OpenApi};
         ent::merge_entities,
         brw::songs, brw::facet, brw::suggest,
         hm::home, hm::record_view, hm::pick_state, hm::pick, hm::unpick,
-        imp::import_songs, ctb::contribute_song,
+        imp::import_songs, ctb::contribute_song, ctb::add_song_lyrics, mdt::create_metadata,
         img::limits, img::upload, img::withdraw, img::entity_images, img::media, img::queue, img::approve, img::reject,
         srch::search, srch::suggest, srch::suggestion_accepted, srch::metrics,
         seo_api::get_page, seo_api::sitemap,
@@ -284,6 +286,8 @@ pub fn router(app: App) -> Router {
             "/contribute/song",
             post(ctb::contribute_song).layer(axum::extract::DefaultBodyLimit::max(8 * 1024 * 1024)),
         )
+        .route("/compositions/{id}/lyrics", post(ctb::add_song_lyrics))
+        .route("/admin/metadata", post(mdt::create_metadata))
         .route("/images/limits", get(img::limits))
         .route(
             "/images",

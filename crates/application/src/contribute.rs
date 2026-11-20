@@ -281,3 +281,74 @@ pub async fn song(app: &App, p: &Principal, meta: &RequestMeta, s: Submission) -
         statuses,
     })
 }
+
+/// Adds one lyric (a translation, a transliteration, or another original) to a song that exists. The
+/// lyric hangs off the song's first recording, which is made on the spot if the song has none, so
+/// nobody has to know recordings exist.
+pub async fn lyric_for_song(
+    app: &App,
+    p: &Principal,
+    meta: &RequestMeta,
+    composition_id: Uuid,
+    b: LyricBlock,
+) -> Result<String, AppError> {
+    let title: Option<String> = sqlx::query_scalar("SELECT title FROM compositions WHERE id = $1")
+        .bind(composition_id)
+        .fetch_optional(&app.pool)
+        .await?;
+    let Some(title) = title else {
+        return Err(AppError::NotFound { entity: "composition" });
+    };
+    let (language, script) = language_and_script_of(app, &b.language, &b.script)
+        .await?
+        .ok_or_else(|| {
+            AppError::from(domain::DomainError::invalid(
+                "language",
+                if b.language.trim().is_empty() {
+                    "required"
+                } else {
+                    "unknown_language"
+                },
+            ))
+        })?;
+    let existing: Option<Uuid> =
+        sqlx::query_scalar("SELECT id FROM recordings WHERE composition_id = $1 ORDER BY created_at, id LIMIT 1")
+            .bind(composition_id)
+            .fetch_optional(&app.pool)
+            .await?;
+    let recording = match existing {
+        Some(id) => id,
+        None => {
+            cat::create_recording(
+                app,
+                p,
+                meta,
+                RecordingInput {
+                    composition_id: Some(composition_id),
+                    title: Some(title),
+                    ..Default::default()
+                },
+            )
+            .await?
+            .recording
+            .id
+        }
+    };
+    let out = lyrics::create_contribution(
+        app,
+        p,
+        meta,
+        recording,
+        None,
+        ContributionInput {
+            kind: b.kind.trim().to_owned(),
+            language,
+            script,
+            body: b.body,
+            note: None,
+            source_contribution_id: None,
+        },
+    )
+    .await?;
+    Ok(out.value.row.status)
+}
