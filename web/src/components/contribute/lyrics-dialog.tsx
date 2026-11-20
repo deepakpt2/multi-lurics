@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
-import type { Block } from "@/lib/contribute";
+import { ENGLISH, type Block } from "@/lib/contribute";
 import { useLoad } from "../catalogue/common";
 import { languageLabel, listLanguages, listScripts, scriptLabel } from "../localization/names";
 import { ProblemAlert } from "../states";
@@ -26,7 +26,7 @@ export function LyricsDialog({
   initial?: Partial<Block>;
   onClose: () => void;
   /** Resolves when saved; a rejection is shown in the window and the text is kept. */
-  onSave: (b: Pick<Block, "type" | "language" | "script" | "body">) => Promise<void> | void;
+  onSave: (b: Pick<Block, "type" | "language" | "script" | "body" | "title">) => Promise<void> | void;
 }) {
   const t = useTranslations("contribute.dialog");
   const tl = useTranslations("lyrics");
@@ -37,8 +37,9 @@ export function LyricsDialog({
   const [language, setLanguage] = useState(initial?.language ?? "");
   const [script, setScript] = useState(initial?.script ?? "");
   const [body, setBody] = useState(initial?.body ?? "");
+  const [songTitle, setSongTitle] = useState(initial?.title ?? "");
   const [error, setError] = useState<unknown>(undefined);
-  const [gap, setGap] = useState<"language" | "lyrics" | null>(null);
+  const [gap, setGap] = useState<"language" | "title" | "lyrics" | null>(null);
   const [busy, setBusy] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const first = useRef<HTMLSelectElement>(null);
@@ -58,13 +59,13 @@ export function LyricsDialog({
   const rtl = languages.find((l) => l.iso639_3 === language)?.is_rtl ?? false;
 
   const save = async () => {
-    const g = !language ? "language" : !body.trim() ? "lyrics" : null;
+    const g = !language ? "language" : language !== ENGLISH && !songTitle.trim() ? "title" : !body.trim() ? "lyrics" : null;
     setGap(g);
     if (g) return;
     setBusy(true);
     setError(undefined);
     try {
-      await onSave({ type, language, script, body });
+      await onSave({ type, language, script, body, title: language === ENGLISH ? "" : songTitle.trim() });
     } catch (e) {
       setError(e);
     } finally {
@@ -148,6 +149,13 @@ export function LyricsDialog({
                 ))}
               </select>
             </div>
+            {language !== ENGLISH && (
+              <div className="field">
+                <label htmlFor={`${id}-title`}>{t("titleIn", { language: (() => { const l = languages.find((x) => x.iso639_3 === language); return l ? languageLabel(l) : language; })() })}</label>
+                <input id={`${id}-title`} dir={rtl ? "rtl" : "auto"} lang={language} translate="no" value={songTitle} onChange={(e) => setSongTitle(e.target.value)} />
+                <p className="muted small">{t("titleInHint")}</p>
+              </div>
+            )}
             <div className="field">
               <label htmlFor={`${id}-body`}>{tc("fields.lyrics")}</label>
               <textarea id={`${id}-body`} className="lyrics-input" rows={14} dir={rtl ? "rtl" : "ltr"} lang={language} translate="no" value={body} onChange={(e) => setBody(e.target.value)} />

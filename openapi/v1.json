@@ -13651,6 +13651,10 @@
             "type": "string",
             "description": "The language's usual script when blank."
           },
+          "title": {
+            "type": "string",
+            "description": "The song's title in this language. Asked for when the language is not English; stored as a title\nof the song in that language."
+          },
           "type": {
             "type": "string",
             "description": "`original`, `translation` or `transliteration`. A translation or transliteration needs no original."
@@ -16405,7 +16409,8 @@
             }
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "The song's title in English (required: it makes the page address, which is always in Latin letters).\nTitles in other languages go with each lyric block."
           },
           "year": {
             "type": [

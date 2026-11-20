@@ -220,7 +220,8 @@
     "in_the_past": "This time has already passed.",
     "not_published": "Publish the article first.",
     "captcha_required": "Please complete the check before continuing.",
-    "captcha_failed": "The check was not accepted. Please try again."
+    "captcha_failed": "The check was not accepted. Please try again.",
+    "english_required": "Enter the title in English letters."
   },
   "errors": {
     "title": "حدث خطأ",
@@ -1278,7 +1279,7 @@
       "another": "Lyrics in another language ({n})"
     },
     "fields": {
-      "title": "Song title",
+      "title": "Song title in English",
       "album": "Album or film",
       "singers": "Singers",
       "composers": "Music director / composer",
@@ -1299,7 +1300,7 @@
       "lyrics": "Lyrics"
     },
     "hints": {
-      "title": "As written, in its original script.",
+      "title": "Always in English letters: it makes the page address. Titles in other languages are asked for with each lyric.",
       "album": "Start typing; choose the existing one if it appears.",
       "fixed": "Fixed: you are adding a song to this album.",
       "composers": "The music director for a film song.",
@@ -1353,8 +1354,11 @@
       "cancel": "Cancel",
       "missing": {
         "language": "Please choose the language.",
-        "lyrics": "Please add the lyrics."
-      }
+        "lyrics": "Please add the lyrics.",
+        "title": "Please type the song title in this language."
+      },
+      "titleIn": "Song title in {language}",
+      "titleInHint": "Type the title as it is written in this language. It shows on the song page for readers of that language."
     }
   },
   "articles": {

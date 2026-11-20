@@ -242,8 +242,28 @@ pub async fn sync_slug(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> 
     let Some(name): Option<String> = sqlx::query_scalar(sql).bind(id).fetch_optional(&mut *conn).await? else {
         return Ok(None);
     };
-    let policy = seo::load_config(conn).await?.slug;
-    let base = policy.slugify(&name).unwrap_or_else(|| entity_type.to_owned());
+    let cfg = seo::load_config(conn).await?;
+    let policy = cfg.slug;
+    // Addresses are in Latin letters: a verified English name wins over a name in another script.
+    let name = if policy.preserve_native_script {
+        name
+    } else {
+        sqlx::query_scalar(
+            "SELECT el.name FROM entity_localizations el JOIN languages l ON l.id = el.language_id
+              WHERE el.entity_type = $1 AND el.entity_id = $2 AND el.verification_state = 'verified'
+                AND lower(l.iso639_1) = lower($3)
+              ORDER BY el.is_preferred DESC, el.created_at LIMIT 1",
+        )
+        .bind(entity_type)
+        .bind(id)
+        .bind(&cfg.default_locale)
+        .fetch_optional(&mut *conn)
+        .await?
+        .unwrap_or(name)
+    };
+    let base = policy
+        .slugify(&name)
+        .unwrap_or_else(|| format!("{entity_type}-{}", &id.simple().to_string()[..8]));
     let mut n = 1u32;
     let chosen = loop {
         let candidate = if n == 1 { base.clone() } else { format!("{base}-{n}") };

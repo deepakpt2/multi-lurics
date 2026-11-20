@@ -24,6 +24,9 @@ pub struct LyricBlock {
     pub language: String,
     pub script: String,
     pub body: String,
+    /// The song's title in this block's language (asked for when it is not English); kept as a title
+    /// of the song in that language. Optional for API callers.
+    pub title: String,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -54,6 +57,56 @@ pub struct Made {
     pub recording_id: Uuid,
     /// `published` or `pending`, per lyric block, in order.
     pub statuses: Vec<String>,
+}
+
+/// The song's title in another language, so its page can show it. Never fails the contribution: a
+/// title already held for that language and script, or one a moderator must settle, is simply kept.
+async fn add_title(
+    app: &App,
+    p: &Principal,
+    meta: &RequestMeta,
+    composition: Uuid,
+    language: &str,
+    script: &str,
+    title: &str,
+) {
+    let title = title.trim();
+    if title.is_empty() || language.eq_ignore_ascii_case("en") {
+        return;
+    }
+    let r = crate::localization::create_localization(
+        app,
+        p,
+        meta,
+        "composition",
+        composition,
+        crate::localization::LocalizationInput {
+            language: language.to_owned(),
+            script: Some(script.to_owned()),
+            name: title.to_owned(),
+            description: None,
+            is_preferred: None,
+            provenance: "community".into(),
+            source: None,
+        },
+    )
+    .await;
+    if let Err(e) = r {
+        tracing::info!(error = ?e, language, "title in another language not stored");
+    }
+}
+
+/// The main title is the English one: it makes the page address, which is always in Latin letters.
+fn english_title(title: &str) -> Result<(), AppError> {
+    // A blank title is reported as missing by the ordinary checks.
+    if title.is_empty()
+        || title.chars().any(|c| c.is_ascii_alphanumeric())
+            && !title.chars().any(|c| c.is_alphabetic() && c >= '\u{0250}')
+    {
+        Ok(())
+    } else {
+        Err(domain::DomainError::invalid("title", "english_required").into())
+    }
 }
 
 fn blank(s: &str) -> Option<String> {
@@ -115,6 +168,7 @@ pub async fn song(app: &App, p: &Principal, meta: &RequestMeta, s: Submission) -
         ..Default::default()
     };
     // Everything that can be known without writing is checked first.
+    english_title(s.title.trim())?;
     cat::validate_composition(&input)?;
     let blocks: Vec<&LyricBlock> = s.lyrics.iter().filter(|b| !b.body.trim().is_empty()).collect();
     if blocks.is_empty() {
@@ -258,6 +312,7 @@ pub async fn song(app: &App, p: &Principal, meta: &RequestMeta, s: Submission) -
 
     let mut statuses = Vec::new();
     for (b, (language, script)) in blocks.iter().zip(resolved) {
+        add_title(app, p, meta, composition, &language, &script, &b.title).await;
         let out = lyrics::create_contribution(
             app,
             p,
@@ -336,6 +391,7 @@ pub async fn lyric_for_song(
             .id
         }
     };
+    add_title(app, p, meta, composition_id, &language, &script, &b.title).await;
     let out = lyrics::create_contribution(
         app,
         p,

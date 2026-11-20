@@ -181,10 +181,26 @@ pub async fn sync(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> Res<V
     if let Some((title, default_language)) = base(conn, entity_type, id).await? {
         if is_public(conn, entity_type, id).await? {
             let id8 = id.simple().to_string()[..8].to_owned();
+            // Addresses are in Latin letters: made from the English title (the main title, or a verified
+            // English one), the same in every language. An operator can allow native-script addresses instead.
+            let latin = !cfg.slug.preserve_native_script;
+            let english = if latin {
+                match langs.iter().find(|l| l.locale == cfg.default_locale) {
+                    Some(en) => localized_title(&mut *conn, entity_type, id, en.language_id).await?,
+                    None => None,
+                }
+                .unwrap_or_else(|| title.clone())
+            } else {
+                String::new()
+            };
             for loc in content_locales(&mut *conn, &cfg, &langs, entity_type, id, default_language).await? {
-                let text = localized_title(&mut *conn, entity_type, id, loc.language_id)
-                    .await?
-                    .unwrap_or_else(|| title.clone());
+                let text = if latin {
+                    english.clone()
+                } else {
+                    localized_title(&mut *conn, entity_type, id, loc.language_id)
+                        .await?
+                        .unwrap_or_else(|| title.clone())
+                };
                 let desired = cfg.slug.slugify(&text);
                 // A reserved word is never used bare: it would shadow a route or a word we own.
                 let reserved = desired.as_deref().is_some_and(|s| cfg.slug.is_reserved(s));

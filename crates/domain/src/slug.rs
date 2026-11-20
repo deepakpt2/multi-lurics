@@ -8,7 +8,8 @@ use unicode_normalization::UnicodeNormalization;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SlugPolicy {
-    /// Keep letters of any script as written (NFC). When false, only Latin text yields a slug.
+    /// Keep letters of any script as written (NFC). When false (the default), addresses are Latin only:
+    /// they are made from the English title, and only Latin text yields a slug.
     pub preserve_native_script: bool,
     /// Fold Latin letters with diacritics to their base letter (é → e). Other scripts are untouched.
     pub ascii_fold_latin: bool,
@@ -21,7 +22,7 @@ pub struct SlugPolicy {
 impl Default for SlugPolicy {
     fn default() -> Self {
         Self {
-            preserve_native_script: true,
+            preserve_native_script: false,
             ascii_fold_latin: true,
             max_length: 80,
             separator: '-',
@@ -118,8 +119,16 @@ pub fn normalize_incoming(slug: &str) -> String {
 mod tests {
     use super::*;
 
+    /// Native-script addresses, the operator's opt-in.
+    fn native() -> SlugPolicy {
+        SlugPolicy {
+            preserve_native_script: true,
+            ..SlugPolicy::default()
+        }
+    }
+
     fn s(t: &str) -> Option<String> {
-        SlugPolicy::default().slugify(t)
+        native().slugify(t)
     }
 
     #[test]
@@ -143,13 +152,21 @@ mod tests {
     }
 
     #[test]
+    fn addresses_are_latin_only_by_default() {
+        let p = SlugPolicy::default();
+        assert_eq!(p.slugify("Vande Mataram").as_deref(), Some("vande-mataram"));
+        assert_eq!(p.slugify("Café Déjà Vu").as_deref(), Some("cafe-deja-vu"));
+        assert_eq!(p.slugify("വന്ദേ മാതരം"), None);
+    }
+
+    #[test]
     fn nfc_is_enforced_and_policy_is_configurable() {
         let composed = "caf\u{e9}";
         let decomposed = "cafe\u{301}";
         assert_eq!(s(composed), s(decomposed));
         let no_fold = SlugPolicy {
             ascii_fold_latin: false,
-            ..Default::default()
+            ..native()
         };
         assert_eq!(no_fold.slugify(decomposed).as_deref(), Some("caf\u{e9}"));
         let ascii_only = SlugPolicy {
@@ -160,7 +177,7 @@ mod tests {
         assert_eq!(ascii_only.slugify("Fairuz").as_deref(), Some("fairuz"));
         let short = SlugPolicy {
             max_length: 7,
-            ..Default::default()
+            ..native()
         };
         assert_eq!(short.slugify("kaatrin mozhi").as_deref(), Some("kaatrin"));
         assert_eq!(short.slugify("ab cd efgh").as_deref(), Some("ab-cd-e"));

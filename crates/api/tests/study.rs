@@ -699,8 +699,8 @@ async fn a_member_adds_a_whole_song_in_one_form_even_with_only_a_transliteration
         "title": "Kannum Kannum", "year": 1989, "album": { "id": album["id"], "name": "Kireedam" },
         "singers": [{ "name": "K. S. Chithra" }], "composers": [{ "name": "Johnson" }], "tags": ["film"],
         "lyrics": [
-            { "type": "transliteration", "language": "ml", "script": "Latn", "body": "kannum kannum" },
-            { "type": "translation", "language": "en", "body": "eyes to eyes" },
+            { "type": "transliteration", "language": "ml", "script": "Latn", "body": "kannum kannum", "title": "കണ്ണും കണ്ണും" },
+            { "type": "translation", "language": "en", "body": "eyes to eyes", "title": "ignored for English" },
             { "type": "original", "language": "ml", "body": "   " }
         ]
     });
@@ -724,6 +724,29 @@ async fn a_member_adds_a_whole_song_in_one_form_even_with_only_a_transliteration
     );
     assert_eq!(n("SELECT count(*) FROM albums").await, 1);
     assert_eq!(n("SELECT count(*) FROM contributions WHERE type = 'original'").await, 0);
+    // The title typed with the Malayalam lyric is kept as the song's Malayalam title (for a moderator to
+    // verify); English needs none, because the main title is English.
+    assert_eq!(
+        n("SELECT count(*) FROM entity_localizations WHERE entity_type = 'composition' AND name = 'കണ്ണും കണ്ണും'").await,
+        1
+    );
+    assert_eq!(
+        n("SELECT count(*) FROM entity_localizations WHERE entity_type = 'composition'").await,
+        1
+    );
+    // The main title must be in English letters.
+    let native = post(
+        &w.r,
+        "/api/v1/contribute/song",
+        json!({ "title": "കണ്ണും കണ്ണും", "lyrics": [{ "type": "original", "language": "ml", "body": "x" }] }),
+        Some(&w.other),
+    )
+    .await;
+    assert_eq!(native.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(
+        native.body["errors"][0],
+        json!({ "field": "title", "code": "english_required" })
+    );
 
     // The same title on the same album is asked about, not guessed.
     let dup = post(&w.r, "/api/v1/contribute/song", body.clone(), Some(&w.other)).await;

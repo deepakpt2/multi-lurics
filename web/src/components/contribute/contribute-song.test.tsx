@@ -32,7 +32,7 @@ describe("contribute a song", () => {
     // The details come first. Lyrics cannot be added, or the song submitted, before the title is there.
     expect(await screen.findByRole("button", { name: /^Add lyrics$/ })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
-    await userEvent.type(screen.getByLabelText("Song title"), "Kannum Kannum");
+    await userEvent.type(screen.getByLabelText("Song title in English"), "Kannum Kannum");
     // Similar songs already in the catalogue are shown so the same song is not added twice.
     expect(await screen.findByText("Songs that look similar are already here:")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Kannum Kannum Existing" })).toBeInTheDocument();
@@ -50,6 +50,10 @@ describe("contribute a song", () => {
     await userEvent.click(within(dialog).getByRole("radio", { name: "Transliteration" }));
     expect(within(dialog).getByText(/Someone else can add the original later/)).toBeInTheDocument();
     await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "mal");
+    // A language other than English asks for the song's title in it.
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
+    expect(await within(dialog).findByText("Please type the song title in this language.")).toBeInTheDocument();
+    await userEvent.type(within(dialog).getByLabelText(/Song title in/), "കണ്ണും കണ്ണും");
     await userEvent.type(within(dialog).getByLabelText("Lyrics"), "kannum kannum");
     await userEvent.click(within(dialog).getByRole("button", { name: "Save lyrics" }));
 
@@ -75,8 +79,8 @@ describe("contribute a song", () => {
       album: { id: "al1", name: "Kireedam" },
       singers: [{ id: null, name: "Somebody New" }],
       lyrics: [
-        { type: "transliteration", language: "mal", script: "Mlym", body: "kannum kannum" },
-        { type: "translation", language: "eng", script: "Latn", body: "eyes to eyes" },
+        { type: "transliteration", language: "mal", script: "Mlym", body: "kannum kannum", title: "കണ്ണും കണ്ണും" },
+        { type: "translation", language: "eng", script: "Latn", body: "eyes to eyes", title: "" },
       ],
     });
   });
@@ -84,7 +88,7 @@ describe("contribute a song", () => {
   it("an entry can be edited or removed before submitting", async () => {
     mockFetch(routes());
     renderIntl(<ContributeSong prefill={parsePrefill({})} />);
-    await userEvent.type(await screen.findByLabelText("Song title"), "T");
+    await userEvent.type(await screen.findByLabelText("Song title in English"), "T");
     await userEvent.click(screen.getByRole("button", { name: /^Add lyrics$/ }));
     let dialog = await screen.findByRole("dialog");
     await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "eng");
@@ -103,7 +107,7 @@ describe("contribute a song", () => {
   it("from an album page the album is filled in and cannot be changed", async () => {
     mockFetch(routes());
     renderIntl(<ContributeSong prefill={parsePrefill({ album: "al1", album_name: "Kireedam" })} />);
-    await screen.findByLabelText("Song title");
+    await screen.findByLabelText("Song title in English");
     expect(screen.getByText("Kireedam")).toBeInTheDocument();
     expect(screen.getByText("fixed")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Kireedam" })).not.toBeInTheDocument();
@@ -121,7 +125,7 @@ describe("contribute a song", () => {
   it("offers 'add anyway' for a duplicate on the album", async () => {
     const { calls } = mockFetch(routes({ "POST /api/v1/contribute/song": () => problem(409, "possible_duplicate", { candidates: ["c1"] }) }));
     renderIntl(<ContributeSong prefill={parsePrefill({ album: "al1", album_name: "Kireedam" })} />);
-    await userEvent.type(await screen.findByLabelText("Song title"), "T");
+    await userEvent.type(await screen.findByLabelText("Song title in English"), "T");
     await userEvent.click(screen.getByRole("button", { name: /^Add lyrics$/ }));
     const dialog = await screen.findByRole("dialog");
     await userEvent.selectOptions(await within(dialog).findByLabelText("Language"), "eng");

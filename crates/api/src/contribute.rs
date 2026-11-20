@@ -35,10 +35,16 @@ pub struct LyricBlock {
     #[serde(default)]
     pub script: String,
     pub body: String,
+    /// The song's title in this language. Asked for when the language is not English; stored as a title
+    /// of the song in that language.
+    #[serde(default)]
+    pub title: String,
 }
 
 #[derive(Deserialize, ToSchema)]
 pub struct SongSubmission {
+    /// The song's title in English (required: it makes the page address, which is always in Latin letters).
+    /// Titles in other languages go with each lyric block.
     pub title: String,
     pub year: Option<i32>,
     pub album: Option<NameRef>,
@@ -124,6 +130,7 @@ pub async fn contribute_song(
                     language: l.language,
                     script: l.script,
                     body: l.body,
+                    title: l.title,
                 })
                 .collect(),
             allow_duplicate: b.allow_duplicate,
@@ -169,6 +176,7 @@ pub async fn add_song_lyrics(
             language: b.language,
             script: b.script,
             body: b.body,
+            title: b.title,
         },
     )
     .await?;

@@ -1,6 +1,10 @@
 import type { Chosen } from "@/components/contribute/name-picker";
 
-export type Block = { key: string; language: string; script: string; type: "original" | "translation" | "transliteration"; body: string };
+/** One set of lyrics. `title` is the song's title in the block's language (asked for when it is not English). */
+export type Block = { key: string; language: string; script: string; type: "original" | "translation" | "transliteration"; body: string; title: string };
+
+/** The language code the site treats as English (the main title is always English). */
+export const ENGLISH = "eng";
 
 export type Prefill = {
   album: Chosen[];
@@ -108,7 +112,7 @@ export function buildSubmission(d: Draft, allowDuplicate = false) {
     occasions: devotional ? list(d.occasions) : [],
     tags: d.tags.map((t) => t.name),
     youtube: d.youtube.trim(),
-    lyrics: d.blocks.filter((b) => b.body.trim() !== "").map((b) => ({ type: b.type, language: b.language, script: b.script, body: b.body })),
+    lyrics: d.blocks.filter((b) => b.body.trim() !== "").map((b) => ({ type: b.type, language: b.language, script: b.script, body: b.body, title: b.language === ENGLISH ? "" : b.title.trim() })),
     allow_duplicate: allowDuplicate,
   };
 }

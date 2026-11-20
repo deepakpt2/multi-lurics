@@ -149,6 +149,14 @@ async fn slug_of(pool: &PgPool, entity: &str, lang: &str) -> Option<String> {
     .unwrap()
 }
 
+/// The operator's opt-in: addresses in the script of each title instead of Latin letters only.
+async fn native_script_addresses(pool: &PgPool) {
+    sqlx::query("UPDATE settings SET value = jsonb_set(value, '{slug,preserve_native_script}', 'true'::jsonb) WHERE key = 'seo'")
+        .execute(pool)
+        .await
+        .unwrap();
+}
+
 #[allow(clippy::too_many_arguments)]
 async fn localize(
     pool: &PgPool,
@@ -411,6 +419,7 @@ async fn collisions_are_resolved_the_same_way_every_time(pool: PgPool) {
 
 #[sqlx::test(migrator = "infrastructure::MIGRATOR")]
 async fn canonical_and_hreflang_cover_only_locales_that_have_content_including_non_latin(pool: PgPool) {
+    native_script_addresses(&pool).await;
     let w = world(&pool).await;
     let (c, _) = published_song(&w, &pool, "Kaatrin Mozhi", json!([])).await;
     let cid = id(&c);
@@ -488,6 +497,7 @@ async fn canonical_and_hreflang_cover_only_locales_that_have_content_including_n
 
 #[sqlx::test(migrator = "infrastructure::MIGRATOR")]
 async fn native_scripts_and_spelling_variants_have_one_url(pool: PgPool) {
+    native_script_addresses(&pool).await;
     let w = world(&pool).await;
     let (c, _) = published_song(&w, &pool, "കാറ്റിൻ മൊഴി", json!([])).await;
     let slug = slug_of(&pool, &id(&c), "en").await.unwrap();
@@ -733,4 +743,51 @@ async fn a_failed_invalidation_is_retried_not_dropped(pool: PgPool) {
     assert!(error.unwrap().contains("500"));
     // The data itself was committed before the failed notification.
     assert_eq!(slug_of(&pool, &id(&c), "en").await.as_deref(), Some("retry-me"));
+}
+
+/// The default: addresses are Latin letters, made from the English title, whatever other titles exist.
+#[sqlx::test(migrator = "infrastructure::MIGRATOR")]
+async fn addresses_are_always_latin_and_come_from_the_english_title(pool: PgPool) {
+    let w = world(&pool).await;
+    let (c, _) = published_song(&w, &pool, "Kaatrin Mozhi", json!([])).await;
+    let cid = id(&c);
+    localize(
+        &pool,
+        "composition",
+        &cid,
+        "ara",
+        "Arab",
+        "كاترين موزي",
+        "verified",
+        w.admin_id,
+    )
+    .await;
+    index(&pool).await;
+    // The Arabic page exists, with the same Latin address; its title stays Arabic.
+    assert_eq!(slug_of(&pool, &cid, "en").await.as_deref(), Some("kaatrin-mozhi"));
+    assert_eq!(slug_of(&pool, &cid, "ar").await.as_deref(), Some("kaatrin-mozhi"));
+
+    // A song whose main title is not Latin gets an id address until it has an English title.
+    let (m, _) = published_song(&w, &pool, "കാറ്റിൻ മൊഴി", json!([])).await;
+    let mid = id(&m);
+    let before = slug_of(&pool, &mid, "en").await.unwrap();
+    assert!(before.starts_with("id-"), "{before}");
+    localize(
+        &pool,
+        "composition",
+        &mid,
+        "eng",
+        "Latn",
+        "Kaattin Mozhi",
+        "verified",
+        w.admin_id,
+    )
+    .await;
+    index(&pool).await;
+    assert_eq!(slug_of(&pool, &mid, "en").await.as_deref(), Some("kaattin-mozhi"));
+    // The old address redirects to the new one.
+    assert_eq!(
+        page(&w, "song", "en", &before).await.status,
+        StatusCode::MOVED_PERMANENTLY
+    );
 }

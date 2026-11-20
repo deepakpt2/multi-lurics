@@ -3013,6 +3013,11 @@ export interface components {
             language: string;
             /** @description The language's usual script when blank. */
             script?: string;
+            /**
+             * @description The song's title in this language. Asked for when the language is not English; stored as a title
+             *     of the song in that language.
+             */
+            title?: string;
             /** @description `original`, `translation` or `transliteration`. A translation or transliteration needs no original. */
             type: string;
         };
@@ -3870,6 +3875,10 @@ export interface components {
             singers?: components["schemas"]["NameRef"][];
             source_work?: string;
             tags?: string[];
+            /**
+             * @description The song's title in English (required: it makes the page address, which is always in Latin letters).
+             *     Titles in other languages go with each lyric block.
+             */
             title: string;
             /** Format: int32 */
             year?: number | null;

@@ -26,14 +26,14 @@ describe("prefill", () => {
 const draft = (over: Partial<Draft> = {}): Draft => ({
   title: " Kannum ", year: "1989", album: [{ id: "al1", name: "Kireedam" }], singers: [{ name: "Chithra" }], composers: [], lyricists: [], category: "mainstream",
   religion: "hindu", deity: [{ name: "Hanuman" }], raga: [], form: "bhajan", source: "x", occasions: "a, b", tags: [{ name: "film" }], youtube: " https://youtu.be/dQw4w9WgXcQ ",
-  blocks: [{ key: "1", language: "ml", script: "", type: "transliteration", body: "kannum" }, { key: "2", language: "en", script: "", type: "translation", body: "  " }], ...over,
+  blocks: [{ key: "1", language: "ml", script: "", type: "transliteration", body: "kannum", title: "കണ്ണും" }, { key: "2", language: "en", script: "", type: "translation", body: "  ", title: "" }], ...over,
 });
 
 describe("submission", () => {
   it("sends ids for chosen things and names for new ones, drops blank blocks and devotional-only fields", () => {
     const s = buildSubmission(draft());
     expect(s).toMatchObject({ title: "Kannum", year: 1989, album: { id: "al1", name: "Kireedam" }, singers: [{ id: null, name: "Chithra" }], religion: "", deity: "", devotional_form: "", occasions: [], tags: ["film"], youtube: "https://youtu.be/dQw4w9WgXcQ", allow_duplicate: false });
-    expect(s.lyrics).toEqual([{ type: "transliteration", language: "ml", script: "", body: "kannum" }]);
+    expect(s.lyrics).toEqual([{ type: "transliteration", language: "ml", script: "", body: "kannum", title: "കണ്ണും" }]);
   });
   it("keeps devotional fields for a devotional song", () => {
     expect(buildSubmission(draft({ category: "devotional" }), true)).toMatchObject({ religion: "hindu", deity: "Hanuman", devotional_form: "bhajan", source_work: "x", occasions: ["a", "b"], allow_duplicate: true });
