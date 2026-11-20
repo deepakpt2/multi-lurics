@@ -24,7 +24,8 @@
     "privacy": "Privacy",
     "contentPolicy": "Content policy",
     "copyright": "Copyright and takedown",
-    "moderationLegal": "Legal notices"
+    "moderationLegal": "Legal notices",
+    "menu": "Menu"
   },
   "localeNames": {
     "en": "English",
@@ -32,7 +33,8 @@
   },
   "home": {
     "title": "Welcome",
-    "intro": "Sign in or create an account to get started."
+    "intro": "Sign in or create an account to get started.",
+    "browse": "Browse songs"
   },
   "common": {
     "loading": "Loading…",

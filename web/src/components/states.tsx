@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertTriangle, CircleAlert, Inbox, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ApiProblem } from "@/api/client";
 
@@ -17,6 +18,7 @@ export function EmptyState({ title, children }: { title?: string; children?: Rea
   const t = useTranslations("common");
   return (
     <div className="state state-empty" role="status">
+      <Inbox size={28} aria-hidden="true" />
       <p>{title ?? t("empty")}</p>
       {children}
     </div>
@@ -37,6 +39,7 @@ export function ConflictNotice({ onReload }: { onReload?: () => void }) {
   const t = useTranslations("conflict");
   return (
     <div className="alert alert-warning" role="alert" data-state="conflict">
+      <AlertTriangle size={18} aria-hidden="true" />
       <strong>{t("title")}</strong>
       <p>{t("body")}</p>
       {onReload && (
@@ -56,6 +59,7 @@ export function ProblemAlert({ error, onReload }: { error: unknown; onReload?: (
   const requestId = error instanceof ApiProblem ? error.problem.request_id : undefined;
   return (
     <div className="alert alert-error" role="alert" data-state="error">
+      <CircleAlert size={18} aria-hidden="true" />
       <p>{message(error)}</p>
       {requestId && <p className="muted small">{t("requestId", { id: requestId })}</p>}
     </div>
@@ -71,6 +75,7 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
       <ProblemAlert error={error} onReload={onRetry} />
       {onRetry && !(error instanceof ApiProblem && error.isConflict) && (
         <button type="button" className="button" onClick={onRetry}>
+          <RefreshCw size={16} aria-hidden="true" />
           {t("common.retry")}
         </button>
       )}
