@@ -39,6 +39,7 @@ use utoipa::{Modify, OpenApi};
         routes::request_password_reset, routes::confirm_password_reset,
         oauth::providers, oauth::google_start, oauth::google_callback,
         routes::me, routes::list_audit_events,
+        routes::list_users, routes::grant_user_role, routes::revoke_user_role, routes::disable_user, routes::enable_user,
         catalogue::list_artists, catalogue::create_artist, catalogue::get_artist, catalogue::update_artist,
         catalogue::list_compositions, catalogue::create_composition, catalogue::get_composition,
         catalogue::update_composition,
@@ -198,6 +199,13 @@ pub fn router(app: App) -> Router {
         .route("/auth/logout", post(routes::logout))
         .route("/me", get(routes::me))
         .route("/admin/audit-events", get(routes::list_audit_events))
+        .route("/admin/users", get(routes::list_users))
+        .route(
+            "/admin/users/{id}/roles/{role}",
+            axum::routing::put(routes::grant_user_role).delete(routes::revoke_user_role),
+        )
+        .route("/admin/users/{id}/disable", post(routes::disable_user))
+        .route("/admin/users/{id}/enable", post(routes::enable_user))
         .route("/artists", get(cat::list_artists).post(cat::create_artist))
         .route("/artists/{id}", get(cat::get_artist).patch(cat::update_artist))
         .route(

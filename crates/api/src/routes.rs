@@ -1,4 +1,4 @@
-use crate::extract::{Admin, ApiJson, ApiQuery, Meta, RequireRole, RequireUser, SESSION_COOKIE};
+use crate::extract::{Admin, ApiJson, ApiPath, ApiQuery, Meta, RequireRole, RequireUser, SESSION_COOKIE};
 use crate::problem::{ApiError, ApiResult, Problem};
 use application::{admin, auth, App};
 use axum::extract::State;
@@ -330,3 +330,129 @@ pub async fn method_not_allowed() -> ApiError {
         "Method not allowed",
     )
 }
+
+// ---------- user administration ----------
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminUser {
+    pub id: Uuid,
+    pub email: String,
+    /// Shown verbatim; never machine-translated.
+    pub display_name: String,
+    /// `unverified`, `active` or `disabled`.
+    pub status: String,
+    /// Elevated roles only (`moderator`, `admin`); every user is implicitly a member.
+    pub roles: Vec<String>,
+    pub created_at: DateTime<Utc>,
+}
+
+impl From<admin::AdminUser> for AdminUser {
+    fn from(u: admin::AdminUser) -> Self {
+        Self {
+            id: u.id,
+            email: u.email,
+            display_name: u.display_name,
+            status: u.status,
+            roles: u.roles,
+            created_at: u.created_at,
+        }
+    }
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminUserPage {
+    pub items: Vec<AdminUser>,
+    pub next_cursor: Option<String>,
+}
+
+#[derive(Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
+pub struct UserQuery {
+    /// Case-insensitive substring of email or display name.
+    pub q: Option<String>,
+    pub cursor: Option<String>,
+    /// Page size, 1–100 (default 25).
+    pub limit: Option<i64>,
+}
+
+#[utoipa::path(get, path = "/api/v1/admin/users", tag = "admin", params(UserQuery),
+    security(("session" = [])), responses(
+    (status = 200, body = AdminUserPage),
+    (status = 400, body = Problem, content_type = "application/problem+json"),
+    (status = 401, body = Problem, content_type = "application/problem+json"),
+    (status = 403, body = Problem, content_type = "application/problem+json"),
+    (status = 422, body = Problem, content_type = "application/problem+json")))]
+pub async fn list_users(
+    State(app): State<App>,
+    RequireRole(p, ..): RequireRole<Admin>,
+    ApiQuery(q): ApiQuery<UserQuery>,
+) -> ApiResult<Json<AdminUserPage>> {
+    let page = admin::list_users(&app, &p, q.q.as_deref(), q.cursor.as_deref(), q.limit).await?;
+    Ok(Json(AdminUserPage {
+        items: page.items.into_iter().map(Into::into).collect(),
+        next_cursor: page.next_cursor,
+    }))
+}
+
+macro_rules! user_change {
+    ($name:ident, $method:ident, $path:literal, $doc:literal, |$role:ident| $change:expr, $($pp:tt)*) => {
+        #[utoipa::path($method, path = $path, tag = "admin", params($($pp)*),
+            security(("session" = [])), description = $doc, responses(
+            (status = 200, body = AdminUser),
+            (status = 401, body = Problem, content_type = "application/problem+json"),
+            (status = 403, body = Problem, content_type = "application/problem+json"),
+            (status = 404, body = Problem, content_type = "application/problem+json"),
+            (status = 409, body = Problem, content_type = "application/problem+json", description = "`own_account`: admins cannot change their own account"),
+            (status = 422, body = Problem, content_type = "application/problem+json")))]
+        pub async fn $name(
+            State(app): State<App>,
+            Meta(meta): Meta,
+            RequireRole(p, ..): RequireRole<Admin>,
+            ApiPath(path): ApiPath<UserRolePath>,
+        ) -> ApiResult<Json<AdminUser>> {
+            let $role = path.role.as_deref().map(admin::parse_role).transpose()?;
+            Ok(Json(admin::change_user(&app, &p, &meta, path.id, $change).await?.into()))
+        }
+    };
+}
+
+#[derive(Deserialize)]
+pub struct UserRolePath {
+    pub id: Uuid,
+    pub role: Option<String>,
+}
+
+user_change!(
+    grant_user_role,
+    put,
+    "/api/v1/admin/users/{id}/roles/{role}",
+    "Grants `moderator` or `admin`. Idempotent; audited.",
+    |role| admin::Change::Grant(role.expect("route has role")),
+    ("id" = Uuid, Path),
+    ("role" = String, Path)
+);
+user_change!(
+    revoke_user_role,
+    delete,
+    "/api/v1/admin/users/{id}/roles/{role}",
+    "Revokes a role. Idempotent; audited.",
+    |role| admin::Change::Revoke(role.expect("route has role")),
+    ("id" = Uuid, Path),
+    ("role" = String, Path)
+);
+user_change!(
+    disable_user,
+    post,
+    "/api/v1/admin/users/{id}/disable",
+    "Disables the account and ends all its sessions. Idempotent; audited.",
+    |_role| admin::Change::Disable,
+    ("id" = Uuid, Path)
+);
+user_change!(
+    enable_user,
+    post,
+    "/api/v1/admin/users/{id}/enable",
+    "Re-enables a disabled account. Idempotent; audited.",
+    |_role| admin::Change::Enable,
+    ("id" = Uuid, Path)
+);

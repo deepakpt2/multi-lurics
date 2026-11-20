@@ -320,3 +320,81 @@ pub async fn consume_token(
     .fetch_optional(conn)
     .await
 }
+
+// ---- administration ----
+
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct AdminUserRow {
+    pub id: Uuid,
+    pub email: String,
+    pub display_name: String,
+    pub status: String,
+    pub created_at: DateTime<Utc>,
+    pub roles: Vec<String>,
+}
+
+/// Newest-first keyset page of users. `pattern` is a ready-made ILIKE pattern.
+pub async fn list_users(
+    conn: &mut PgConnection,
+    pattern: Option<&str>,
+    after: Option<(DateTime<Utc>, Uuid)>,
+    limit: i64,
+) -> Result<Vec<AdminUserRow>, sqlx::Error> {
+    let (ts, id) = after.unzip();
+    sqlx::query_as(
+        "SELECT u.id, u.email::text AS email, u.display_name, u.status, u.created_at,
+                ARRAY(SELECT r.role FROM user_roles r WHERE r.user_id = u.id ORDER BY r.role) AS roles
+         FROM users u
+         WHERE ($4::text IS NULL OR u.email::text ILIKE $4 OR u.display_name ILIKE $4)
+           AND ($1::timestamptz IS NULL OR (u.created_at, u.id) < ($1, $2))
+         ORDER BY u.created_at DESC, u.id DESC
+         LIMIT $3",
+    )
+    .bind(ts)
+    .bind(id)
+    .bind(limit)
+    .bind(pattern)
+    .fetch_all(conn)
+    .await
+}
+
+/// Locks the user row for the rest of the transaction; returns its status.
+pub async fn lock_user(conn: &mut PgConnection, id: Uuid) -> Result<Option<String>, sqlx::Error> {
+    sqlx::query_scalar("SELECT status FROM users WHERE id = $1 FOR UPDATE")
+        .bind(id)
+        .fetch_optional(conn)
+        .await
+}
+
+pub async fn revoke_role(conn: &mut PgConnection, user_id: Uuid, role: Role) -> Result<bool, sqlx::Error> {
+    let r = sqlx::query("DELETE FROM user_roles WHERE user_id = $1 AND role = $2")
+        .bind(user_id)
+        .bind(role.as_str())
+        .execute(conn)
+        .await?;
+    Ok(r.rows_affected() == 1)
+}
+
+/// Disables, or restores to `active` (`unverified` when the email was never verified). Returns the new status.
+pub async fn set_disabled(conn: &mut PgConnection, id: Uuid, disabled: bool) -> Result<String, sqlx::Error> {
+    sqlx::query_scalar(
+        "UPDATE users SET updated_at = now(),
+                status = CASE WHEN $2 THEN 'disabled' WHEN email_verified_at IS NULL THEN 'unverified' ELSE 'active' END
+         WHERE id = $1 RETURNING status",
+    )
+    .bind(id)
+    .bind(disabled)
+    .fetch_one(conn)
+    .await
+}
+
+pub async fn get_admin_user(conn: &mut PgConnection, id: Uuid) -> Result<Option<AdminUserRow>, sqlx::Error> {
+    sqlx::query_as(
+        "SELECT u.id, u.email::text AS email, u.display_name, u.status, u.created_at,
+                ARRAY(SELECT r.role FROM user_roles r WHERE r.user_id = u.id ORDER BY r.role) AS roles
+         FROM users u WHERE u.id = $1",
+    )
+    .bind(id)
+    .fetch_optional(conn)
+    .await
+}

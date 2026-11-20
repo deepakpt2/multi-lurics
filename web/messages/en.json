@@ -25,7 +25,10 @@
     "contentPolicy": "Content policy",
     "copyright": "Copyright and takedown",
     "moderationLegal": "Legal notices",
-    "menu": "Menu"
+    "menu": "Menu",
+    "users": "Users",
+    "signOut": "Sign out",
+    "moderationHub": "Review queues"
   },
   "localeNames": {
     "en": "English",
@@ -189,7 +192,8 @@
     "nothing_to_appeal": "There is nothing to appeal.",
     "comment_not_visible": "This comment is already hidden.",
     "slow_down": "You are doing that too often. Please wait a moment.",
-    "not_published": "This contribution is not published, so there is nothing to take down."
+    "not_published": "This contribution is not published, so there is nothing to take down.",
+    "own_account": "You cannot change your own account. Ask another admin."
   },
   "conflict": {
     "title": "Someone else changed this",
@@ -806,5 +810,30 @@
       "google_disabled": "This account is disabled.",
       "google_email_unverified": "Google could not confirm that email address, so we cannot sign you in with it."
     }
+  },
+  "admin": {
+    "usersTitle": "Users",
+    "usersIntro": "Grant or remove moderator and admin access, or disable an account. Every change is recorded in the audit log.",
+    "search": "Search by name or email",
+    "searchButton": "Search",
+    "noUsers": "No matching users.",
+    "you": "You",
+    "status": {
+      "active": "Active",
+      "unverified": "Unverified",
+      "disabled": "Disabled"
+    },
+    "roles": {
+      "moderator": "Moderator",
+      "admin": "Admin"
+    },
+    "makeModerator": "Make moderator",
+    "removeModerator": "Remove moderator",
+    "makeAdmin": "Make admin",
+    "removeAdmin": "Remove admin",
+    "disable": "Disable account",
+    "enable": "Enable account",
+    "loadMore": "Load more",
+    "joined": "Joined {date}"
   }
 }

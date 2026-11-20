@@ -273,3 +273,24 @@ button.link { background: none; border: 0; padding: 0; color: inherit; text-deco
   .site-header .brand { margin-inline-end: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .button, .field input { transition: none; } }
+
+/* Moderation hub, user administration, signed-out actions */
+.hub { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.75rem; margin-block: 1rem 1.5rem; }
+.hub-card {
+  display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.1rem; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+  color: var(--fg); text-decoration: none; font-weight: 500; transition: border-color 0.15s, transform 0.15s;
+}
+.hub-card svg { color: var(--accent); background: var(--accent-soft); padding: 0.55rem; box-sizing: content-box; border-radius: 10px; }
+.hub-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.auth-links { display: flex; gap: 0.5rem; }
+.user-card { list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 0.9rem 1.1rem; }
+.user-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; }
+.user-head p { margin-block: 0.15rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: start; }
+.chips .badge { margin: 0; }
+.badge.status-active { background: var(--ok-bg); color: #276a35; }
+.badge.status-disabled { background: var(--error-bg); color: var(--error-fg); }
+.badge.status-unverified { background: var(--warn-bg); color: #7a5a0a; }
+.badge.role { background: var(--sage); color: #fff; }
+@media (max-width: 40rem) { .auth-links .button { padding-inline: 0.8rem; min-block-size: 2.25rem; } }

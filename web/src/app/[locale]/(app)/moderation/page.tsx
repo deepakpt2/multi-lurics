@@ -1,3 +1,4 @@
+import { FileText, Flag, GitPullRequest, Scale } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ModerationQueue } from "@/components/localization/moderation";
@@ -11,15 +12,24 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <>
       <h1>{t("queueTitle")}</h1>
-      <p>
-        <Link href="/moderation/lyrics">{t("lyricsQueueLink")}</Link>
-        {" "}
-        <Link href="/moderation/entities">{t("proposalsQueueLink")}</Link>
-        {" "}
-        <Link href="/moderation/community">{tc("reportsTitle")}</Link>
-        {" "}
-        <Link href="/moderation/legal">{tl("queueTitle")}</Link>
-      </p>
+      <nav className="hub" aria-label={t("queueTitle")}>
+        <Link href="/moderation/lyrics" className="hub-card">
+          <FileText size={22} aria-hidden="true" />
+          <span>{t("lyricsQueueLink")}</span>
+        </Link>
+        <Link href="/moderation/entities" className="hub-card">
+          <GitPullRequest size={22} aria-hidden="true" />
+          <span>{t("proposalsQueueLink")}</span>
+        </Link>
+        <Link href="/moderation/community" className="hub-card">
+          <Flag size={22} aria-hidden="true" />
+          <span>{tc("reportsTitle")}</span>
+        </Link>
+        <Link href="/moderation/legal" className="hub-card">
+          <Scale size={22} aria-hidden="true" />
+          <span>{tl("queueTitle")}</span>
+        </Link>
+      </nav>
       <ModerationQueue />
     </>
   );

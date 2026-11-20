@@ -1,11 +1,13 @@
 "use client";
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { Disc3, Flower2, Library, ListMusic, LogIn, Menu, MessageSquare, Mic2, NotebookPen, ShieldCheck, Columns2, UserPlus, UserRound } from "lucide-react";
+import { Columns2, Disc3, Flower2, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, NotebookPen, ShieldCheck, UserPlus, UserRound, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
+import { api, call } from "@/api/client";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { locales, offeredLocales } from "@/i18n/routing";
 import { SearchBox } from "./search/search";
+import { useSession } from "./session";
 
 type Icon = typeof Library;
 
@@ -13,6 +15,16 @@ export function SiteHeader() {
   const t = useTranslations();
   const current = useLocale();
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isModerator, isAdmin } = useSession();
+  const offered = locales.filter((l) => offeredLocales.includes(l));
+  const signOut = async () => {
+    try {
+      await call(api.POST("/api/v1/auth/logout"));
+    } finally {
+      router.push("/login");
+    }
+  };
   const active = (href: string) => (pathname === href || pathname.startsWith(`${href}/`) ? "page" : undefined);
   const NavLink = ({ href, icon: I, children }: { href: string; icon: Icon; children: React.ReactNode }) => (
     <Link href={href} aria-current={active(href)}>
@@ -45,36 +57,50 @@ export function SiteHeader() {
         <NavLink href="/albums" icon={ListMusic}>{t("nav.albums")}</NavLink>
         <NavLink href="/compare" icon={Columns2}>{t("nav.compare")}</NavLink>
       </nav>
-      <Dropdown.Root>
-        <Dropdown.Trigger className="menu-trigger">
-          <Menu size={18} aria-hidden="true" />
-          <span>{t("nav.menu")}</span>
-        </Dropdown.Trigger>
-        <Dropdown.Portal>
-          <Dropdown.Content className="menu" align="end" sideOffset={8}>
-            <MenuLink href="/account" icon={UserRound}>{t("nav.account")}</MenuLink>
-            <MenuLink href="/contributions" icon={NotebookPen}>{t("nav.myLyrics")}</MenuLink>
-            <MenuLink href="/account/comments" icon={MessageSquare}>{t("nav.myComments")}</MenuLink>
-            <MenuLink href="/moderation" icon={ShieldCheck}>{t("nav.moderation")}</MenuLink>
-            <Dropdown.Separator className="menu-sep" />
-            <MenuLink href="/login" icon={LogIn}>{t("nav.signIn")}</MenuLink>
-            <MenuLink href="/register" icon={UserPlus}>{t("nav.register")}</MenuLink>
-          </Dropdown.Content>
-        </Dropdown.Portal>
-      </Dropdown.Root>
-      <nav aria-label={t("nav.language")} className="locale-switcher">
-        {locales.map((l) =>
-          offeredLocales.includes(l) ? (
+      {user === null && (
+        <div className="auth-links">
+          <Link href="/login" className="button">
+            <LogIn size={16} aria-hidden="true" />
+            {t("nav.signIn")}
+          </Link>
+          <Link href="/register" className="button primary">
+            <UserPlus size={16} aria-hidden="true" />
+            {t("nav.register")}
+          </Link>
+        </div>
+      )}
+      {user && (
+        <Dropdown.Root>
+          <Dropdown.Trigger className="menu-trigger" aria-label={t("nav.menu")}>
+            <UserRound size={18} aria-hidden="true" />
+            <span dir="auto" translate="no">{user.display_name}</span>
+          </Dropdown.Trigger>
+          <Dropdown.Portal>
+            <Dropdown.Content className="menu" align="end" sideOffset={8}>
+              <MenuLink href="/account" icon={UserRound}>{t("nav.account")}</MenuLink>
+              <MenuLink href="/contributions" icon={NotebookPen}>{t("nav.myLyrics")}</MenuLink>
+              <MenuLink href="/account/comments" icon={MessageSquare}>{t("nav.myComments")}</MenuLink>
+              {(isModerator || isAdmin) && <Dropdown.Separator className="menu-sep" />}
+              {isModerator && <MenuLink href="/moderation" icon={ShieldCheck}>{t("nav.moderation")}</MenuLink>}
+              {isAdmin && <MenuLink href="/admin/users" icon={Users}>{t("nav.users")}</MenuLink>}
+              <Dropdown.Separator className="menu-sep" />
+              <Dropdown.Item className="menu-item" onSelect={() => void signOut()}>
+                <LogOut size={16} aria-hidden="true" />
+                {t("nav.signOut")}
+              </Dropdown.Item>
+            </Dropdown.Content>
+          </Dropdown.Portal>
+        </Dropdown.Root>
+      )}
+      {offered.length > 1 && (
+        <nav aria-label={t("nav.language")} className="locale-switcher">
+          {offered.map((l) => (
             <Link key={l} href={pathname} locale={l} lang={l} aria-current={l === current ? "true" : undefined}>
               {t(`localeNames.${l}`)}
             </Link>
-          ) : (
-            <span key={l} lang={l} aria-disabled="true" className="disabled-locale">
-              {t(`localeNames.${l}`)}
-            </span>
-          ),
-        )}
-      </nav>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }
