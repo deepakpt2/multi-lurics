@@ -1,6 +1,7 @@
 import { Library, LogIn, UserPlus } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { GuestOnly } from "@/components/guest-only";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -12,6 +13,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <p className="lead">{t("app.tagline")}</p>
       <p>{t("home.intro")}</p>
       <p className="actions">
+        <GuestOnly>
         <Link className="button primary" href="/register">
           <UserPlus size={16} aria-hidden="true" />
           {t("nav.register")}
@@ -20,6 +22,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <LogIn size={16} aria-hidden="true" />
           {t("nav.signIn")}
         </Link>
+        </GuestOnly>
         <Link className="button ghost" href="/browse">
           <Library size={16} aria-hidden="true" />
           {t("home.browse")}
