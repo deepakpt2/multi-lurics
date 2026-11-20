@@ -48,7 +48,7 @@ impl RateLimiter {
 
 /// The caller as the edge proxy reports it. These headers are only trustworthy behind a proxy
 /// that overwrites them (Cloudflare/Traefik here); direct exposure would let a client rotate them.
-fn client_key(h: &HeaderMap) -> String {
+pub(crate) fn client_key(h: &HeaderMap) -> String {
     let first = |name: &str| {
         h.get(name)
             .and_then(|v| v.to_str().ok())

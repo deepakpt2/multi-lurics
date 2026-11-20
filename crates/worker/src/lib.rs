@@ -180,3 +180,13 @@ pub async fn run_once(pool: &PgPool, handler: &dyn Handler) -> anyhow::Result<us
     }
     Ok(events.len())
 }
+
+/// Rebuilds the home page lists (popular and new songs, albums, artists) and clears expired
+/// view-dedupe rows. The formula lives in `infrastructure::home`.
+pub async fn refresh_home(pool: &PgPool) -> anyhow::Result<()> {
+    let mut tx = pool.begin().await?;
+    infrastructure::home::refresh(&mut tx).await?;
+    infrastructure::home::purge_seen(&mut tx).await?;
+    tx.commit().await?;
+    Ok(())
+}

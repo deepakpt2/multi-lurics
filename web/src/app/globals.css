@@ -357,3 +357,32 @@ button.link { background: none; border: 0; padding: 0; color: inherit; text-deco
 .review-pair figure { margin: 0; display: grid; gap: 0.25rem; justify-items: start; }
 .review-pair img { border-radius: 12px; }
 .attached-image { display: flex; align-items: center; gap: 0.75rem; }
+
+/* Home page lists */
+.home-sections { margin-block-start: 2rem; }
+.home-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.home-toolbar h2 { margin: 0; }
+.home-toolbar-actions { display: flex; align-items: center; gap: 0.75rem; }
+.home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; margin-block: 1rem; }
+.home-section { padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.home-section[draggable="true"] { cursor: grab; border-style: dashed; }
+.home-section[data-dragging] { opacity: 0.5; }
+.home-section-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.home-section-head h3 { margin: 0; font-size: 1.05rem; }
+.home-controls { display: inline-flex; align-items: center; gap: 0.15rem; }
+.home-grip { color: var(--muted); }
+.icon-button { display: inline-grid; place-items: center; inline-size: 2rem; block-size: 2rem; padding: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: inherit; cursor: pointer; }
+.icon-button:disabled { opacity: 0.4; cursor: default; }
+.home-list { list-style: none; margin: 0.75rem 0 0; padding: 0; display: grid; gap: 0.6rem; }
+.home-item { display: flex; align-items: center; gap: 0.6rem; }
+.home-rank { flex: none; inline-size: 1.4rem; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; }
+.home-item-body { display: grid; gap: 0.1rem; min-inline-size: 0; overflow-wrap: anywhere; }
+.home-stats { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.home-stats span { display: inline-flex; align-items: center; gap: 0.2rem; }
+.home-empty { display: grid; gap: 0.5rem; justify-items: start; margin-block-start: 0.75rem; color: var(--muted); }
+.home-hidden { padding: 1rem; border: 1px dashed var(--border); border-radius: var(--radius); display: grid; gap: 0.5rem; justify-items: start; }
+.home-hidden h3 { margin: 0; font-size: 1rem; }
+.home-hidden ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.home-hidden li { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.page-stats { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-block: 0.25rem 0.75rem; }
+.page-stats span { display: inline-flex; align-items: center; gap: 0.25rem; }

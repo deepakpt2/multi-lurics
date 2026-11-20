@@ -51,6 +51,7 @@ pub fn app_with(pool: PgPool, tweak: impl FnOnce(&mut Config)) -> App {
         media_max_bytes: 1024 * 1024,
         media_max_side: 4000,
         media_sizes: vec![32, 64, 128],
+        home_refresh_secs: 3600,
     };
     tweak(&mut config);
     App::new(pool, Arc::new(config))

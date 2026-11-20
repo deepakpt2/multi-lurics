@@ -134,7 +134,8 @@ pub struct Filter {
 }
 
 /// A song is public when it has a published lyric: the same rule as `seo_is_public('composition', …)`.
-const PUBLISHED: &str = "EXISTS (SELECT 1 FROM recordings pr JOIN contributions px ON px.recording_id = pr.id
+pub(crate) const PUBLISHED: &str =
+    "EXISTS (SELECT 1 FROM recordings pr JOIN contributions px ON px.recording_id = pr.id
                           WHERE pr.composition_id = c.id AND px.published_revision_id IS NOT NULL)";
 
 fn push_value(qb: &mut QueryBuilder<'_, Postgres>, v: &Value) {

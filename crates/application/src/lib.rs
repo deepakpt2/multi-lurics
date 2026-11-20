@@ -10,6 +10,7 @@ pub mod community;
 pub mod comparison;
 pub mod entities;
 pub mod error;
+pub mod home;
 pub mod images;
 pub mod legal;
 pub mod localization;

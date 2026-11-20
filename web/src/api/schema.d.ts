@@ -703,6 +703,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editors-picks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["pick_state"];
+        put: operations["pick"];
+        post?: never;
+        delete: operations["unpick"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/entities/merges": {
         parameters: {
             query?: never;
@@ -841,6 +857,22 @@ export interface paths {
         get: operations["list_entity_localizations"];
         put?: never;
         post: operations["create_localization"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["home"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1631,6 +1663,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/views": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["record_view"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -2333,6 +2381,51 @@ export interface components {
             migration_version?: number | null;
             status: string;
         };
+        HomeItem: {
+            albums: components["schemas"]["BrowseRef"][];
+            /** Format: int32 */
+            comments: number;
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Public image (albums and artists): `/api/v1/media/{image_id}/{width}`.
+             */
+            image_id?: string | null;
+            page?: null | components["schemas"]["BrowsePageRef"];
+            /** Format: int32 */
+            rank: number;
+            /** Format: double */
+            rating_average?: number | null;
+            /** Format: int32 */
+            rating_count: number;
+            /** @description Singers and albums of a song; each filters browse by that value. */
+            singers: components["schemas"]["BrowseRef"][];
+            /** @description Browse slug of an album or artist (`/browse?album=<slug>`). */
+            slug?: string | null;
+            title: components["schemas"]["Display"];
+            /**
+             * Format: int64
+             * @description Views in the last 30 days.
+             */
+            views: number;
+        };
+        HomeResponse: {
+            /**
+             * Format: date-time
+             * @description When the lists were last computed; they do not change between runs.
+             */
+            generated_at?: string | null;
+            /** @description Always all six sections, in the default order. */
+            sections: components["schemas"]["HomeSection"][];
+        };
+        HomeSection: {
+            /** @description Empty when there is nothing to show yet (for example on a new install). */
+            items: components["schemas"]["HomeItem"][];
+            key: components["schemas"]["HomeSectionKey"];
+        };
+        /** @enum {string} */
+        HomeSectionKey: "editors_picks" | "popular_songs" | "new_songs" | "popular_albums" | "new_albums" | "popular_artists";
         Image: {
             /** Format: date-time */
             created_at: string;
@@ -2741,6 +2834,9 @@ export interface components {
         PasswordResetRequest: {
             email?: string;
             locale?: string | null;
+        };
+        PickState: {
+            picked: boolean;
         };
         Problem: {
             /** @description Present on `409 likely_duplicates`: entities that probably are the one being proposed. */
@@ -3378,6 +3474,23 @@ export interface components {
             /** Format: int32 */
             version: number;
         };
+        ViewCount: {
+            /**
+             * Format: int64
+             * @description All-time views of the page.
+             */
+            views: number;
+        };
+        ViewCreate: {
+            /**
+             * Format: uuid
+             * @description Composition, artist or album id.
+             */
+            id: string;
+            kind: components["schemas"]["ViewKind"];
+        };
+        /** @enum {string} */
+        ViewKind: "song" | "artist" | "album";
     };
     responses: never;
     parameters: never;
@@ -6083,6 +6196,93 @@ export interface operations {
             };
         };
     };
+    pick_state: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PickState"];
+                };
+            };
+        };
+    };
+    pick: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PickState"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    unpick: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PickState"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     merge_entities: {
         parameters: {
             query?: never;
@@ -6651,6 +6851,36 @@ export interface operations {
                 content: {
                     "application/problem+json": components["schemas"]["Problem"];
                 };
+            };
+        };
+    };
+    home: {
+        parameters: {
+            query?: {
+                /** @description Display language tag for names. */
+                lang?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Popular and new songs and albums, and most viewed artists */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomeResponse"];
+                };
+            };
+            /** @description Unchanged since `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -9116,6 +9346,46 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    record_view: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ViewCreate"];
+            };
+        };
+        responses: {
+            /** @description Counted once per viewer and day; returns the total */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ViewCount"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,6 +1,7 @@
 import { Library, LogIn, UserPlus } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { HomeSections } from "@/components/home/home-sections";
 import { GuestOnly } from "@/components/guest-only";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
@@ -8,6 +9,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   setRequestLocale(locale);
   const t = await getTranslations();
   return (
+    <>
     <section className="hero">
       <h1>{t("home.title")}</h1>
       <p className="lead">{t("app.tagline")}</p>
@@ -29,5 +31,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </Link>
       </p>
     </section>
+    <HomeSections />
+    </>
   );
 }

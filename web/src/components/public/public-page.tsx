@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { decodeSlug, describe, fetchPage, jsonLd, pagePath, pageUrl, safeJson, siteUrl, type PublicPage, type Scope } from "@/lib/seo";
 import { Name } from "../localization/localized";
+import { PageStats } from "./page-stats";
 
 type Params = Promise<{ locale: string; slug: string }>;
 
@@ -84,6 +85,7 @@ export function publicPage(scope: Scope) {
             </>
           )}
         </p>
+        {(p.scope === "song" || p.scope === "artist") && <PageStats kind={p.scope} id={p.id} lyricIds={p.lyrics.map((l) => l.id)} />}
         {p.scope === "song" && (
           <dl className="facts">
             <dt>{tf("category")}</dt>

@@ -38,6 +38,8 @@ pub struct Config {
     pub media_max_side: u32,
     /// Square sizes (pixels) generated for every image, ascending. Requests are served the smallest one that fits.
     pub media_sizes: Vec<u32>,
+    /// How often the worker rebuilds the home page lists, in seconds.
+    pub home_refresh_secs: u64,
 }
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -200,6 +202,16 @@ impl Config {
         if !(64..=20_000).contains(&media_max_side) {
             errs.push("LYRICS_MEDIA_MAX_SIDE must be between 64 and 20000".into());
         }
+        let home_refresh_secs: u64 = parse_or(
+            &mut errs,
+            get("LYRICS_HOME_REFRESH_SECS"),
+            "LYRICS_HOME_REFRESH_SECS",
+            "3600",
+        )
+        .unwrap_or(0);
+        if !(60..=86_400).contains(&home_refresh_secs) {
+            errs.push("LYRICS_HOME_REFRESH_SECS must be between 60 and 86400".into());
+        }
         let media_sizes = parse_sizes(&mut errs, get("LYRICS_MEDIA_SIZES").as_deref().unwrap_or("96,240,640"));
 
         if !errs.is_empty() {
@@ -229,6 +241,7 @@ impl Config {
             media_max_bytes,
             media_max_side,
             media_sizes,
+            home_refresh_secs,
         })
     }
 }

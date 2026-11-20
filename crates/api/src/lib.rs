@@ -5,6 +5,7 @@ pub mod catalogue;
 pub mod community;
 pub mod entities;
 pub mod extract;
+pub mod home;
 pub mod images;
 pub mod legal;
 pub mod localization;
@@ -25,6 +26,7 @@ use browse as brw;
 use catalogue as cat;
 use community as com;
 use entities as ent;
+use home as hm;
 use images as img;
 use localization as loc;
 use lyrics as lyr;
@@ -61,6 +63,7 @@ use utoipa::{Modify, OpenApi};
         ent::suggest, ent::create_proposal, ent::proposal_queue, ent::approve_proposal, ent::reject_proposal,
         ent::merge_entities,
         brw::songs, brw::facet, brw::suggest,
+        hm::home, hm::record_view, hm::pick_state, hm::pick, hm::unpick,
         img::limits, img::upload, img::withdraw, img::entity_images, img::media, img::queue, img::approve, img::reject,
         srch::search, srch::suggest, srch::suggestion_accepted, srch::metrics,
         seo_api::get_page, seo_api::sitemap,
@@ -186,6 +189,7 @@ pub fn router(app: App) -> Router {
         .route("/search/suggest", get(srch::suggest))
         .route("/search/suggest/accepted", post(srch::suggestion_accepted))
         .route("/browse/suggest", get(brw::suggest))
+        .route("/views", post(hm::record_view))
         .route_layer(axum::middleware::from_fn_with_state(limiter, ratelimit::limit));
 
     // Credential endpoints get their own per-client bucket (guessing, enumeration, mail flooding).
@@ -262,6 +266,11 @@ pub fn router(app: App) -> Router {
         .route("/pages/{scope}/{slug}", get(seo_api::get_page))
         .route("/sitemap", get(seo_api::sitemap))
         .route("/search", get(srch::search))
+        .route("/home", get(hm::home))
+        .route(
+            "/editors-picks/{id}",
+            get(hm::pick_state).put(hm::pick).delete(hm::unpick),
+        )
         .route("/images/limits", get(img::limits))
         .route(
             "/images",

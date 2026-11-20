@@ -39,7 +39,57 @@
   "home": {
     "title": "Welcome",
     "intro": "Sign in or create an account to get started.",
-    "browse": "Browse songs"
+    "browse": "Browse songs",
+    "discover": "Discover",
+    "customize": "Customize",
+    "done": "Done",
+    "customizeHelp": "Hide sections you do not want, or move them up and down (or drag them). Your choice is saved in this browser for your account.",
+    "hiddenCount": "{count, plural, one {# section hidden} other {# sections hidden}}",
+    "hiddenTitle": "Hidden sections",
+    "noneHidden": "No sections are hidden.",
+    "showAgain": "Show {name}",
+    "hide": "Hide {name}",
+    "moveUp": "Move {name} up",
+    "moveDown": "Move {name} down",
+    "reset": "Restore the default layout",
+    "allHidden": "All sections are hidden. Choose Customize to bring them back.",
+    "nothing": "Nothing to see here yet.",
+    "views": "{count, plural, one {# view} other {# views}} in the last 30 days",
+    "viewsShort": "{count, plural, one {# view} other {# views}}",
+    "ratings": "{count, plural, one {# rating} other {# ratings}}",
+    "comments": "{count, plural, one {# comment} other {# comments}}",
+    "updated": "Lists updated {when, date, medium} {when, time, short}",
+    "sections": {
+      "editors_picks": {
+        "title": "Editors' picks"
+      },
+      "popular_songs": {
+        "title": "Most popular songs",
+        "add": "Add a song now"
+      },
+      "new_songs": {
+        "title": "New songs",
+        "add": "Add a song now"
+      },
+      "popular_albums": {
+        "title": "Popular albums",
+        "add": "Add an album now"
+      },
+      "new_albums": {
+        "title": "New albums",
+        "add": "Add an album now"
+      },
+      "popular_artists": {
+        "title": "Most viewed artists",
+        "add": "Add an artist now"
+      }
+    },
+    "ratingShort": "{average} ({count})",
+    "unpick": "Remove {name} from editors' picks",
+    "picksHowTo": "Open a song and choose “Feature on home page”.",
+    "picksSoon": "Songs our editors recommend will appear here.",
+    "pick": "Feature on home page",
+    "picked": "Featured on home page — remove"
   },
   "common": {
     "loading": "Loading…",
@@ -618,6 +668,13 @@
     "localeNames": {
       "en": "English",
       "ar": "العربية"
+    },
+    "stats": {
+      "label": "Page activity",
+      "views": "{count, plural, one {# view} other {# views}}",
+      "rating": "{average} average from {count, plural, one {# rating} other {# ratings}}",
+      "noRatings": "No ratings yet",
+      "comments": "{count, plural, one {# comment} other {# comments}}"
     }
   },
   "compare": {

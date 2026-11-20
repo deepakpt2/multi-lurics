@@ -42,7 +42,17 @@ async fn main() -> anyhow::Result<()> {
         inner: handler,
         revalidate,
     };
+    let every = Duration::from_secs(config.home_refresh_secs);
+    let mut next_refresh = tokio::time::Instant::now();
     loop {
+        if tokio::time::Instant::now() >= next_refresh {
+            // A failed refresh keeps the previous lists; try again next round.
+            match worker::refresh_home(&pool).await {
+                Ok(()) => tracing::info!("home lists refreshed"),
+                Err(e) => tracing::error!(error = %e, "home list refresh failed"),
+            }
+            next_refresh = tokio::time::Instant::now() + every;
+        }
         let n = worker::run_once(&pool, &handler).await?;
         if once {
             tracing::info!(processed = n, "single pass complete");

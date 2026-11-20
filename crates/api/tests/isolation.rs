@@ -21,6 +21,8 @@ const PUBLIC_WRITES: &[(&str, &str)] = &[
     ("post", "/api/v1/auth/password-reset/confirm"),
     ("post", "/api/v1/legal/notices"),
     ("post", "/api/v1/search/suggest/accepted"),
+    // Page views: counted once per viewer, page and day; nothing but a hash is stored.
+    ("post", "/api/v1/views"),
 ];
 
 fn fill(path: &str) -> String {

@@ -39,7 +39,57 @@
   "home": {
     "title": "مرحبًا",
     "intro": "سجّل الدخول أو أنشئ حسابًا للبدء.",
-    "browse": "تصفح الأغاني"
+    "browse": "تصفح الأغاني",
+    "discover": "اكتشف",
+    "customize": "تخصيص",
+    "done": "تم",
+    "customizeHelp": "أخفِ الأقسام التي لا تريدها، أو حرّكها للأعلى والأسفل (أو اسحبها). يُحفظ اختيارك في هذا المتصفح لحسابك.",
+    "hiddenCount": "{count, plural, one {قسم واحد مخفي} two {قسمان مخفيان} few {# أقسام مخفية} many {# قسمًا مخفيًا} other {# قسم مخفي}}",
+    "hiddenTitle": "الأقسام المخفية",
+    "noneHidden": "لا توجد أقسام مخفية.",
+    "showAgain": "إظهار {name}",
+    "hide": "إخفاء {name}",
+    "moveUp": "نقل {name} للأعلى",
+    "moveDown": "نقل {name} للأسفل",
+    "reset": "استعادة التخطيط الافتراضي",
+    "allHidden": "جميع الأقسام مخفية. اختر تخصيص لإعادتها.",
+    "nothing": "لا يوجد ما يُعرض هنا بعد.",
+    "views": "{count, plural, one {# مشاهدة} two {مشاهدتان} few {# مشاهدات} many {# مشاهدة} other {# مشاهدة}} في آخر 30 يومًا",
+    "viewsShort": "{count, plural, one {# مشاهدة} two {مشاهدتان} few {# مشاهدات} many {# مشاهدة} other {# مشاهدة}}",
+    "ratings": "{count, plural, one {# تقييم} two {تقييمان} few {# تقييمات} many {# تقييمًا} other {# تقييم}}",
+    "comments": "{count, plural, one {# تعليق} two {تعليقان} few {# تعليقات} many {# تعليقًا} other {# تعليق}}",
+    "updated": "آخر تحديث للقوائم {when, date, medium} {when, time, short}",
+    "sections": {
+      "editors_picks": {
+        "title": "اختيارات المحررين"
+      },
+      "popular_songs": {
+        "title": "الأغاني الأكثر شعبية",
+        "add": "أضف أغنية الآن"
+      },
+      "new_songs": {
+        "title": "أغانٍ جديدة",
+        "add": "أضف أغنية الآن"
+      },
+      "popular_albums": {
+        "title": "ألبومات رائجة",
+        "add": "أضف ألبومًا الآن"
+      },
+      "new_albums": {
+        "title": "ألبومات جديدة",
+        "add": "أضف ألبومًا الآن"
+      },
+      "popular_artists": {
+        "title": "الفنانون الأكثر مشاهدة",
+        "add": "أضف فنانًا الآن"
+      }
+    },
+    "ratingShort": "{average} ({count})",
+    "unpick": "إزالة {name} من اختيارات المحررين",
+    "picksHowTo": "افتح أغنية واختر «عرض في الصفحة الرئيسية».",
+    "picksSoon": "ستظهر هنا الأغاني التي يوصي بها المحررون.",
+    "pick": "عرض في الصفحة الرئيسية",
+    "picked": "معروضة في الصفحة الرئيسية — إزالة"
   },
   "common": {
     "loading": "جارٍ التحميل…",
@@ -618,6 +668,13 @@
     "localeNames": {
       "en": "English",
       "ar": "العربية"
+    },
+    "stats": {
+      "label": "نشاط الصفحة",
+      "views": "{count, plural, one {# مشاهدة} two {مشاهدتان} few {# مشاهدات} many {# مشاهدة} other {# مشاهدة}}",
+      "rating": "المتوسط {average} من {count, plural, one {# تقييم} two {تقييمين} few {# تقييمات} many {# تقييمًا} other {# تقييم}}",
+      "noRatings": "لا تقييمات بعد",
+      "comments": "{count, plural, one {# تعليق} two {تعليقان} few {# تعليقات} many {# تعليقًا} other {# تعليق}}"
     }
   },
   "compare": {

@@ -22,7 +22,7 @@ describe("composition form: Indian song metadata", () => {
     await userEvent.type(screen.getByLabelText("Tags"), "bhajan, morning ,");
     await userEvent.click(screen.getByRole("button", { name: /save|create|add/i }));
 
-    expect(await calls.at(-1)!.json()).toMatchObject({
+    expect(await calls.find((c) => c.method === "POST")!.json()).toMatchObject({
       title: "Hanuman Chalisa",
       category: "devotional",
       raga: "Mohanam",

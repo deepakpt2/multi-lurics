@@ -4236,6 +4236,135 @@
         ]
       }
     },
+    "/api/v1/editors-picks/{id}": {
+      "get": {
+        "tags": [
+          "home"
+        ],
+        "operationId": "pick_state",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PickState"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "home"
+        ],
+        "operationId": "pick",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PickState"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "home"
+        ],
+        "operationId": "unpick",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PickState"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
     "/api/v1/entities/merges": {
       "post": {
         "tags": [
@@ -5136,6 +5265,40 @@
             "session": []
           }
         ]
+      }
+    },
+    "/api/v1/home": {
+      "get": {
+        "tags": [
+          "home"
+        ],
+        "operationId": "home",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Display language tag for names.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Popular and new songs and albums, and most viewed artists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged since `If-None-Match`."
+          }
+        }
       }
     },
     "/api/v1/images": {
@@ -8925,6 +9088,56 @@
         }
       }
     },
+    "/api/v1/views": {
+      "post": {
+        "tags": [
+          "home"
+        ],
+        "operationId": "record_view",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Counted once per viewer and day; returns the total",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ViewCount"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/healthz": {
       "get": {
         "tags": [
@@ -11239,6 +11452,144 @@
           }
         }
       },
+      "HomeItem": {
+        "type": "object",
+        "required": [
+          "rank",
+          "id",
+          "title",
+          "singers",
+          "albums",
+          "views",
+          "rating_count",
+          "comments"
+        ],
+        "properties": {
+          "albums": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseRef"
+            }
+          },
+          "comments": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "image_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Public image (albums and artists): `/api/v1/media/{image_id}/{width}`."
+          },
+          "page": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BrowsePageRef",
+                "description": "Public page of a song or artist: `/{locale}/song/{slug}` or `/{locale}/artist/{slug}`."
+              }
+            ]
+          },
+          "rank": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rating_average": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          },
+          "rating_count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "singers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrowseRef"
+            },
+            "description": "Singers and albums of a song; each filters browse by that value."
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Browse slug of an album or artist (`/browse?album=<slug>`)."
+          },
+          "title": {
+            "$ref": "#/components/schemas/Display"
+          },
+          "views": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Views in the last 30 days."
+          }
+        }
+      },
+      "HomeResponse": {
+        "type": "object",
+        "required": [
+          "sections"
+        ],
+        "properties": {
+          "generated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the lists were last computed; they do not change between runs."
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HomeSection"
+            },
+            "description": "Always all six sections, in the default order."
+          }
+        }
+      },
+      "HomeSection": {
+        "type": "object",
+        "required": [
+          "key",
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HomeItem"
+            },
+            "description": "Empty when there is nothing to show yet (for example on a new install)."
+          },
+          "key": {
+            "$ref": "#/components/schemas/HomeSectionKey"
+          }
+        }
+      },
+      "HomeSectionKey": {
+        "type": "string",
+        "enum": [
+          "editors_picks",
+          "popular_songs",
+          "new_songs",
+          "popular_albums",
+          "new_albums",
+          "popular_artists"
+        ]
+      },
       "Image": {
         "type": "object",
         "required": [
@@ -12550,6 +12901,17 @@
               "string",
               "null"
             ]
+          }
+        }
+      },
+      "PickState": {
+        "type": "object",
+        "required": [
+          "picked"
+        ],
+        "properties": {
+          "picked": {
+            "type": "boolean"
           }
         }
       },
@@ -14624,6 +14986,44 @@
             "format": "int32"
           }
         }
+      },
+      "ViewCount": {
+        "type": "object",
+        "required": [
+          "views"
+        ],
+        "properties": {
+          "views": {
+            "type": "integer",
+            "format": "int64",
+            "description": "All-time views of the page."
+          }
+        }
+      },
+      "ViewCreate": {
+        "type": "object",
+        "required": [
+          "kind",
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Composition, artist or album id."
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ViewKind"
+          }
+        }
+      },
+      "ViewKind": {
+        "type": "string",
+        "enum": [
+          "song",
+          "artist",
+          "album"
+        ]
       }
     },
     "securitySchemes": {

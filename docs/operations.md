@@ -192,3 +192,21 @@ Artists, albums, labels, publishers, genres, ragas and deities can have one publ
 | `MEDIA_SIZES` | `96,240,640` | Square sizes generated per image (16–4096, at most 8). A request is served the smallest size that fits. Changing it affects new uploads only. |
 
 Files are at `<MEDIA_DIR>/<image id>/<size>.jpg`. `entity_images` is the record; a file without a row (a crash between the two) is harmless and can be deleted. Unsent drafts (uploaded but never attached to a proposal) are not purged automatically yet; they are capped at 5 per person.
+
+## Home page lists and view counts (migration 0017)
+
+The worker rebuilds five computed lists (plus the curated editors' picks) every `HOME_REFRESH_SECS` (default 3600) and stores them in `home_lists`; the API serves that snapshot, so the lists do not change between runs. On a fresh install the first request builds them once. A failed run keeps the previous lists and is retried on the next round.
+
+| List | Contents |
+|---|---|
+| `popular_songs` | Top 10 by score, only songs with some activity. |
+| `new_songs` | Top 10 by when their first lyric was published. |
+| `popular_albums` | Top 10 by own views plus the average score of their public songs. |
+| `new_albums` | Newest albums that have at least one public song. |
+| `popular_artists` | Most viewed: views of the artist page plus views of songs they are credited on (any role). |
+
+Song score = `ln(1 + views in 30 days) + 2 · ((bayes − 1) / 4) · ln(1 + ratings) + 1.5 · ln(1 + visible comments in 30 days)`, where `bayes = (5 · 3.0 + sum of ratings) / (5 + ratings)`. A song with few ratings is pulled towards a neutral 3, and a song with no ratings gets nothing from the rating term. Weights and window are constants in `crates/infrastructure/src/home.rs`; change them there and the next run applies them.
+
+Views: public song and artist pages call `POST /api/v1/views` from the browser (so crawlers that do not run scripts are not counted). A view counts once per viewer, page and day: signed-in people by account, visitors by network address and browser. Only a SHA-256 of `(day, viewer, target)` is stored, in `view_seen`, and rows older than a day are deleted by each list run. Counts per day are in `view_counts`. Behind a proxy, set it to overwrite `cf-connecting-ip` / `x-forwarded-for`, as for the rate limits.
+
+Visitors choose which sections show and in what order on the home page; that is kept in the browser's local storage per signed-in user (`lyrics.home.v1:<user id>`; `guest` when signed out), never on the server.

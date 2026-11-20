@@ -131,7 +131,7 @@ fn clean_q(v: &mut Violations, q: Option<&str>) -> Option<String> {
 
 /// The locale a slug should be in for this request: the language tag's base when the site has that
 /// locale, otherwise the default locale.
-fn locale_for(cfg: &seo_repo::SeoConfig, lang: Option<&str>) -> String {
+pub(crate) fn locale_for(cfg: &seo_repo::SeoConfig, lang: Option<&str>) -> String {
     let base = lang
         .and_then(|l| l.split(['-', '_']).next())
         .unwrap_or("")
@@ -144,7 +144,11 @@ fn locale_for(cfg: &seo_repo::SeoConfig, lang: Option<&str>) -> String {
 }
 
 /// Current browse slugs for the entities, creating any that do not exist yet.
-async fn ensure_slugs(app: &App, entity_type: &'static str, ids: &[Uuid]) -> Result<HashMap<Uuid, String>, AppError> {
+pub(crate) async fn ensure_slugs(
+    app: &App,
+    entity_type: &'static str,
+    ids: &[Uuid],
+) -> Result<HashMap<Uuid, String>, AppError> {
     let mut conn = app.pool.acquire().await?;
     let mut found = repo::current_slugs(&mut conn, entity_type, ids).await?;
     drop(conn);
@@ -282,45 +286,9 @@ async fn entity_name(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> Re
         .unwrap_or_default())
 }
 
-/// `GET /browse/songs`
-pub async fn songs(
-    app: &App,
-    sel: &Selection,
-    page: Option<i64>,
-    page_size: Option<i64>,
-    sort: Option<&str>,
-    lang: Option<&str>,
-) -> Result<Paged<Song>, AppError> {
-    let mut v = Violations::default();
-    sel.check(&mut v);
-    let (page, size) = paging(&mut v, page, page_size);
-    let sort = match sort {
-        None | Some("newest") => Sort::Newest,
-        Some("title") => Sort::Title,
-        Some(_) => {
-            v.push("sort", "invalid_value");
-            Sort::Newest
-        }
-    };
-    v.finish()?;
+/// Song cards (titles, singers, albums, languages, public page) for already-chosen songs, in order.
+pub(crate) async fn cards(app: &App, rows: Vec<repo::SongRow>, lang: Option<&str>) -> Result<Vec<Song>, AppError> {
     let mut conn = app.pool.acquire().await?;
-    let resolved = resolve(app, &mut conn, sel, lang).await?;
-    if !resolved.all {
-        return Ok(Paged {
-            items: Vec::new(),
-            page,
-            page_size: size,
-            total: 0,
-            filters: resolved.shown,
-        });
-    }
-    let offset = (page - 1) * size;
-    let rows = repo::list_songs(&mut conn, &resolved.filters, sort, size, offset).await?;
-    let total = match rows.first() {
-        Some(r) => r.total,
-        None if offset > 0 => repo::count_songs(&mut conn, &resolved.filters).await?,
-        None => 0,
-    };
     let ids: Vec<Uuid> = rows.iter().map(|r| r.id).collect();
     let req = resolve_requested(&mut conn, lang).await?;
     let cfg = seo_repo::load_config(&mut conn).await?;
@@ -363,7 +331,7 @@ pub async fn songs(
     refs.extend(albums.iter().map(|a| (EntityType::Album, a.id, a.title.clone())));
     let shown = names(&mut conn, &req, &refs).await?;
 
-    let items = rows
+    Ok(rows
         .into_iter()
         .map(|r| {
             let lang_of = |kind: &'static str| languages.iter().filter(move |l| l.song == r.id && l.kind == kind);
@@ -413,7 +381,50 @@ pub async fn songs(
                 translations,
             }
         })
-        .collect();
+        .collect())
+}
+
+/// `GET /browse/songs`
+pub async fn songs(
+    app: &App,
+    sel: &Selection,
+    page: Option<i64>,
+    page_size: Option<i64>,
+    sort: Option<&str>,
+    lang: Option<&str>,
+) -> Result<Paged<Song>, AppError> {
+    let mut v = Violations::default();
+    sel.check(&mut v);
+    let (page, size) = paging(&mut v, page, page_size);
+    let sort = match sort {
+        None | Some("newest") => Sort::Newest,
+        Some("title") => Sort::Title,
+        Some(_) => {
+            v.push("sort", "invalid_value");
+            Sort::Newest
+        }
+    };
+    v.finish()?;
+    let mut conn = app.pool.acquire().await?;
+    let resolved = resolve(app, &mut conn, sel, lang).await?;
+    if !resolved.all {
+        return Ok(Paged {
+            items: Vec::new(),
+            page,
+            page_size: size,
+            total: 0,
+            filters: resolved.shown,
+        });
+    }
+    let offset = (page - 1) * size;
+    let rows = repo::list_songs(&mut conn, &resolved.filters, sort, size, offset).await?;
+    let total = match rows.first() {
+        Some(r) => r.total,
+        None if offset > 0 => repo::count_songs(&mut conn, &resolved.filters).await?,
+        None => 0,
+    };
+    drop(conn);
+    let items = cards(app, rows, lang).await?;
     Ok(Paged {
         items,
         page,
