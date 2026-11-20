@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { CommunitySection } from "../community/community";
+import { CorrectionButton } from "./correction";
 import { AddLyricsDialog } from "../contribute/add-lyrics";
 import {
   DEFAULT_READING,
@@ -148,6 +149,9 @@ export function LyricPanes({
     <div className="lyric-panes-wrap">
       {!reading && (
         <div className="lyric-panes-bar">
+          <button type="button" className="button" onClick={add}>
+            <Plus size={16} aria-hidden="true" /> {t("add")}
+          </button>
           <button
             type="button"
             className="button"
@@ -210,6 +214,7 @@ export function LyricPanes({
                       <ExternalLink size={16} aria-hidden="true" />
                     </Link>
                   )}
+                  {lyric && !reading && <CorrectionButton id={lyric.id} body={lyric.body} language={lyric.language} dir={lyric.dir} name={names.label(lyric)} />}
                   {panes.length > 1 && (
                     <button type="button" className="icon-button" aria-label={t("close", { n: n + 1 })} title={t("close", { n: n + 1 })} onClick={() => setPanes((ps) => ps.filter((x) => x.key !== p.key))}>
                       <X size={16} aria-hidden="true" />
@@ -239,10 +244,6 @@ export function LyricPanes({
             </article>
           );
         })}
-        <button type="button" className="lyric-pane-add" onClick={add} aria-label={t("add")} title={t("add")}>
-          <Plus size={22} aria-hidden="true" />
-          <span>{t("add")}</span>
-        </button>
       </div>
       {panes.length > 1 && (
         <p className="lyric-pane-position muted small" aria-live="polite">
@@ -278,6 +279,9 @@ export function LyricPanes({
             </button>
           ))}
         </span>
+        <button type="button" className="button" onClick={add}>
+          <Plus size={16} aria-hidden="true" /> {t("add")}
+        </button>
         <button type="button" ref={closer} className="button" onClick={() => setReading(false)}>
           <X size={16} aria-hidden="true" /> {t("exitReading")}
         </button>

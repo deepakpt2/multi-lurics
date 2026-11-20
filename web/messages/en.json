@@ -221,7 +221,8 @@
     "not_published": "Publish the article first.",
     "captcha_required": "Please complete the check before continuing.",
     "captcha_failed": "The check was not accepted. Please try again.",
-    "english_required": "Enter the title in English letters."
+    "english_required": "Enter the title in English letters.",
+    "correction_pending": "You already have a correction waiting for review on these lyrics."
   },
   "errors": {
     "title": "Something went wrong",
@@ -790,7 +791,19 @@
       },
       "backToSong": "Back to the song",
       "pageTitle": "{name}: lyrics",
-      "rateAndDiscuss": "Rate and discuss these lyrics"
+      "rateAndDiscuss": "Rate and discuss these lyrics",
+      "edit": "Edit {name}",
+      "suggest": "Suggest a correction to {name}",
+      "signInToCorrect": "Sign in to suggest a correction",
+      "suggestTitle": "Suggest a correction",
+      "suggestHint": "Fix the text below and send it. A moderator will check it before anything changes.",
+      "suggestText": "Lyrics",
+      "suggestNote": "What was wrong? (optional)",
+      "suggestSend": "Send correction",
+      "suggestSending": "Sending…",
+      "suggestDone": "Thank you. A moderator will review your correction.",
+      "cancel": "Cancel",
+      "ok": "OK"
     }
   },
   "compare": {
@@ -1423,5 +1436,14 @@
     "placeholder": "Type a language, for example Sanskrit",
     "hint": "Start typing and choose from the list.",
     "none": "No language matches. Choose one from the suggestions."
+  },
+  "corrections": {
+    "title": "Suggested corrections",
+    "empty": "No corrections are waiting.",
+    "reason": "Reader's note: {note}",
+    "current": "Public now",
+    "suggested": "Suggested",
+    "apply": "Accept and publish",
+    "reject": "Reject"
   }
 }

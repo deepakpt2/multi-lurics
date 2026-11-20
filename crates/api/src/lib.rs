@@ -3,6 +3,7 @@
 pub mod articles;
 pub mod browse;
 pub mod captcha;
+pub mod corrections;
 pub mod catalogue;
 pub mod community;
 pub mod contribute;
@@ -70,6 +71,7 @@ use utoipa::{Modify, OpenApi};
         lyr::list_revisions, lyr::get_revision, lyr::diff_revisions, lyr::approve_contribution,
         lyr::publish_contribution, lyr::reject_contribution, lyr::contribution_queue, lyr::my_contributions,
         lyr::get_trust_policy, lyr::set_trust_policy,
+        corrections::suggest, corrections::queue, corrections::apply, corrections::reject,
         ent::suggest, ent::create_proposal, ent::proposal_queue, ent::approve_proposal, ent::reject_proposal,
         ent::merge_entities,
         brw::songs, brw::facet, brw::suggest,
@@ -126,6 +128,10 @@ pub fn router(app: App) -> Router {
         .route("/contributions/{id}/reject", post(lyr::reject_contribution))
         .route("/revisions/{id}", get(lyr::get_revision))
         .route("/revisions/{a}/diff/{b}", get(lyr::diff_revisions))
+        .route("/contributions/{id}/corrections", post(corrections::suggest))
+        .route("/moderation/corrections", get(corrections::queue))
+        .route("/moderation/corrections/{id}/apply", post(corrections::apply))
+        .route("/moderation/corrections/{id}/reject", post(corrections::reject))
         .route("/moderation/contributions", get(lyr::contribution_queue))
         .route("/me/contributions", get(lyr::my_contributions))
         .route(

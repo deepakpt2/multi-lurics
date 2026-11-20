@@ -100,7 +100,7 @@ These rely on `CF-Connecting-IP` or `X-Forwarded-For` set by your proxy. Per-per
 | **Bulk import of songs** | `/import` · `POST /api/v1/import/songs` | Moderator |
 | **Articles**: write, publish, put on the home page for a period | `/articles`, `/articles/new`, each article's own page | Moderator |
 | **Editor's picks** (songs featured on the home page) | The pick button on a song page · `PUT/DELETE /api/v1/editors-picks/{id}` | Moderator |
-| **Moderation queues**: lyrics, images, reports, appeals, legal notices | `/moderation` | Moderator |
+| **Moderation queues**: lyrics, suggested corrections to lyrics, images, reports, appeals, legal notices | `/moderation` | Moderator |
 | **Audit log** | `GET /api/v1/admin/audit-events` | Admin |
 
 ---
@@ -167,6 +167,7 @@ These are rows in the `languages` and `scripts` tables (seeded by migrations `00
 
 Changing these needs a code change and a release.
 
+- **Corrections:** any signed-in member can suggest a fix to a published lyric (one open suggestion per lyric per person, counted under the `contribute` limit). Moderators see them under `/moderation/lyrics`; accepting one publishes it as a new revision, and moderators edit lyrics directly instead.
 - **Contribution limits:** at most 200 names per metadata batch, 60 pictures per article, 16 MB for imports, 8 MB for a contributed song, body limits on uploads (`LYRICS_MEDIA_MAX_BYTES` plus 64 KB).
 - **Articles:** at most three on the home page at once (newest first); body up to 200,000 characters; slugs `a-z`, digits, hyphens, up to 80 characters; `new` and `home` are reserved.
 - **Home page lists:** the ranking formula (views, ratings, comments over 30 days) lives in `crates/infrastructure/src/home.rs`; how often it runs is `LYRICS_HOME_REFRESH_SECS`.

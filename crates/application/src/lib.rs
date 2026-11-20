@@ -11,6 +11,7 @@ pub mod catalogue;
 pub mod community;
 pub mod comparison;
 pub mod contribute;
+pub mod corrections;
 pub mod entities;
 pub mod error;
 pub mod home;

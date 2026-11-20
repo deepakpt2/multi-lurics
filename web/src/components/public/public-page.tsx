@@ -76,7 +76,7 @@ export function publicPage(scope: Scope) {
     const others = p.alternates.filter((a) => a.locale !== p.locale);
     const songPath = `/${scope}/${encodeURIComponent(p.canonical.slug)}`;
     return (
-      <article>
+      <article className="song-page">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(jsonLd(p)) }} />
         <h1>
           <Name display={p.title} />
@@ -98,49 +98,48 @@ export function publicPage(scope: Scope) {
         )}
         {p.scope === "song" && (
           <dl className="facts">
-            <dt>{tf("category")}</dt>
-            <dd>{tr(`songCategories.${(p.category ?? "mainstream") as "mainstream"}`)}</dd>
+            <div><dt>{tf("category")}</dt><dd>{tr(`songCategories.${(p.category ?? "mainstream") as "mainstream"}`)}</dd></div>
             {p.raga && (
-              <>
-                <dt>{tf("raga")}</dt>
-                <dd dir="auto">{p.raga}</dd>
-              </>
+              <div>
+<dt>{tf("raga")}</dt>
+<dd dir="auto">{p.raga}</dd>
+</div>
             )}
             {p.religion && (
-              <>
-                <dt>{tf("religion")}</dt>
-                <dd>{tr(`religions.${p.religion as "hindu"}`)}</dd>
-              </>
+              <div>
+<dt>{tf("religion")}</dt>
+<dd>{tr(`religions.${p.religion as "hindu"}`)}</dd>
+</div>
             )}
             {p.deity && (
-              <>
-                <dt>{tf("deity")}</dt>
-                <dd dir="auto">{p.deity}</dd>
-              </>
+              <div>
+<dt>{tf("deity")}</dt>
+<dd dir="auto">{p.deity}</dd>
+</div>
             )}
             {p.devotional_form && (
-              <>
-                <dt>{tf("devotional_form")}</dt>
-                <dd>{tr(`devotionalForms.${p.devotional_form as "bhajan"}`)}</dd>
-              </>
+              <div>
+<dt>{tf("devotional_form")}</dt>
+<dd>{tr(`devotionalForms.${p.devotional_form as "bhajan"}`)}</dd>
+</div>
             )}
             {p.source_work && (
-              <>
-                <dt>{tf("source_work")}</dt>
-                <dd dir="auto">{p.source_work}</dd>
-              </>
+              <div>
+<dt>{tf("source_work")}</dt>
+<dd dir="auto">{p.source_work}</dd>
+</div>
             )}
             {p.occasions.length > 0 && (
-              <>
-                <dt>{tf("occasions")}</dt>
-                <dd dir="auto">{p.occasions.join(", ")}</dd>
-              </>
+              <div>
+<dt>{tf("occasions")}</dt>
+<dd dir="auto">{p.occasions.join(", ")}</dd>
+</div>
             )}
             {p.tags.length > 0 && (
-              <>
-                <dt>{tf("tags")}</dt>
-                <dd dir="auto">{p.tags.join(", ")}</dd>
-              </>
+              <div>
+<dt>{tf("tags")}</dt>
+<dd dir="auto">{p.tags.join(", ")}</dd>
+</div>
             )}
           </dl>
         )}
@@ -168,13 +167,13 @@ export function publicPage(scope: Scope) {
             </ul>
           </>
         )}
-        {p.youtube_id && <VideoEmbed id={p.youtube_id} title={p.title.text} />}
         {p.lyrics.length > 0 && p.scope === "song" && (
           <section aria-labelledby="lyrics-title">
             <h2 id="lyrics-title">{t("lyrics")}</h2>
             <LyricPanes lyrics={p.lyrics} songPath={songPath} pageLocale={p.locale} songId={p.id} title={p.title.text} />
           </section>
         )}
+        {p.youtube_id && <VideoEmbed id={p.youtube_id} title={p.title.text} />}
         {p.related.length > 0 && (
           <section aria-labelledby="related-title">
             <h2 id="related-title">{t("related.title")}</h2>
