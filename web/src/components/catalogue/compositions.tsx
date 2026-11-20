@@ -6,6 +6,7 @@ import { api, call } from "@/api/client";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Name } from "../localization/localized";
 import { NamesLink } from "../localization/names";
+import { MatchHint } from "./match-hint";
 import { Field, SelectField, formValues, useSubmit } from "../form";
 import { CREDIT_ROLES, CreditList, FormActions, ListShell, Loaded, RefListEditor, SaveProblem, int, str, text, useLoad, usePaged, type S } from "./common";
 
@@ -203,6 +204,7 @@ export function CompositionForm({ initial, onReload }: { initial?: S["Compositio
   const router = useRouter();
   const [credits, setCredits] = useState<Ref[]>(initial?.credits.map((c) => ({ id: c.artist_id, label: c.artist_name, choice: c.role })) ?? []);
   const [category, setCategory] = useState<string>(initial?.category ?? "mainstream");
+  const [typed, setTyped] = useState({ raga: initial?.raga ?? "", deity: initial?.deity ?? "", tag: "" });
   const s = useSubmit(async (v: Record<string, string>) => {
     const devotional = category === "devotional";
     const body = {
@@ -222,20 +224,31 @@ export function CompositionForm({ initial, onReload }: { initial?: S["Compositio
     router.push(`/compositions/${saved.id}`);
   });
   return (
-    <form noValidate onSubmit={(e) => (e.preventDefault(), s.submit(formValues(e.currentTarget)))}>
+    <form
+      noValidate
+      onInput={(e) => {
+        const el = e.target as unknown as HTMLInputElement;
+        if (el.name === "raga" || el.name === "deity") setTyped((x) => ({ ...x, [el.name]: el.value }));
+        if (el.name === "tags") setTyped((x) => ({ ...x, tag: el.value.split(/[,،]/).pop() ?? "" }));
+      }}
+      onSubmit={(e) => (e.preventDefault(), s.submit(formValues(e.currentTarget)))}
+    >
       {s.error !== undefined && <SaveProblem error={s.error} kind="compositions" onReload={onReload} />}
       <Field name="title" dir="auto" verbatim required defaultValue={initial?.title} hint={t("hints.title")} fieldErrors={s.fieldErrors} />
       <Field name="iswc" dir="ltr" defaultValue={initial?.iswc} hint={t("hints.iswc")} fieldErrors={s.fieldErrors} />
       <Field name="year" type="number" defaultValue={initial?.year} fieldErrors={s.fieldErrors} />
       <SelectField name="category" options={CATEGORIES} labels="catalogue.songCategories" defaultValue={category} onChange={setCategory} fieldErrors={s.fieldErrors} />
       <Field name="raga" dir="auto" verbatim defaultValue={initial?.raga} hint={t("hints.raga")} fieldErrors={s.fieldErrors} />
+      <MatchHint type="raga" value={typed.raga} />
       {category === "devotional" && (
         <>
           <SelectField name="religion" options={RELIGIONS} labels="catalogue.religions" optional defaultValue={initial?.religion ?? ""} fieldErrors={s.fieldErrors} />
           <Field name="deity" dir="auto" verbatim defaultValue={initial?.deity} hint={t("hints.deity")} fieldErrors={s.fieldErrors} />
+          <MatchHint type="deity" value={typed.deity} />
         </>
       )}
       <Field name="tags" dir="auto" verbatim defaultValue={initial?.tags.join(", ")} hint={t("hints.tags")} fieldErrors={s.fieldErrors} />
+      <MatchHint type="tag" value={typed.tag} />
       <RefListEditor
         name="credits"
         legend={t("catalogue.credits")}

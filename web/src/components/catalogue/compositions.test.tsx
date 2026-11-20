@@ -9,7 +9,7 @@ const saved = { id: "c9", title: "Hanuman Chalisa", version: 1, credits: [], rec
 
 describe("composition form: Indian song metadata", () => {
   it("shows religion and deity only for devotional songs and sends the metadata", async () => {
-    const { calls } = mockFetch({ "POST /api/v1/compositions": () => json(201, saved) });
+    const { calls } = mockFetch({ "GET /api/v1/entities/suggest": () => json(200, { items: [] }), "POST /api/v1/compositions": () => json(201, saved) });
     renderIntl(<CompositionForm />);
     expect(screen.queryByLabelText("Religion")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Deity")).not.toBeInTheDocument();
@@ -22,7 +22,7 @@ describe("composition form: Indian song metadata", () => {
     await userEvent.type(screen.getByLabelText("Tags"), "bhajan, morning ,");
     await userEvent.click(screen.getByRole("button", { name: /save|create|add/i }));
 
-    expect(await calls[0].json()).toMatchObject({
+    expect(await calls.at(-1)!.json()).toMatchObject({
       title: "Hanuman Chalisa",
       category: "devotional",
       raga: "Mohanam",
@@ -35,6 +35,7 @@ describe("composition form: Indian song metadata", () => {
 
   it("never sends religion or deity for a mainstream song, and shows server errors on the field", async () => {
     const { calls } = mockFetch({
+      "GET /api/v1/entities/suggest": () => json(200, { items: [] }),
       "POST /api/v1/compositions": () => problem(422, "validation_failed", { errors: [{ field: "tags", code: "too_many" }] }),
     });
     renderIntl(<CompositionForm />);
@@ -42,5 +43,16 @@ describe("composition form: Indian song metadata", () => {
     await userEvent.click(screen.getByRole("button", { name: /save|create|add/i }));
     expect(await screen.findByText("There are too many entries.")).toBeInTheDocument();
     expect(await calls[0].json()).toMatchObject({ category: "mainstream", religion: null, deity: null, tags: [] });
+  });
+
+  it("tells the user which existing raga their text will link to", async () => {
+    mockFetch({
+      "GET /api/v1/entities/suggest": () =>
+        json(200, { items: [{ id: "r1", type: "raga", display: { text: "Mohanam", dir: "ltr", resolution: "primary" }, localized_names: [], matched_via: "name", related: [], score: 1 }] }),
+    });
+    renderIntl(<CompositionForm />);
+    await userEvent.type(screen.getByLabelText("Raga"), "mohanam");
+    expect(await screen.findByText(/Matches existing:/)).toBeInTheDocument();
+    expect(screen.getByText("Mohanam")).toBeInTheDocument();
   });
 });

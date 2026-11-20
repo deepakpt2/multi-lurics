@@ -389,7 +389,10 @@
     },
     "songFilters": "تصفية الأغاني",
     "anyType": "أي نوع",
-    "applyFilters": "تطبيق التصفية"
+    "applyFilters": "تطبيق التصفية",
+    "match": {
+      "linked": "مطابق لما هو موجود:"
+    }
   },
   "localization": {
     "title": "الأسماء والترجمات",

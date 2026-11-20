@@ -389,7 +389,10 @@
     },
     "songFilters": "Filter songs",
     "anyType": "Any",
-    "applyFilters": "Apply filters"
+    "applyFilters": "Apply filters",
+    "match": {
+      "linked": "Matches existing:"
+    }
   },
   "localization": {
     "title": "Names and translations",
