@@ -47,6 +47,8 @@ describe("a metadata page", () => {
     expect(within(album).getAllByRole("link", { name: "Chithra" })[0]).toHaveAttribute("href", "/browse/singer/chithra");
     expect(screen.getByRole("heading", { name: "Not on an album" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Filter songs" })).toHaveAttribute("href", "/browse?singer=chithra");
+    // "Add a song here" opens the one contribution form with this singer filled in.
+    expect(screen.getByRole("link", { name: "Add a song here" })).toHaveAttribute("href", "/contribute?singer=a1&singer_name=Chithra");
   });
 
   it("an album's own page lists its songs in one list, with the film's facts", () => {
@@ -54,6 +56,7 @@ describe("a metadata page", () => {
     renderIntl(<MetadataPage facet="album" slug="kireedam" state={state} result={{ ok: true, data: data([song("Kannum", "Kireedam")], { filters: [filter({ facet: "album", slug: "kireedam", label: disp("Kireedam"), kind: "soundtrack", detail: "1989" })] as never }) }} />);
     expect(screen.getByRole("heading", { level: 1, name: "Kireedam" })).toBeInTheDocument();
     expect(screen.getByText("Soundtrack · 1989")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Add a song here" })).toHaveAttribute("href", "/contribute?album=a1&album_name=Kireedam");
     expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
   });
 

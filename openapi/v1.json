@@ -3219,6 +3219,71 @@
         ]
       }
     },
+    "/api/v1/contribute/song": {
+      "post": {
+        "tags": [
+          "contribute"
+        ],
+        "operationId": "contribute_song",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SongSubmission"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SongMade"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`possible_duplicate`: a song with this title is already on the album; `candidates` lists them.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
     "/api/v1/contributions/{id}": {
       "get": {
         "tags": [
@@ -12606,6 +12671,31 @@
           }
         }
       },
+      "LyricBlock": {
+        "type": "object",
+        "required": [
+          "type",
+          "language",
+          "body"
+        ],
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string",
+            "description": "`ml`, `hi`, `mal`… or the English name."
+          },
+          "script": {
+            "type": "string",
+            "description": "The language's usual script when blank."
+          },
+          "type": {
+            "type": "string",
+            "description": "`original`, `translation` or `transliteration`. A translation or transliteration needs no original."
+          }
+        }
+      },
       "MatchKind": {
         "type": "string",
         "enum": [
@@ -12873,6 +12963,22 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "NameRef": {
+        "type": "object",
+        "description": "A person or album that may already exist: the `id` of one chosen from suggestions, or just a `name`.",
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
@@ -15132,6 +15238,124 @@
           "total": {
             "type": "integer",
             "format": "int64"
+          }
+        }
+      },
+      "SongMade": {
+        "type": "object",
+        "required": [
+          "composition_id",
+          "recording_id",
+          "statuses"
+        ],
+        "properties": {
+          "composition_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recording_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "`published` or `pending` (waiting for review), one per lyric block with text, in order."
+          }
+        }
+      },
+      "SongSubmission": {
+        "type": "object",
+        "required": [
+          "title",
+          "lyrics"
+        ],
+        "properties": {
+          "album": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/NameRef"
+              }
+            ]
+          },
+          "allow_duplicate": {
+            "type": "boolean",
+            "description": "Make the song even if one with this title is already on the album (otherwise 409 `possible_duplicate`)."
+          },
+          "category": {
+            "type": "string",
+            "description": "`mainstream` (default) or `devotional`."
+          },
+          "composers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NameRef"
+            }
+          },
+          "deity": {
+            "type": "string"
+          },
+          "devotional_form": {
+            "type": "string"
+          },
+          "lyricists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NameRef"
+            }
+          },
+          "lyrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LyricBlock"
+            },
+            "description": "At least one block with text."
+          },
+          "occasions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "raga": {
+            "type": "string"
+          },
+          "religion": {
+            "type": "string"
+          },
+          "singers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NameRef"
+            }
+          },
+          "source_work": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "year": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "youtube": {
+            "type": "string",
+            "description": "A YouTube link in any form."
           }
         }
       },

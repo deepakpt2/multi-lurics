@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { Columns2, Disc3, FileUp, Flower2, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, NotebookPen, ShieldCheck, UserPlus, UserRound, Users } from "lucide-react";
+import { Columns2, Disc3, FileUp, Flower2, PenLine, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, NotebookPen, ShieldCheck, UserPlus, UserRound, Users } from "lucide-react";
 import { Menu as MenuIcon, X as CloseIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -57,6 +57,10 @@ export function SiteHeader() {
         {open ? <CloseIcon size={20} aria-hidden="true" /> : <MenuIcon size={20} aria-hidden="true" />}
       </button>
       <div id="header-menu" className="header-menu" data-open={open || undefined}>
+      <Link href="/contribute" className="button primary header-contribute">
+        <PenLine size={16} aria-hidden="true" />
+        {t("nav.contribute")}
+      </Link>
       <nav aria-label={t("nav.primary")}>
         <NavLink href="/browse" icon={Library} exact>{t("nav.browse")}</NavLink>
         <NavLink href="/browse/album" icon={ListMusic}>{t("nav.albums")}</NavLink>

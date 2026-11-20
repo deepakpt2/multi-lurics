@@ -32,7 +32,8 @@
     "browse": "تصفح",
     "catalogueTools": "أدوات الفهرس",
     "import": "Bulk import",
-    "siteNav": "Site navigation"
+    "siteNav": "Site navigation",
+    "contribute": "Contribute"
   },
   "localeNames": {
     "en": "English",
@@ -211,7 +212,8 @@
     "dimensions_too_large": "أبعاد هذه الصورة كبيرة جدًا.",
     "must_confirm": "يرجى تأكيد أن لك حق مشاركة هذه الصورة.",
     "unknown_image": "لم تعد الصورة المرفوعة متاحة. ارفعها من جديد.",
-    "invalid_video_link": "That is not a YouTube video link."
+    "invalid_video_link": "That is not a YouTube video link.",
+    "possible_duplicate": "A song with this title is already on the album."
   },
   "errors": {
     "title": "حدث خطأ",
@@ -1119,7 +1121,8 @@
       "songs": "{count, plural, one {# song} other {# songs}}",
       "filter": "Filter songs",
       "empty": "No songs with a published lyric yet.",
-      "noAlbum": "Not on an album"
+      "noAlbum": "Not on an album",
+      "addSong": "Add a song here"
     }
   },
   "images": {
@@ -1227,6 +1230,79 @@
       "occasions": "Devotional only: festivals and times, separated by ;",
       "tags": "Tags, separated by ;",
       "youtube": "A YouTube link in any form"
+    }
+  },
+  "contribute": {
+    "title": "Contribute a song",
+    "intro": "Add a song with its details and lyrics on one page. You can add translations or transliterations too, and you can add a transliteration or translation without the original: someone else can add that later.",
+    "signInFirst": "Please sign in to contribute.",
+    "signIn": "Sign in",
+    "choose": "Choose…",
+    "scriptAuto": "The language's usual script",
+    "sections": {
+      "about": "About the song",
+      "lyrics": "Lyrics",
+      "another": "Lyrics in another language ({n})"
+    },
+    "fields": {
+      "title": "Song title",
+      "album": "Album or film",
+      "singers": "Singers",
+      "composers": "Music director / composer",
+      "lyricists": "Lyricist",
+      "year": "Year",
+      "category": "Kind of song",
+      "religion": "Religion",
+      "deity": "Deity",
+      "form": "Form",
+      "source": "Source text",
+      "occasions": "Occasions",
+      "raga": "Raga",
+      "tags": "Tags",
+      "youtube": "YouTube video",
+      "language": "Language",
+      "script": "Script",
+      "type": "What is this text?",
+      "lyrics": "Lyrics"
+    },
+    "hints": {
+      "title": "As written, in its original script.",
+      "album": "Start typing; choose the existing one if it appears.",
+      "fixed": "Fixed: you are adding a song to this album.",
+      "composers": "The music director for a film song.",
+      "occasions": "Separate with commas, e.g. Navratri, Ekadashi, morning.",
+      "youtube": "Optional. Paste any YouTube link.",
+      "noOriginalNeeded": "You can add this without the original. Someone else can add the original later."
+    },
+    "similar": {
+      "title": "Songs that look similar are already here:",
+      "hint": "If your song is one of them, open it and use Contribute there to add a translation or details instead."
+    },
+    "addAnother": "Add the same song in another language",
+    "removeBlock": "Remove this language",
+    "duplicate": "A song with this title is already on this album.",
+    "duplicateAnyway": "Add it anyway",
+    "reviewNote": "Lyrics from new contributors are checked by a moderator before they appear publicly.",
+    "submit": "Submit",
+    "submitting": "Please wait…",
+    "missing": {
+      "title": "Please enter the song title.",
+      "lyrics": "Please add some lyrics.",
+      "language": "Please choose the language of each lyrics section."
+    },
+    "done": {
+      "title": "Thank you!",
+      "published": "Your song is published.",
+      "pending": "Your song was received. Its lyrics will appear once a moderator has checked them.",
+      "another": "Add another song",
+      "home": "Go to the home page"
+    },
+    "picker": {
+      "suggestions": "Suggestions",
+      "addNew": "Add “{name}” as new",
+      "new": "new",
+      "fixed": "fixed",
+      "remove": "Remove {name}"
     }
   }
 }

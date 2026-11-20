@@ -543,6 +543,22 @@ export interface paths {
         patch: operations["update_composition"];
         trace?: never;
     };
+    "/api/v1/contribute/song": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["contribute_song"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/contributions/{id}": {
         parameters: {
             query?: never;
@@ -2748,6 +2764,15 @@ export interface components {
             email?: string;
             password?: string;
         };
+        LyricBlock: {
+            body: string;
+            /** @description `ml`, `hi`, `mal`… or the English name. */
+            language: string;
+            /** @description The language's usual script when blank. */
+            script?: string;
+            /** @description `original`, `translation` or `transliteration`. A translation or transliteration needs no original. */
+            type: string;
+        };
         /** @enum {string} */
         MatchKind: "exact" | "normalized" | "prefix" | "fuzzy";
         /** @enum {string} */
@@ -2840,6 +2865,12 @@ export interface components {
             /** Format: int32 */
             rating?: number | null;
             reactions: string[];
+        };
+        /** @description A person or album that may already exist: the `id` of one chosen from suggestions, or just a `name`. */
+        NameRef: {
+            /** Format: uuid */
+            id?: string | null;
+            name?: string;
         };
         Note: {
             /** Format: uuid */
@@ -3538,6 +3569,38 @@ export interface components {
             pages: number;
             /** Format: int64 */
             total: number;
+        };
+        SongMade: {
+            /** Format: uuid */
+            composition_id: string;
+            /** Format: uuid */
+            recording_id: string;
+            /** @description `published` or `pending` (waiting for review), one per lyric block with text, in order. */
+            statuses: string[];
+        };
+        SongSubmission: {
+            album?: null | components["schemas"]["NameRef"];
+            /** @description Make the song even if one with this title is already on the album (otherwise 409 `possible_duplicate`). */
+            allow_duplicate?: boolean;
+            /** @description `mainstream` (default) or `devotional`. */
+            category?: string;
+            composers?: components["schemas"]["NameRef"][];
+            deity?: string;
+            devotional_form?: string;
+            lyricists?: components["schemas"]["NameRef"][];
+            /** @description At least one block with text. */
+            lyrics: components["schemas"]["LyricBlock"][];
+            occasions?: string[];
+            raga?: string;
+            religion?: string;
+            singers?: components["schemas"]["NameRef"][];
+            source_work?: string;
+            tags?: string[];
+            title: string;
+            /** Format: int32 */
+            year?: number | null;
+            /** @description A YouTube link in any form. */
+            youtube?: string;
         };
         SpamDoc: {
             blocked_terms: string[];
@@ -5659,6 +5722,54 @@ export interface operations {
                     "application/problem+json": components["schemas"]["Problem"];
                 };
             };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    contribute_song: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SongSubmission"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SongMade"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `possible_duplicate`: a song with this title is already on the album; `candidates` lists them. */
             409: {
                 headers: {
                     [name: string]: unknown;

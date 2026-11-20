@@ -1,9 +1,10 @@
 "use client";
 
-import { ListFilter } from "lucide-react";
+import { ListFilter, PenLine } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { toProblem } from "@/api/client";
+import { prefillFor } from "@/lib/contribute";
 import { browseHref, itemHref, type BrowseSong, type BrowseState, type FacetKey, type Loaded, type SongsResponse } from "@/lib/browse";
 import { EntityImage } from "../media/entity-image";
 import { ContributeButton } from "../public/contribute";
@@ -119,6 +120,9 @@ export function MetadataPage({
             <p className="muted">{t("item.songs", { count: data?.total ?? 0 })}</p>
             <p className="page-actions">
               {target && <ContributeButton target={target} />}
+              <Link className="button primary" href={prefillFor(facet, slug, name, filter.id)}>
+                <PenLine size={16} aria-hidden="true" /> {t("item.addSong")}
+              </Link>
               <Link className="button" href={browseHref({ filters: [{ facet, slug }] })}>
                 <ListFilter size={16} aria-hidden="true" /> {t("item.filter")}
               </Link>

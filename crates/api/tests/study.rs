@@ -683,3 +683,88 @@ async fn moderators_import_songs_in_bulk_and_a_second_run_changes_nothing(pool: 
     assert_eq!(many.status, StatusCode::UNPROCESSABLE_ENTITY);
     let _: Uuid = Uuid::nil();
 }
+
+#[sqlx::test(migrator = "infrastructure::MIGRATOR")]
+async fn a_member_adds_a_whole_song_in_one_form_even_with_only_a_transliteration(pool: PgPool) {
+    let w = world(&pool).await;
+    let album = post(
+        &w.r,
+        "/api/v1/albums",
+        json!({ "title": "Kireedam", "kind": "soundtrack" }),
+        Some(&w.member),
+    )
+    .await
+    .body;
+    let body = json!({
+        "title": "Kannum Kannum", "year": 1989, "album": { "id": album["id"], "name": "Kireedam" },
+        "singers": [{ "name": "K. S. Chithra" }], "composers": [{ "name": "Johnson" }], "tags": ["film"],
+        "lyrics": [
+            { "type": "transliteration", "language": "ml", "script": "Latn", "body": "kannum kannum" },
+            { "type": "translation", "language": "en", "body": "eyes to eyes" },
+            { "type": "original", "language": "ml", "body": "   " }
+        ]
+    });
+    let anon = post(&w.r, "/api/v1/contribute/song", body.clone(), None).await;
+    assert_eq!(anon.status, StatusCode::UNAUTHORIZED);
+    let made = post(&w.r, "/api/v1/contribute/song", body.clone(), Some(&w.other)).await;
+    assert_eq!(made.status, StatusCode::CREATED, "{}", made.body);
+    assert_eq!(
+        made.body["statuses"],
+        json!(["pending", "pending"]),
+        "blank blocks are ignored; members wait for review"
+    );
+    let n = |sql: &'static str| {
+        let pool = pool.clone();
+        async move { sqlx::query_scalar::<_, i64>(sql).fetch_one(&pool).await.unwrap() }
+    };
+    assert_eq!(
+        n("SELECT count(*) FROM album_tracks").await,
+        1,
+        "the track lands on the existing album"
+    );
+    assert_eq!(n("SELECT count(*) FROM albums").await, 1);
+    assert_eq!(n("SELECT count(*) FROM contributions WHERE type = 'original'").await, 0);
+
+    // The same title on the same album is asked about, not guessed.
+    let dup = post(&w.r, "/api/v1/contribute/song", body.clone(), Some(&w.other)).await;
+    assert_eq!(dup.status, StatusCode::CONFLICT, "{}", dup.body);
+    assert_eq!(dup.body["code"], "possible_duplicate");
+    let mut again = body.clone();
+    again["allow_duplicate"] = json!(true);
+    assert_eq!(
+        post(&w.r, "/api/v1/contribute/song", again, Some(&w.other))
+            .await
+            .status,
+        StatusCode::CREATED
+    );
+
+    // A moderator's lyric publishes at once; bad input is refused with field codes.
+    let mut m = body.clone();
+    m["title"] = json!("Another");
+    assert_eq!(
+        post(&w.r, "/api/v1/contribute/song", m, Some(&w.moderator)).await.body["statuses"],
+        json!(["published", "published"])
+    );
+    for (patch, field, code) in [
+        (json!({ "lyrics": [] }), "lyrics", "required"),
+        (
+            json!({ "lyrics": [{ "type": "original", "language": "klingon", "body": "x" }] }),
+            "language",
+            "unknown_language",
+        ),
+        (
+            json!({ "lyrics": [{ "type": "poem", "language": "ml", "body": "x" }] }),
+            "type",
+            "invalid_choice",
+        ),
+        (json!({ "title": "" }), "title", "required"),
+    ] {
+        let mut b = json!({ "title": "T", "lyrics": [{ "type": "original", "language": "ml", "body": "x" }] });
+        for (k, v) in patch.as_object().unwrap() {
+            b[k] = v.clone();
+        }
+        let res = post(&w.r, "/api/v1/contribute/song", b, Some(&w.member)).await;
+        assert_eq!(res.status, StatusCode::UNPROCESSABLE_ENTITY, "{field}: {}", res.body);
+        assert!(problems(&res).contains(&(field.into(), code.into())), "{}", res.body);
+    }
+}

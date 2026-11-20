@@ -139,8 +139,12 @@ async fn check(app: &App, r: &Row) -> Result<Vec<(String, String)>, AppError> {
 }
 
 /// The language code to hand to the lyrics use case, and the script (the given one or the language's usual).
-async fn language_and_script(app: &App, r: &Row) -> Result<Option<(String, String)>, AppError> {
-    let lang = r.language.trim();
+pub(crate) async fn language_and_script_of(
+    app: &App,
+    language: &str,
+    script: &str,
+) -> Result<Option<(String, String)>, AppError> {
+    let lang = language.trim();
     if lang.is_empty() {
         return Ok(None);
     }
@@ -154,8 +158,12 @@ async fn language_and_script(app: &App, r: &Row) -> Result<Option<(String, Strin
     .fetch_optional(&app.pool)
     .await?;
     let Some((code, usual)) = found else { return Ok(None) };
-    let script = blank(&r.script).or(usual);
+    let script = blank(script).or(usual);
     Ok(script.map(|s| (code, s)))
+}
+
+async fn language_and_script(app: &App, r: &Row) -> Result<Option<(String, String)>, AppError> {
+    language_and_script_of(app, &r.language, &r.script).await
 }
 
 async fn duplicate(app: &App, r: &Row, seen: &HashSet<(String, String)>) -> Result<bool, AppError> {
@@ -191,7 +199,7 @@ async fn duplicate(app: &App, r: &Row, seen: &HashSet<(String, String)>) -> Resu
 /// People are found by name first (exact, then any name or alias the search index knows), so "K. J.
 /// Yesudas" and "Yesudas" are one person once an alias says so; otherwise created. `cache` keeps the
 /// ones met earlier in the same request.
-async fn person(
+pub(crate) async fn person(
     app: &App,
     p: &Principal,
     meta: &RequestMeta,
