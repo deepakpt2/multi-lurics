@@ -91,7 +91,6 @@ describe("contribute a song", () => {
   });
 
   it("needs a title, some lyrics and a language, and offers 'add anyway' for a duplicate on the album", async () => {
-    let allow: unknown;
     const { calls } = mockFetch(routes({ "POST /api/v1/contribute/song": () => problem(409, "possible_duplicate", { candidates: ["c1"] }) }));
     renderIntl(<ContributeSong prefill={parsePrefill({})} />);
     await userEvent.click(await screen.findByRole("button", { name: "Submit" }));
@@ -104,7 +103,7 @@ describe("contribute a song", () => {
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
     expect(await screen.findByText("A song with this title is already on this album.")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Add it anyway" }));
-    allow = await calls.filter((c) => c.method === "POST").at(-1)!.json();
+    const allow = await calls.filter((c) => c.method === "POST").at(-1)!.json();
     expect(allow).toMatchObject({ allow_duplicate: true });
   });
 });
