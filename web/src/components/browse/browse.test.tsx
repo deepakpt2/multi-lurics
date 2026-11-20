@@ -172,9 +172,10 @@ describe("browse page", () => {
     expect(within(nav).getByRole("link", { name: "Page 3" })).toHaveAttribute("href", "/browse?singer=yesudas&page=3");
     expect(within(nav).getByRole("link", { name: "Previous" })).toHaveAttribute("href", "/browse?singer=yesudas");
     expect(within(nav).getByRole("link", { name: "Page 2" })).toHaveAttribute("aria-current", "page");
-    await userEvent.selectOptions(screen.getByLabelText("Per page"), "50");
+    await userEvent.click(within(screen.getByRole("radiogroup", { name: "Per page" })).getByRole("radio", { name: "50" }));
     expect(push).toHaveBeenLastCalledWith("/browse?singer=yesudas&page_size=50");
-    await userEvent.selectOptions(screen.getByLabelText("Sort by"), "title");
+    expect(within(screen.getByRole("radiogroup", { name: "Sort by" })).getByRole("radio", { name: "Newest first" })).toBeChecked();
+    await userEvent.click(within(screen.getByRole("radiogroup", { name: "Sort by" })).getByRole("radio", { name: "Title (A to Z)" }));
     expect(push).toHaveBeenLastCalledWith("/browse?singer=yesudas&sort=title");
   });
 

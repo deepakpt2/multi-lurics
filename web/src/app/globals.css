@@ -464,3 +464,28 @@ body.reading-open { overflow: hidden; }
 progress { inline-size: min(100%, 20rem); vertical-align: middle; }
 @media (max-width: 40rem) { .import-columns div { grid-template-columns: 1fr; gap: 0; } }
 .import-file { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: baseline; }
+
+/* Header: brand and search on the first line; the menu on a second line (a hamburger on phones). */
+.site-header { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; }
+.site-header .brand { margin-inline-end: 0; }
+.burger { display: none; }
+.header-menu { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; flex-basis: 100%; order: 10; padding-block-start: 0.4rem; border-block-start: 1px solid var(--border); }
+.header-menu .auth-links, .header-menu > .menu-trigger { margin-inline-start: auto; }
+@media (max-width: 48rem) {
+  .site-header > :nth-child(3) { margin-inline-start: auto; }
+  .burger { display: inline-grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--fg); cursor: pointer; }
+  .header-menu { display: none; flex-direction: column; align-items: stretch; }
+  .header-menu[data-open] { display: flex; }
+  .site-header .header-menu nav:not(.locale-switcher) { flex-direction: column; flex-wrap: wrap; overflow: visible; order: 0; inline-size: 100%; }
+  .site-header .header-menu nav a { white-space: normal; min-block-size: 2.75rem; }
+  .header-menu .auth-links, .header-menu > .menu-trigger { margin-inline-start: 0; }
+  .header-menu .auth-links .button { flex: 1; justify-content: center; }
+}
+
+/* Segmented choices (page size, sort) */
+.pager-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem 1.5rem; }
+.segmented { display: inline-flex; align-items: center; gap: 0.15rem; padding: 0.2rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
+.segmented-label { padding-inline: 0.7rem 0.4rem; font-size: 0.82rem; color: var(--muted); }
+.segmented button { min-block-size: 2rem; padding-inline: 0.8rem; border: 0; border-radius: 999px; background: transparent; color: var(--fg); font: inherit; font-size: 0.9rem; cursor: pointer; }
+.segmented button:hover { background: var(--accent-soft); }
+.segmented button[aria-checked="true"] { background: var(--accent); color: var(--accent-fg); }

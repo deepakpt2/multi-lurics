@@ -78,24 +78,23 @@ export function Pager({
         {pages > 0 ? t("status", { page: Math.min(state.page, pages), pages }) : null}
       </p>
       <div className="pager-options">
-        <label>
-          {t("perPage")}
-          <select value={state.pageSize} onChange={(e) => go({ pageSize: Number(e.target.value), page: 1 })}>
-            {PAGE_SIZES.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="segmented" role="radiogroup" aria-label={t("perPage")}>
+          <span className="segmented-label" aria-hidden="true">{t("perPage")}</span>
+          {PAGE_SIZES.map((n) => (
+            <button key={n} type="button" role="radio" aria-checked={state.pageSize === n} onClick={() => go({ pageSize: n, page: 1 })}>
+              {n}
+            </button>
+          ))}
+        </div>
         {withSort && (
-          <label>
-            {t("sort")}
-            <select value={state.sort} onChange={(e) => go({ sort: e.target.value as BrowseState["sort"], page: 1 })}>
-              <option value="newest">{t("newest")}</option>
-              <option value="title">{t("title")}</option>
-            </select>
-          </label>
+          <div className="segmented" role="radiogroup" aria-label={t("sort")}>
+            <span className="segmented-label" aria-hidden="true">{t("sort")}</span>
+            {(["newest", "title"] as const).map((k) => (
+              <button key={k} type="button" role="radio" aria-checked={state.sort === k} onClick={() => go({ sort: k, page: 1 })}>
+                {t(k)}
+              </button>
+            ))}
+          </div>
         )}
       </div>
     </div>

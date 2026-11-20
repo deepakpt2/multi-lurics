@@ -31,7 +31,8 @@
     "moderationHub": "Review queues",
     "browse": "Browse",
     "catalogueTools": "Catalogue tools",
-    "import": "Bulk import"
+    "import": "Bulk import",
+    "siteNav": "Site navigation"
   },
   "localeNames": {
     "en": "English",

@@ -2,7 +2,9 @@
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import { Columns2, Disc3, FileUp, Flower2, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, NotebookPen, ShieldCheck, UserPlus, UserRound, Users } from "lucide-react";
+import { Menu as MenuIcon, X as CloseIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { api, call } from "@/api/client";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { SearchBox } from "./search/search";
@@ -14,6 +16,9 @@ export function SiteHeader() {
   const t = useTranslations();
   const pathname = usePathname();
   const router = useRouter();
+  const [open, setOpen] = useState(false);
+  // Choosing something closes the phone menu.
+  useEffect(() => setOpen(false), [pathname]);
   const { user, isModerator, isAdmin } = useSession();
   const signOut = async () => {
     try {
@@ -48,6 +53,10 @@ export function SiteHeader() {
         {t("app.name")}
       </Link>
       <SearchBox />
+      <button type="button" className="burger" aria-expanded={open} aria-controls="header-menu" aria-label={t("nav.siteNav")} onClick={() => setOpen((o) => !o)}>
+        {open ? <CloseIcon size={20} aria-hidden="true" /> : <MenuIcon size={20} aria-hidden="true" />}
+      </button>
+      <div id="header-menu" className="header-menu" data-open={open || undefined}>
       <nav aria-label={t("nav.primary")}>
         <NavLink href="/browse" icon={Library} exact>{t("nav.browse")}</NavLink>
         <NavLink href="/browse/album" icon={ListMusic}>{t("nav.albums")}</NavLink>
@@ -96,6 +105,7 @@ export function SiteHeader() {
           </Dropdown.Portal>
         </Dropdown.Root>
       )}
+      </div>
     </header>
   );
 }

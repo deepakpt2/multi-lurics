@@ -13,7 +13,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     <section className="hero">
       <h1>{t("home.title")}</h1>
       <p className="lead">{t("app.tagline")}</p>
-      <p>{t("home.intro")}</p>
+      <GuestOnly>
+        <p>{t("home.intro")}</p>
+      </GuestOnly>
       <p className="actions">
         <GuestOnly>
         <Link className="button primary" href="/register">
