@@ -52,7 +52,13 @@ async fn main() -> anyhow::Result<()> {
     if matches!(db::migration_state(&app.pool).await?, MigrationState::UpToDate { .. }) {
         application::oauth::bootstrap_admin(&app)
             .await
-            .map_err(|e| anyhow::anyhow!("first-admin bootstrap failed: {e}"))?;
+            .map_err(|e| match e {
+                application::AppError::Validation(v) => anyhow::anyhow!(
+                    "first-admin bootstrap failed: invalid {} (check ADMIN_EMAIL, ADMIN_PASSWORD: 12+ characters, ADMIN_NAME)",
+                    v.iter().map(|f| f.field).collect::<Vec<_>>().join(", ")
+                ),
+                e => anyhow::anyhow!("first-admin bootstrap failed: {e}"),
+            })?;
     }
     let listener = tokio::net::TcpListener::bind(addr).await?;
     tracing::info!(%addr, "listening");

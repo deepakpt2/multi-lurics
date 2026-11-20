@@ -1696,15 +1696,20 @@ export interface components {
             spam: components["schemas"]["SpamDoc"];
         };
         Composition: {
+            category: string;
             /** Format: date-time */
             created_at: string;
             /** Format: uuid */
             created_by: string;
+            deity?: string | null;
             /** @description Name resolved for the requested `lang` (see `fallback`). */
             display: components["schemas"]["Display"];
             /** Format: uuid */
             id: string;
             iswc?: string | null;
+            raga?: string | null;
+            religion?: string | null;
+            tags: string[];
             title: string;
             /** Format: date-time */
             updated_at: string;
@@ -1714,10 +1719,20 @@ export interface components {
             year?: number | null;
         };
         CompositionCreate: {
-            /** @description Work-level credits only (composer, lyricist). */
+            /** @description `mainstream` (film, album, independent; the default) or `devotional`. */
+            category?: string | null;
+            /** @description Work-level credits only: composer (the music director) and lyricist. */
             credits?: components["schemas"]["CreditInput"][] | null;
+            /** @description Deity or revered figure, as written. Devotional songs only. */
+            deity?: string | null;
             /** @description ISWC, e.g. `T-034.524.680-1`; check digit verified. */
             iswc?: string | null;
+            /** @description Raga, as written (any script). */
+            raga?: string | null;
+            /** @description `hindu`, `sikh`, `buddhist`, `jain`, `christian`, `muslim` or `other`. Devotional songs only. */
+            religion?: string | null;
+            /** @description Free tags (at most 20, 40 characters each). */
+            tags?: string[];
             title?: string;
             /** Format: int32 */
             year?: number | null;
@@ -1735,10 +1750,16 @@ export interface components {
         };
         /** @description Absent fields are left unchanged; `null` clears; `credits`, when present, replaces the list. */
         CompositionPatch: {
+            category?: string | null;
             credits?: components["schemas"]["CreditInput"][] | null;
+            deity?: string | null;
             /** Format: int32 */
             expected_version?: number | null;
             iswc?: string | null;
+            raga?: string | null;
+            religion?: string | null;
+            /** @description When present, replaces all tags. */
+            tags?: string[] | null;
             title?: string | null;
             /** Format: int32 */
             year?: number | null;
@@ -2044,7 +2065,7 @@ export interface components {
         /** @enum {string} */
         MatchKind: "exact" | "normalized" | "prefix" | "fuzzy";
         /** @enum {string} */
-        MatchVia: "name" | "localization" | "transliteration" | "alias";
+        MatchVia: "name" | "localization" | "transliteration" | "alias" | "metadata";
         Matched: {
             kind: components["schemas"]["MatchKind"];
             /** @description The name that matched, as written. May differ from `display` (an alias or another script). */
@@ -2407,9 +2428,13 @@ export interface components {
             alternates: components["schemas"]["PageRef"][];
             /** @description The one URL search engines should index. */
             canonical: components["schemas"]["PageRef"];
+            /** @description Song only: `mainstream` or `devotional`. */
+            category?: string | null;
             /** @description ISWC (song), ISRC (recording) or ISNI (artist). */
             code?: string | null;
             credits: components["schemas"]["PageCredit"][];
+            /** @description Song only, devotional songs. */
+            deity?: string | null;
             /** @description Artist disambiguation. */
             detail?: string | null;
             /** Format: int32 */
@@ -2422,12 +2447,18 @@ export interface components {
             /** @description Published lyrics only. */
             lyrics: components["schemas"]["PageLyric"][];
             parent?: null | components["schemas"]["PageLink"];
+            /** @description Song only. */
+            raga?: string | null;
             /** @description A song's or an artist's recordings. */
             recordings: components["schemas"]["PageLink"][];
+            /** @description Song only, devotional songs. */
+            religion?: string | null;
             /** @description `song`, `recording` or `artist`. */
             scope: string;
             /** @description An artist's songs. */
             songs: components["schemas"]["PageLink"][];
+            /** @description Song only; empty otherwise. */
+            tags: string[];
             title: components["schemas"]["Display"];
             /** Format: date-time */
             updated_at: string;
@@ -4220,6 +4251,12 @@ export interface operations {
                 iswc?: string;
                 /** @description Case-insensitive title prefix. */
                 prefix?: string;
+                /** @description `mainstream` or `devotional`. */
+                category?: string;
+                raga?: string;
+                deity?: string;
+                /** @description Songs carrying this tag. */
+                tag?: string;
                 /** @description Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422). */
                 lang?: string;
             };

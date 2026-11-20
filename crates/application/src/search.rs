@@ -127,6 +127,7 @@ pub enum MatchVia {
     Localization,
     Transliteration,
     Alias,
+    Metadata,
 }
 
 impl MatchVia {
@@ -136,6 +137,7 @@ impl MatchVia {
             Self::Localization => "localization",
             Self::Transliteration => "transliteration",
             Self::Alias => "alias",
+            Self::Metadata => "metadata",
         }
     }
 }
@@ -227,6 +229,7 @@ impl SearchService for PgSearch {
                         "localization" => MatchVia::Localization,
                         "transliteration" => MatchVia::Transliteration,
                         "alias" => MatchVia::Alias,
+                        "metadata" => MatchVia::Metadata,
                         _ => MatchVia::Name,
                     },
                     position: Position(r.score, r.entity_id),

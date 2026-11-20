@@ -72,7 +72,7 @@ describe("credits are grouped by category", () => {
     mockFetch({
       "GET /api/v1/compositions/c1": () =>
         json(200, {
-          id: "c1", title: "Song", display: disp("Song"), iswc: null, year: null, version: 1, created_by: "u", created_at: T, updated_at: T,
+          id: "c1", title: "Song", display: disp("Song"), iswc: null, year: null, category: "mainstream", raga: null, religion: null, deity: null, tags: [], version: 1, created_by: "u", created_at: T, updated_at: T,
           credits: [
             credit("Adapter Person", "adapter", "adapter", "a3"),
             credit("Writer", "composer", "original_songwriter", "a1"),

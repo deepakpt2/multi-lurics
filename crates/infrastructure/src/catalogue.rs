@@ -222,6 +222,11 @@ pub struct CompositionData {
     pub title: String,
     pub iswc: Option<String>,
     pub year: Option<i16>,
+    pub category: String,
+    pub raga: Option<String>,
+    pub religion: Option<String>,
+    pub deity: Option<String>,
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]
@@ -230,6 +235,11 @@ pub struct CompositionRow {
     pub title: String,
     pub iswc: Option<String>,
     pub year: Option<i16>,
+    pub category: String,
+    pub raga: Option<String>,
+    pub religion: Option<String>,
+    pub deity: Option<String>,
+    pub tags: Vec<String>,
     pub version: i32,
     pub created_by: Uuid,
     pub created_at: DateTime<Utc>,
@@ -242,19 +252,31 @@ impl CompositionRow {
             title: self.title.clone(),
             iswc: self.iswc.clone(),
             year: self.year,
+            category: self.category.clone(),
+            raga: self.raga.clone(),
+            religion: self.religion.clone(),
+            deity: self.deity.clone(),
+            tags: self.tags.clone(),
         }
     }
 }
 
-const COMPOSITION: &str = "id, title, iswc, year, version, created_by, created_at, updated_at";
+const COMPOSITION: &str =
+    "id, title, iswc, year, category, raga, religion, deity, tags, version, created_by, created_at, updated_at";
 
 pub async fn insert_composition(conn: &mut PgConnection, d: &CompositionData, by: Uuid) -> Res<CompositionRow> {
     sqlx::query_as(&format!(
-        "INSERT INTO compositions (title, iswc, year, created_by) VALUES ($1, $2, $3, $4) RETURNING {COMPOSITION}"
+        "INSERT INTO compositions (title, iswc, year, category, raga, religion, deity, tags, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING {COMPOSITION}"
     ))
     .bind(&d.title)
     .bind(&d.iswc)
     .bind(d.year)
+    .bind(&d.category)
+    .bind(&d.raga)
+    .bind(&d.religion)
+    .bind(&d.deity)
+    .bind(&d.tags)
     .bind(by)
     .fetch_one(conn)
     .await
@@ -262,13 +284,19 @@ pub async fn insert_composition(conn: &mut PgConnection, d: &CompositionData, by
 
 pub async fn update_composition(conn: &mut PgConnection, id: Uuid, d: &CompositionData) -> Res<CompositionRow> {
     sqlx::query_as(&format!(
-        "UPDATE compositions SET title = $2, iswc = $3, year = $4, version = version + 1, updated_at = now()
+        "UPDATE compositions SET title = $2, iswc = $3, year = $4, category = $5, raga = $6, religion = $7,
+                deity = $8, tags = $9, version = version + 1, updated_at = now()
          WHERE id = $1 RETURNING {COMPOSITION}"
     ))
     .bind(id)
     .bind(&d.title)
     .bind(&d.iswc)
     .bind(d.year)
+    .bind(&d.category)
+    .bind(&d.raga)
+    .bind(&d.religion)
+    .bind(&d.deity)
+    .bind(&d.tags)
     .fetch_one(conn)
     .await
 }
@@ -281,11 +309,27 @@ pub async fn get_composition(conn: &mut PgConnection, id: Uuid, lock: bool) -> R
         .await
 }
 
+/// The spelling already in use for a raga or deity (case-insensitive match), so "mohanam" and "Mohanam"
+/// do not become two values. `column` is a fixed internal name, never user input.
+pub async fn existing_spelling(conn: &mut PgConnection, column: &'static str, value: &str) -> Res<Option<String>> {
+    debug_assert!(matches!(column, "raga" | "deity"));
+    sqlx::query_scalar(&format!(
+        "SELECT {column} FROM compositions WHERE lower({column}) = lower($1) GROUP BY {column} ORDER BY count(*) DESC, {column} LIMIT 1"
+    ))
+    .bind(value)
+    .fetch_optional(conn)
+    .await
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct CompositionFilter {
     pub artist_id: Option<Uuid>,
     pub iswc: Option<String>,
     pub title_prefix: Option<String>,
+    pub category: Option<String>,
+    pub raga: Option<String>,
+    pub deity: Option<String>,
+    pub tag: Option<String>,
 }
 
 pub async fn list_compositions(
@@ -301,6 +345,10 @@ pub async fn list_compositions(
            AND ($2::text IS NULL OR iswc = $2)
            AND ($3::text IS NULL OR lower(title) LIKE $3)
            AND ($4::timestamptz IS NULL OR (created_at, id) < ($4, $5))
+           AND ($7::text IS NULL OR category = $7)
+           AND ($8::text IS NULL OR lower(raga) = lower($8))
+           AND ($9::text IS NULL OR lower(deity) = lower($9))
+           AND ($10::text IS NULL OR EXISTS (SELECT 1 FROM unnest(tags) t WHERE lower(t) = lower($10)))
          ORDER BY created_at DESC, id DESC LIMIT $6"
     ))
     .bind(f.artist_id)
@@ -309,6 +357,10 @@ pub async fn list_compositions(
     .bind(ts)
     .bind(id)
     .bind(limit)
+    .bind(&f.category)
+    .bind(&f.raga)
+    .bind(&f.deity)
+    .bind(&f.tag)
     .fetch_all(conn)
     .await
 }

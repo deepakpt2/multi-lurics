@@ -92,9 +92,12 @@ type SelectFieldProps = {
   labels: string;
   fieldErrors: FieldError[];
   defaultValue?: string;
+  /** Adds an empty first option so the field can be left unset. */
+  optional?: boolean;
+  onChange?: (value: string) => void;
 };
 
-export function SelectField({ name, options, labels, fieldErrors, defaultValue }: SelectFieldProps) {
+export function SelectField({ name, options, labels, fieldErrors, defaultValue, optional, onChange }: SelectFieldProps) {
   const t = useTranslations();
   const id = useId();
   const err = useFieldError(fieldErrors, name);
@@ -104,10 +107,12 @@ export function SelectField({ name, options, labels, fieldErrors, defaultValue }
       <select
         id={id}
         name={name}
-        defaultValue={defaultValue ?? options[0]}
+        defaultValue={defaultValue ?? (optional ? "" : options[0])}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         aria-invalid={err ? true : undefined}
         aria-describedby={err ? `${id}-err` : undefined}
       >
+        {optional && <option value="" />}
         {options.map((o) => (
           <option key={o} value={o}>
             {t(`${labels}.${o}`)}

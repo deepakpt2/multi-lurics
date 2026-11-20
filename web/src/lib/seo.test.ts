@@ -6,7 +6,7 @@ const link = (id: string, label: string, scope: string, slug?: string) => ({ id,
 const base = (over: Partial<PublicPage>): PublicPage =>
   ({
     scope: "song", id: "c1", locale: "en", canonical: { locale: "en", slug: "kaatrin-mozhi" }, alternates: [], x_default: { locale: "en", slug: "kaatrin-mozhi" },
-    title: disp("Kaatrin Mozhi"), year: null, code: null, kind: null, detail: null, duration_ms: null, parent: null, credits: [], songs: [], recordings: [], lyrics: [],
+    title: disp("Kaatrin Mozhi"), year: null, code: null, kind: null, detail: null, duration_ms: null, category: "mainstream", raga: null, religion: null, deity: null, tags: [], parent: null, credits: [], songs: [], recordings: [], lyrics: [],
     updated_at: "2026-01-01T00:00:00Z", ...over,
   }) as PublicPage;
 
@@ -31,6 +31,12 @@ describe("structured data", () => {
     expect(out).not.toContain("</script>");
     expect(out).not.toContain(" ");
     expect(JSON.parse(out).name).toBe("</script><script>alert(1)</script>");
+  });
+
+  it("publishes raga, deity and tags of a song as keywords", () => {
+    const ld = jsonLd(base({ category: "devotional", raga: "Mohanam", deity: "Hanuman", religion: "hindu", tags: ["bhajan"] }));
+    expect(ld).toMatchObject({ "@type": "MusicComposition", keywords: "Mohanam, Hanuman, bhajan" });
+    expect(jsonLd(base({}))).not.toHaveProperty("keywords");
   });
 
   it("describes a song as MusicComposition with credits and recordings", () => {

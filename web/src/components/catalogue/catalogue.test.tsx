@@ -22,7 +22,7 @@ const suggestion = (id: string, name: string, over: Record<string, unknown> = {}
   id, type: "artist", display: disp(name), matched_via: "name", score: 1, sub_kind: "person", detail: null, year: null, code: null,
   localized_names: [], related: [], ...over,
 });
-const composition = { id: "c1", title: "Kaatrin Mozhi", iswc: null, year: null, version: 1, created_by: "u1", created_at: T, updated_at: T, credits: [], recordings: [], recording_count: 0 };
+const composition = { id: "c1", title: "Kaatrin Mozhi", iswc: null, year: null, category: "mainstream", raga: null, religion: null, deity: null, tags: [], version: 1, created_by: "u1", created_at: T, updated_at: T, credits: [], recordings: [], recording_count: 0 };
 const recording = {
   id: "r1", composition_id: "c1", title: "Original take", isrc: "USRC17607839", duration_ms: 245000, year: null, version: 1,
   created_by: "u1", created_at: T, updated_at: T, composition: { id: "c1", title: "Kaatrin Mozhi" },

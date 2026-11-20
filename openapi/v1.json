@@ -1930,6 +1930,40 @@
             }
           },
           {
+            "name": "category",
+            "in": "query",
+            "description": "`mainstream` or `devotional`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "raga",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Songs carrying this tag.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "lang",
             "in": "query",
             "description": "Display language tag: `ml`, `ar-EG`, `sr-Latn`. Unknown languages are rejected (422).",
@@ -8446,12 +8480,17 @@
           "id",
           "display",
           "title",
+          "category",
+          "tags",
           "version",
           "created_by",
           "created_at",
           "updated_at"
         ],
         "properties": {
+          "category": {
+            "type": "string"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -8459,6 +8498,12 @@
           "created_by": {
             "type": "string",
             "format": "uuid"
+          },
+          "deity": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "display": {
             "$ref": "#/components/schemas/Display",
@@ -8473,6 +8518,24 @@
               "string",
               "null"
             ]
+          },
+          "raga": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "religion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "title": {
             "type": "string"
@@ -8497,6 +8560,13 @@
       "CompositionCreate": {
         "type": "object",
         "properties": {
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`mainstream` (film, album, independent; the default) or `devotional`."
+          },
           "credits": {
             "type": [
               "array",
@@ -8505,7 +8575,14 @@
             "items": {
               "$ref": "#/components/schemas/CreditInput"
             },
-            "description": "Work-level credits only (composer, lyricist)."
+            "description": "Work-level credits only: composer (the music director) and lyricist."
+          },
+          "deity": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Deity or revered figure, as written. Devotional songs only."
           },
           "iswc": {
             "type": [
@@ -8513,6 +8590,27 @@
               "null"
             ],
             "description": "ISWC, e.g. `T-034.524.680-1`; check digit verified."
+          },
+          "raga": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Raga, as written (any script)."
+          },
+          "religion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`hindu`, `sikh`, `buddhist`, `jain`, `christian`, `muslim` or `other`. Devotional songs only."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Free tags (at most 20, 40 characters each)."
           },
           "title": {
             "type": "string"
@@ -8584,6 +8682,12 @@
         "type": "object",
         "description": "Absent fields are left unchanged; `null` clears; `credits`, when present, replaces the list.",
         "properties": {
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "credits": {
             "type": [
               "array",
@@ -8592,6 +8696,12 @@
             "items": {
               "$ref": "#/components/schemas/CreditInput"
             }
+          },
+          "deity": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "expected_version": {
             "type": [
@@ -8605,6 +8715,28 @@
               "string",
               "null"
             ]
+          },
+          "raga": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "religion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "When present, replaces all tags."
           },
           "title": {
             "type": [
@@ -9577,7 +9709,8 @@
           "name",
           "localization",
           "transliteration",
-          "alias"
+          "alias",
+          "metadata"
         ]
       },
       "Matched": {
@@ -10655,6 +10788,7 @@
           "alternates",
           "x_default",
           "title",
+          "tags",
           "credits",
           "songs",
           "recordings",
@@ -10673,6 +10807,13 @@
             "$ref": "#/components/schemas/PageRef",
             "description": "The one URL search engines should index."
           },
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Song only: `mainstream` or `devotional`."
+          },
           "code": {
             "type": [
               "string",
@@ -10685,6 +10826,13 @@
             "items": {
               "$ref": "#/components/schemas/PageCredit"
             }
+          },
+          "deity": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Song only, devotional songs."
           },
           "detail": {
             "type": [
@@ -10732,12 +10880,26 @@
               }
             ]
           },
+          "raga": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Song only."
+          },
           "recordings": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PageLink"
             },
             "description": "A song's or an artist's recordings."
+          },
+          "religion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Song only, devotional songs."
           },
           "scope": {
             "type": "string",
@@ -10749,6 +10911,13 @@
               "$ref": "#/components/schemas/PageLink"
             },
             "description": "An artist's songs."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Song only; empty otherwise."
           },
           "title": {
             "$ref": "#/components/schemas/Display"

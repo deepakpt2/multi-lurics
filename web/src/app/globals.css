@@ -29,6 +29,10 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--fg); }
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: clip; overflow-wrap: break-word; }
+img, svg, video, table, pre { max-inline-size: 100%; }
+pre { overflow-x: auto; }
 body {
   font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Arabic", "Noto Sans Tamil", sans-serif;
   line-height: 1.6;
@@ -39,9 +43,21 @@ a { color: var(--accent); }
   display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
   padding-block: 0.75rem; padding-inline: 1rem; border-block-end: 1px solid var(--border);
 }
-.site-header nav { display: flex; gap: 1rem; }
+.site-header nav { display: flex; flex-wrap: wrap; gap: 0.5rem; min-inline-size: 0; }
+.site-header nav a {
+  display: inline-flex; align-items: center; min-block-size: 2.25rem; padding-inline: 0.75rem;
+  border: 1px solid transparent; border-radius: 999px; color: var(--fg); text-decoration: none; font-size: 0.95rem;
+}
+.site-header nav a:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); border-color: var(--border); }
+.site-header nav a[aria-current="page"] { background: var(--accent); color: var(--accent-fg); }
+.site-header .brand { font-size: 1.25rem; }
+.locale-switcher a, .locale-switcher .disabled-locale { border: 1px solid var(--border); }
+.locale-switcher a[aria-current="true"] { background: var(--accent); color: var(--accent-fg); }
+.disabled-locale {
+  display: inline-flex; align-items: center; min-block-size: 2.25rem; padding-inline: 0.75rem; border-radius: 999px;
+  color: var(--muted); opacity: 0.5; cursor: not-allowed; font-size: 0.95rem;
+}
 .brand { font-weight: 700; text-decoration: none; color: var(--fg); margin-inline-end: auto; }
-.locale-switcher a[aria-current="true"] { font-weight: 700; text-decoration: none; color: var(--fg); }
 .skip-link { position: absolute; inset-inline-start: -999px; }
 .skip-link:focus { inset-inline-start: 1rem; background: var(--bg); padding: 0.5rem; }
 .lead { font-size: 1.15rem; color: var(--muted); }
@@ -171,4 +187,17 @@ button.link { background: none; border: 0; padding: 0; color: inherit; text-deco
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1.25rem;
+}
+
+/* Phones: the header stacks, the links scroll sideways inside their own strip instead of widening the page. */
+@media (max-width: 40rem) {
+  .site-header { gap: 0.5rem; }
+  .site-header nav:not(.locale-switcher) {
+    flex-wrap: nowrap; overflow-x: auto; inline-size: 100%; order: 4; padding-block-end: 0.25rem;
+    scrollbar-width: thin;
+  }
+  .site-header nav a { white-space: nowrap; }
+  .container { padding-block: 1.25rem; }
+  .details, .facts { grid-template-columns: 1fr; }
+  .actions .button, form .button { flex: 1 1 auto; }
 }

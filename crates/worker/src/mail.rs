@@ -18,8 +18,12 @@ pub struct Smtp {
 impl Smtp {
     pub fn new(url: &str, from: &str) -> anyhow::Result<Self> {
         Ok(Self {
-            transport: AsyncSmtpTransport::<Tokio1Executor>::from_url(url)?.build(),
-            from: from.parse()?,
+            transport: AsyncSmtpTransport::<Tokio1Executor>::from_url(url)
+                .map_err(|e| anyhow::anyhow!("SMTP_URL is not valid ({e}); use smtp://host:25 or smtps://user:pass@host:465 with the password percent-encoded"))?
+                .build(),
+            from: from
+                .parse()
+                .map_err(|e| anyhow::anyhow!("MAIL_FROM is not a valid address ({e}); use no-reply@example.com or \"Lyrics <no-reply@example.com>\""))?,
         })
     }
 }

@@ -52,6 +52,12 @@ pub struct CompositionInput {
     pub title: Option<String>,
     pub iswc: Option<Option<String>>,
     pub year: Option<Option<i32>>,
+    pub category: Option<String>,
+    pub raga: Option<Option<String>>,
+    pub religion: Option<Option<String>>,
+    pub deity: Option<Option<String>>,
+    /// Replaces the whole list when present.
+    pub tags: Option<Vec<String>>,
     pub credits: Option<Vec<CreditInput>>,
 }
 
@@ -570,15 +576,59 @@ fn composition_data(
         title: String::new(),
         iswc: None,
         year: None,
+        category: "mainstream".into(),
+        raga: None,
+        religion: None,
+        deity: None,
+        tags: Vec::new(),
     });
     let title = v.check(dc::title("title", i.title.as_deref().unwrap_or(&b.title)));
     let iswc = v.check(dc::iswc("iswc", i.iswc.clone().unwrap_or(b.iswc).as_deref()));
     let year = v.check(dc::year("year", i.year.unwrap_or(b.year.map(i32::from))));
+    let category = v.check(dc::category("category", i.category.as_deref().unwrap_or(&b.category)));
+    let raga = v.check(dc::short_name("raga", i.raga.clone().unwrap_or(b.raga).as_deref()));
+    let tags = v.check(dc::tags("tags", i.tags.as_deref().unwrap_or(&b.tags)));
+    // Religion and deity belong to devotional songs. Leaving "devotional" clears them; sending them for a
+    // mainstream song is an error rather than silently dropped.
+    let devotional = category.as_deref() == Some("devotional");
+    let religion_in = i.religion.clone().unwrap_or(b.religion);
+    let deity_in = i.deity.clone().unwrap_or(b.deity);
+    let (religion, deity) = if devotional {
+        (
+            v.check(dc::religion("religion", religion_in.as_deref())),
+            v.check(dc::short_name("deity", deity_in.as_deref())),
+        )
+    } else {
+        let sent = |o: &Option<Option<String>>| {
+            o.as_ref()
+                .is_some_and(|x| x.as_deref().is_some_and(|s| !s.trim().is_empty()))
+        };
+        if category.is_some() && (sent(&i.religion) || sent(&i.deity)) {
+            v.check::<()>(Err(domain::DomainError::invalid("religion", "devotional_only")));
+        }
+        (Some(None), Some(None))
+    };
     Some(CompositionData {
         title: title?,
         iswc: iswc?,
         year: year?,
+        category: category?,
+        raga: raga?,
+        religion: religion?,
+        deity: deity?,
+        tags: tags?,
     })
+}
+
+/// Reuses the spelling an earlier song already used for the same raga or deity (ignoring case).
+async fn canonical_spellings(tx: &mut AppTx, mut d: CompositionData) -> Result<CompositionData, AppError> {
+    if let Some(r) = d.raga.take() {
+        d.raga = Some(repo::existing_spelling(tx, "raga", &r).await?.unwrap_or(r));
+    }
+    if let Some(x) = d.deity.take() {
+        d.deity = Some(repo::existing_spelling(tx, "deity", &x).await?.unwrap_or(x));
+    }
+    Ok(d)
 }
 
 pub async fn create_composition(
@@ -600,7 +650,7 @@ pub async fn create_composition(
             )
             .await?;
             v.finish()?;
-            let d = d.expect("valid when no violations");
+            let d = canonical_spellings(&mut tx, d.expect("valid when no violations")).await?;
             guard_identifier(&mut tx, Identifier::CompositionIswc, d.iswc.as_deref(), None).await?;
             let row = repo::insert_composition(&mut tx, &d, p.user_id).await?;
             record(
@@ -648,7 +698,7 @@ pub async fn update_composition(
                 None => None,
             };
             v.finish()?;
-            let d = d.expect("valid when no violations");
+            let d = canonical_spellings(&mut tx, d.expect("valid when no violations")).await?;
             let owner = CreditOwner::Composition(id);
             let credits_before = match &credits {
                 Some(c) => credits_changed(&mut tx, owner, c).await?,
@@ -718,6 +768,9 @@ pub async fn list_compositions(
     let after = after(cursor)?;
     let mut v = Violations::default();
     f.iswc = v.check(dc::iswc("iswc", f.iswc.as_deref())).flatten();
+    f.category = v
+        .check(f.category.as_deref().map(|c| dc::category("category", c)).transpose())
+        .flatten();
     v.finish()?;
     let mut conn = app.pool.acquire().await?;
     let rows = repo::list_compositions(&mut conn, &f, after, limit + 1).await?;

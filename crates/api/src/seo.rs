@@ -95,6 +95,16 @@ pub struct PublicPage {
     /// Artist disambiguation.
     pub detail: Option<String>,
     pub duration_ms: Option<i32>,
+    /// Song only: `mainstream` or `devotional`.
+    pub category: Option<String>,
+    /// Song only.
+    pub raga: Option<String>,
+    /// Song only, devotional songs.
+    pub religion: Option<String>,
+    /// Song only, devotional songs.
+    pub deity: Option<String>,
+    /// Song only; empty otherwise.
+    pub tags: Vec<String>,
     /// A recording's song.
     pub parent: Option<PageLink>,
     pub credits: Vec<PageCredit>,
@@ -122,6 +132,11 @@ impl From<uc::Page> for PublicPage {
             kind: p.kind,
             detail: p.detail,
             duration_ms: p.duration_ms,
+            category: p.category,
+            raga: p.raga,
+            religion: p.religion,
+            deity: p.deity,
+            tags: p.tags,
             parent: p.parent.map(Into::into),
             credits: p
                 .credits

@@ -93,6 +93,7 @@ export function jsonLd(p: PublicPage): Record<string, unknown> {
       url,
       inLanguage,
       ...(p.code ? { iswcCode: p.code } : {}),
+      ...(p.raga || p.deity || p.tags.length ? { keywords: [p.raga, p.deity, ...p.tags].filter(Boolean).join(", ") } : {}),
       composer: credited(["composer"]),
       lyricist: credited(["lyricist"]),
       ...(p.lyrics[0] ? { lyrics: { "@type": "CreativeWork", text: p.lyrics[0].body, inLanguage: p.lyrics[0].language } } : {}),

@@ -67,6 +67,7 @@ export function publicPage(scope: Scope) {
     const t = await getTranslations("public");
     const tr = await getTranslations("catalogue");
     const tl = await getTranslations("lyrics");
+    const tf = await getTranslations("fields");
     const others = p.alternates.filter((a) => a.locale !== p.locale);
     return (
       <article>
@@ -83,6 +84,36 @@ export function publicPage(scope: Scope) {
             </>
           )}
         </p>
+        {p.scope === "song" && (
+          <dl className="facts">
+            <dt>{tf("category")}</dt>
+            <dd>{tr(`songCategories.${(p.category ?? "mainstream") as "mainstream"}`)}</dd>
+            {p.raga && (
+              <>
+                <dt>{tf("raga")}</dt>
+                <dd dir="auto">{p.raga}</dd>
+              </>
+            )}
+            {p.religion && (
+              <>
+                <dt>{tf("religion")}</dt>
+                <dd>{tr(`religions.${p.religion as "hindu"}`)}</dd>
+              </>
+            )}
+            {p.deity && (
+              <>
+                <dt>{tf("deity")}</dt>
+                <dd dir="auto">{p.deity}</dd>
+              </>
+            )}
+            {p.tags.length > 0 && (
+              <>
+                <dt>{tf("tags")}</dt>
+                <dd dir="auto">{p.tags.join(", ")}</dd>
+              </>
+            )}
+          </dl>
+        )}
         {p.credits.length > 0 && (
           <>
             <h2>{t("credits")}</h2>

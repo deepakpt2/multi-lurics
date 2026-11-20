@@ -40,6 +40,8 @@ pub struct OriginMultipliers {
     pub localization: f64,
     pub transliteration: f64,
     pub alias: f64,
+    /// Raga, deity or tag of a song.
+    pub metadata: f64,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -67,6 +69,7 @@ impl Default for OriginMultipliers {
             localization: 1.0,
             transliteration: 0.95,
             alias: 0.9,
+            metadata: 0.8,
         }
     }
 }
@@ -150,7 +153,7 @@ pub async fn search(conn: &mut PgConnection, ranking: &Ranking, q: &Query<'_>) -
                 WHERE d.entity_type = ANY($2) AND q.c <> ''
                   AND (NOT $3 OR d.contributor)
                   AND (d.compact = q.c OR d.key LIKE q.k || '%' OR d.compact LIKE q.c || '%' OR d.key % q.k)
-                  AND (d.origin = 'name'
+                  AND (d.origin IN ('name', 'metadata')
                        OR (d.origin = 'alias' AND EXISTS (
                             SELECT 1 FROM entity_aliases a WHERE a.id = d.source_id AND a.verification_state = 'verified'))
                        OR (d.origin IN ('localization', 'transliteration') AND EXISTS (

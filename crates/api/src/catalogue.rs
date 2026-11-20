@@ -379,7 +379,18 @@ pub struct CompositionCreate {
     /// ISWC, e.g. `T-034.524.680-1`; check digit verified.
     pub iswc: Option<String>,
     pub year: Option<i32>,
-    /// Work-level credits only (composer, lyricist).
+    /// `mainstream` (film, album, independent; the default) or `devotional`.
+    pub category: Option<String>,
+    /// Raga, as written (any script).
+    pub raga: Option<String>,
+    /// `hindu`, `sikh`, `buddhist`, `jain`, `christian`, `muslim` or `other`. Devotional songs only.
+    pub religion: Option<String>,
+    /// Deity or revered figure, as written. Devotional songs only.
+    pub deity: Option<String>,
+    /// Free tags (at most 20, 40 characters each).
+    #[serde(default)]
+    pub tags: Vec<String>,
+    /// Work-level credits only: composer (the music director) and lyricist.
     pub credits: Option<Vec<CreditInput>>,
 }
 
@@ -394,6 +405,18 @@ pub struct CompositionPatch {
     #[serde(default, deserialize_with = "present")]
     #[schema(value_type = Option<i32>)]
     pub year: Option<Option<i32>>,
+    pub category: Option<String>,
+    #[serde(default, deserialize_with = "present")]
+    #[schema(value_type = Option<String>)]
+    pub raga: Option<Option<String>>,
+    #[serde(default, deserialize_with = "present")]
+    #[schema(value_type = Option<String>)]
+    pub religion: Option<Option<String>>,
+    #[serde(default, deserialize_with = "present")]
+    #[schema(value_type = Option<String>)]
+    pub deity: Option<Option<String>>,
+    /// When present, replaces all tags.
+    pub tags: Option<Vec<String>>,
     pub credits: Option<Vec<CreditInput>>,
 }
 
@@ -405,6 +428,11 @@ pub struct Composition {
     pub title: String,
     pub iswc: Option<String>,
     pub year: Option<i16>,
+    pub category: String,
+    pub raga: Option<String>,
+    pub religion: Option<String>,
+    pub deity: Option<String>,
+    pub tags: Vec<String>,
     pub version: i32,
     pub created_by: Uuid,
     pub created_at: DateTime<Utc>,
@@ -420,6 +448,11 @@ impl Composition {
             title: r.title,
             iswc: r.iswc,
             year: r.year,
+            category: r.category,
+            raga: r.raga,
+            religion: r.religion,
+            deity: r.deity,
+            tags: r.tags,
             version: r.version,
             created_by: r.created_by,
             created_at: r.created_at,
@@ -485,6 +518,12 @@ pub struct CompositionFilter {
     pub iswc: Option<String>,
     /// Case-insensitive title prefix.
     pub prefix: Option<String>,
+    /// `mainstream` or `devotional`.
+    pub category: Option<String>,
+    pub raga: Option<String>,
+    pub deity: Option<String>,
+    /// Songs carrying this tag.
+    pub tag: Option<String>,
 }
 
 #[utoipa::path(post, path = "/api/v1/compositions", tag = "catalogue", request_body = CompositionCreate,
@@ -507,6 +546,11 @@ pub async fn create_composition(
             title: Some(b.title),
             iswc: Some(b.iswc),
             year: Some(b.year),
+            category: b.category,
+            raga: Some(b.raga),
+            religion: Some(b.religion),
+            deity: Some(b.deity),
+            tags: Some(b.tags),
             credits: credits_in(b.credits),
         },
     )
@@ -539,6 +583,11 @@ pub async fn update_composition(
             title: b.title,
             iswc: b.iswc,
             year: b.year,
+            category: b.category,
+            raga: b.raga,
+            religion: b.religion,
+            deity: b.deity,
+            tags: b.tags,
             credits: credits_in(b.credits),
         },
     )
@@ -571,6 +620,10 @@ pub async fn list_compositions(
         artist_id: f.artist_id,
         iswc: f.iswc,
         title_prefix: f.prefix,
+        category: f.category,
+        raga: f.raga,
+        deity: f.deity,
+        tag: f.tag,
     };
     let l = uc::list_compositions(&app, filter, q.cursor.as_deref(), q.limit, lq.lang.as_deref()).await?;
     Ok(Json(CompositionPage {

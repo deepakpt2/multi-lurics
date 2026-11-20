@@ -30,6 +30,46 @@ pub fn optional_note(field: &'static str, raw: Option<&str>) -> Result<Option<St
     }
 }
 
+/// Song category: `mainstream` (film, album, independent) or `devotional`.
+pub fn category(field: &'static str, raw: &str) -> Result<String, DomainError> {
+    match raw.trim() {
+        c @ ("mainstream" | "devotional") => Ok(c.to_owned()),
+        _ => Err(DomainError::invalid(field, "invalid_value")),
+    }
+}
+
+/// Religion of a devotional song. Blank means absent.
+pub fn religion(field: &'static str, raw: Option<&str>) -> Result<Option<String>, DomainError> {
+    match raw.map(str::trim) {
+        None | Some("") => Ok(None),
+        Some(c @ ("hindu" | "sikh" | "buddhist" | "jain" | "christian" | "muslim" | "other")) => Ok(Some(c.to_owned())),
+        Some(_) => Err(DomainError::invalid(field, "invalid_value")),
+    }
+}
+
+/// Raga or deity name as written, in any script. Blank means absent.
+pub fn short_name(field: &'static str, raw: Option<&str>) -> Result<Option<String>, DomainError> {
+    match raw.map(str::trim) {
+        None | Some("") => Ok(None),
+        Some(s) => clean_text(field, s, 100).map(Some),
+    }
+}
+
+/// Free tags: trimmed, at most 20, each at most 40 characters, case-insensitive duplicates dropped.
+pub fn tags(field: &'static str, raw: &[String]) -> Result<Vec<String>, DomainError> {
+    let mut out: Vec<String> = Vec::new();
+    for t in raw.iter().map(|t| t.trim()).filter(|t| !t.is_empty()) {
+        let t = clean_text(field, t, 40)?;
+        if !out.iter().any(|o| o.to_lowercase() == t.to_lowercase()) {
+            out.push(t);
+        }
+    }
+    if out.len() > 20 {
+        return Err(DomainError::invalid(field, "too_many"));
+    }
+    Ok(out)
+}
+
 fn compact(raw: &str) -> String {
     raw.chars()
         .filter(|c| !matches!(c, ' ' | '-' | '.'))
@@ -207,6 +247,31 @@ impl RelationshipKind {
     /// Every kind except a loosely related performance is another recording of the same work.
     pub fn requires_same_composition(self) -> bool {
         self != Self::RelatedPerformance
+    }
+}
+
+#[cfg(test)]
+mod classification_tests {
+    use super::*;
+
+    #[test]
+    fn category_religion_and_tags_are_validated() {
+        assert_eq!(category("category", " devotional ").unwrap(), "devotional");
+        assert!(category("category", "film").is_err());
+        assert_eq!(religion("religion", Some("")).unwrap(), None);
+        assert!(religion("religion", Some("pagan")).is_err());
+        assert_eq!(
+            short_name("raga", Some("  Mohanam ")).unwrap().as_deref(),
+            Some("Mohanam")
+        );
+        let t = tags(
+            "tags",
+            &["Bhajan".into(), " bhajan ".into(), "".into(), "Morning".into()],
+        )
+        .unwrap();
+        assert_eq!(t, vec!["Bhajan", "Morning"]);
+        assert!(tags("tags", &(0..21).map(|i| format!("t{i}")).collect::<Vec<_>>()).is_err());
+        assert!(tags("tags", &["x".repeat(41)]).is_err());
     }
 }
 

@@ -69,7 +69,12 @@
     "contact_email": "Your email",
     "statement": "Statement",
     "contribution_id": "Contribution ID",
-    "good_faith": "Confirmation"
+    "good_faith": "Confirmation",
+    "category": "Song type",
+    "raga": "Raga",
+    "religion": "Religion",
+    "deity": "Deity",
+    "tags": "Tags"
   },
   "hints": {
     "password": "At least {min} characters.",
@@ -82,7 +87,10 @@
     "isrc": "Optional, e.g. US-RC1-76-07839.",
     "duration": "Optional, in seconds.",
     "barcode": "Optional. 8, 12, 13 or 14 digits.",
-    "relationships": "A cover, remake, live version or alternate arrangement must belong to the same composition as the recording it relates to. Nothing is copied from the related recording."
+    "relationships": "A cover, remake, live version or alternate arrangement must belong to the same composition as the recording it relates to. Nothing is copied from the related recording.",
+    "raga": "Optional, e.g. Mohanam. As written, in any script.",
+    "deity": "Optional. The deity or revered figure the song is addressed to.",
+    "tags": "Optional. Separate with commas, e.g. bhajan, morning."
   },
   "validation": {
     "required": "This field is required.",
@@ -126,7 +134,9 @@
     "same_entity": "Choose two different records.",
     "unknown_entity": "This record does not exist.",
     "must_accept": "You must confirm this to continue.",
-    "no_target": "This notice is not about a specific contribution."
+    "no_target": "This notice is not about a specific contribution.",
+    "invalid_value": "Choose one of the listed options.",
+    "devotional_only": "Only devotional songs have a religion or deity."
   },
   "errors": {
     "title": "Something went wrong",
@@ -318,7 +328,7 @@
       "other": "Other"
     },
     "roles": {
-      "composer": "Composer",
+      "composer": "Music director (composer)",
       "lyricist": "Lyricist",
       "performer": "Performer",
       "featured_performer": "Featured performer",
@@ -355,7 +365,23 @@
       "performance": "Performers",
       "production": "Production",
       "other": "Other roles"
-    }
+    },
+    "songCategories": {
+      "mainstream": "Mainstream (film, album, independent)",
+      "devotional": "Devotional"
+    },
+    "religions": {
+      "hindu": "Hindu",
+      "sikh": "Sikh",
+      "buddhist": "Buddhist",
+      "jain": "Jain",
+      "christian": "Christian",
+      "muslim": "Muslim",
+      "other": "Other"
+    },
+    "songFilters": "Filter songs",
+    "anyType": "Any",
+    "applyFilters": "Apply filters"
   },
   "localization": {
     "title": "Names and translations",
@@ -530,7 +556,8 @@
     "matched": {
       "localization": "Other language",
       "transliteration": "Transliteration",
-      "alias": "Also known as"
+      "alias": "Also known as",
+      "metadata": "Raga, deity or tag"
     },
     "groups": {
       "compositions": "Songs",

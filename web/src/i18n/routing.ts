@@ -3,7 +3,11 @@ import { defineRouting } from "next-intl/routing";
 export const locales = ["en", "ar"] as const;
 export type Locale = (typeof locales)[number];
 
-export const routing = defineRouting({ locales, defaultLocale: "en" });
+/** Locales shown in the language switcher. Arabic is built and kept, but switched off until it is ready: add "ar" here to re-enable. */
+export const offeredLocales: readonly Locale[] = ["en"];
+
+// localeDetection off: a browser's Accept-Language must not send visitors to a locale that is not offered.
+export const routing = defineRouting({ locales, defaultLocale: "en", localeDetection: offeredLocales.length > 1 });
 
 const RTL_LOCALES: ReadonlySet<string> = new Set(["ar", "he", "fa", "ur", "yi", "ps", "sd", "ug", "dv"]);
 

@@ -305,14 +305,20 @@ pub struct Core {
     pub detail: Option<String>,
     pub duration_ms: Option<i32>,
     pub parent_id: Option<Uuid>,
+    /// Song metadata; empty for recordings and artists.
+    pub category: Option<String>,
+    pub raga: Option<String>,
+    pub religion: Option<String>,
+    pub deity: Option<String>,
+    pub tags: Vec<String>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 pub async fn core(conn: &mut PgConnection, entity_type: &str, id: Uuid) -> Res<Option<Core>> {
     let sql = match entity_type {
-        "composition" => "SELECT title, year, iswc AS code, NULL::text AS kind, NULL::text AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, updated_at FROM compositions WHERE id = $1",
-        "recording" => "SELECT title, year, isrc AS code, NULL::text AS kind, NULL::text AS detail, duration_ms, composition_id AS parent_id, updated_at FROM recordings WHERE id = $1",
-        _ => "SELECT name AS title, NULL::smallint AS year, isni AS code, kind, disambiguation AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, updated_at FROM artists WHERE id = $1",
+        "composition" => "SELECT title, year, iswc AS code, NULL::text AS kind, NULL::text AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, category, raga, religion, deity, tags, updated_at FROM compositions WHERE id = $1",
+        "recording" => "SELECT title, year, isrc AS code, NULL::text AS kind, NULL::text AS detail, duration_ms, composition_id AS parent_id, NULL::text AS category, NULL::text AS raga, NULL::text AS religion, NULL::text AS deity, '{}'::text[] AS tags, updated_at FROM recordings WHERE id = $1",
+        _ => "SELECT name AS title, NULL::smallint AS year, isni AS code, kind, disambiguation AS detail, NULL::int AS duration_ms, NULL::uuid AS parent_id, NULL::text AS category, NULL::text AS raga, NULL::text AS religion, NULL::text AS deity, '{}'::text[] AS tags, updated_at FROM artists WHERE id = $1",
     };
     sqlx::query_as(sql).bind(id).fetch_optional(conn).await
 }

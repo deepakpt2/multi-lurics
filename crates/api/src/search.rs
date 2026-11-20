@@ -60,6 +60,7 @@ pub enum MatchVia {
     Localization,
     Transliteration,
     Alias,
+    Metadata,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -113,6 +114,7 @@ impl From<Item> for SearchItem {
                     uc::MatchVia::Localization => MatchVia::Localization,
                     uc::MatchVia::Transliteration => MatchVia::Transliteration,
                     uc::MatchVia::Alias => MatchVia::Alias,
+                    uc::MatchVia::Metadata => MatchVia::Metadata,
                 },
             },
             sub_kind: i.sub_kind,
