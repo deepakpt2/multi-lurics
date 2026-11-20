@@ -2,6 +2,7 @@ import { Library, LogIn, UserPlus } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { HomeSections } from "@/components/home/home-sections";
+import { HomeArticles } from "@/components/articles/home-articles";
 import { GuestOnly } from "@/components/guest-only";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
@@ -33,6 +34,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </Link>
       </p>
     </section>
+    <HomeArticles />
     <HomeSections />
     </>
   );

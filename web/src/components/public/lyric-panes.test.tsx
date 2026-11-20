@@ -142,4 +142,18 @@ describe("reading mode", () => {
     expect(screen.getByRole("dialog")).toHaveAttribute("data-theme", "dark");
     expect(screen.getByRole("radio", { name: "Dark" })).toBeChecked();
   });
+
+  it("offers rating and comments on each lyric, loading them only when opened", async () => {
+    const { calls } = mockFetch({
+      "GET /api/v1/languages": () => json(200, { items: [], next_cursor: null }),
+      "GET /api/v1/scripts": () => json(200, { items: [], next_cursor: null }),
+      "GET /api/v1/contributions/a/engagement": () => json(200, { rating_count: 0, rating_average: null, comment_count: 0, reactions: [], mine: null }),
+      "GET /api/v1/contributions/a/comments": () => json(200, { items: [], next_cursor: null }),
+    });
+    show();
+    expect(calls.some((c) => c.url.includes("/engagement"))).toBe(false);
+    await userEvent.click(screen.getByText("Rate and discuss these lyrics"));
+    expect(await screen.findByRole("group", { name: "Rating" })).toBeInTheDocument();
+    expect(calls.some((c) => c.url.includes("/contributions/a/engagement"))).toBe(true);
+  });
 });

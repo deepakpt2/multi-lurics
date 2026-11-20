@@ -1,6 +1,8 @@
 //! HTTP adapter: routing, extractors, problem+json, OpenAPI. No business rules here.
 
+pub mod articles;
 pub mod browse;
+pub mod captcha;
 pub mod catalogue;
 pub mod community;
 pub mod contribute;
@@ -23,9 +25,11 @@ pub mod search;
 pub mod seo;
 
 use application::App;
+use articles as art;
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use browse as brw;
+use captcha as cpt;
 use catalogue as cat;
 use community as com;
 use contribute as ctb;
@@ -71,6 +75,7 @@ use utoipa::{Modify, OpenApi};
         brw::songs, brw::facet, brw::suggest,
         hm::home, hm::record_view, hm::pick_state, hm::pick, hm::unpick,
         imp::import_songs, ctb::contribute_song, ctb::add_song_lyrics, mdt::create_metadata,
+        cpt::config, art::list, art::home, art::read, art::create, art::update, art::set_home, art::delete, art::images, art::upload_image, art::delete_image,
         img::limits, img::upload, img::withdraw, img::entity_images, img::media, img::queue, img::approve, img::reject,
         srch::search, srch::suggest, srch::suggestion_accepted, srch::metrics,
         seo_api::get_page, seo_api::sitemap,
@@ -206,6 +211,7 @@ pub fn router(app: App) -> Router {
         .route("/auth/verify-email", post(routes::verify_email))
         .route("/auth/login", post(routes::login))
         .route("/auth/providers", get(oauth::providers))
+        .route("/captcha", get(cpt::config))
         .route("/auth/google/start", get(oauth::google_start))
         .route("/auth/google/callback", get(oauth::google_callback))
         .route("/auth/password-reset", post(routes::request_password_reset))
@@ -288,6 +294,22 @@ pub fn router(app: App) -> Router {
         )
         .route("/compositions/{id}/lyrics", post(ctb::add_song_lyrics))
         .route("/admin/metadata", post(mdt::create_metadata))
+        .route("/articles", get(art::list).post(art::create))
+        .route("/articles/home", get(art::home))
+        .route("/articles/{key}", get(art::read).patch(art::update).delete(art::delete))
+        .route("/articles/{key}/home", axum::routing::put(art::set_home))
+        .route(
+            "/articles/{key}/images",
+            get(art::images)
+                .post(art::upload_image)
+                .layer(axum::extract::DefaultBodyLimit::max(
+                    app.config.media_max_bytes as usize + 64 * 1024,
+                )),
+        )
+        .route(
+            "/articles/{key}/images/{image_id}",
+            axum::routing::delete(art::delete_image),
+        )
         .route("/images/limits", get(img::limits))
         .route(
             "/images",

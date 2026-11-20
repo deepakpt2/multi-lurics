@@ -156,6 +156,65 @@ pub fn process(bytes: &[u8], sizes: &[u32], max_side: u32) -> Result<Processed, 
     })
 }
 
+pub struct ProcessedWide {
+    pub width: u32,
+    pub height: u32,
+    /// `(width, jpeg bytes)`, ascending; proportions kept, never enlarged.
+    pub variants: Vec<(u32, Vec<u8>)>,
+}
+
+/// For article pictures: like `process`, but keeps the picture's proportions.
+pub fn process_wide(bytes: &[u8], widths: &[u32], max_side: u32) -> Result<ProcessedWide, MediaError> {
+    let format = image::guess_format(bytes).map_err(|_| MediaError::UnsupportedType)?;
+    if !matches!(
+        format,
+        ImageFormat::Jpeg | ImageFormat::Png | ImageFormat::WebP | ImageFormat::Gif
+    ) {
+        return Err(MediaError::UnsupportedType);
+    }
+    let mut reader = ImageReader::with_format(Cursor::new(bytes), format);
+    let mut limits = Limits::default();
+    limits.max_image_width = Some(max_side);
+    limits.max_image_height = Some(max_side);
+    limits.max_alloc = Some(512 * 1024 * 1024);
+    reader.limits(limits);
+    let mut decoder = reader.into_decoder().map_err(|e| classify(&e))?;
+    let (w, h) = decoder.dimensions();
+    if w > max_side || h > max_side {
+        return Err(MediaError::TooLarge);
+    }
+    if w < MIN_SIDE || h < MIN_SIDE {
+        return Err(MediaError::TooSmall);
+    }
+    let orientation = decoder.orientation().ok();
+    let mut img = DynamicImage::from_decoder(decoder).map_err(|e| classify(&e))?;
+    if let Some(o) = orientation {
+        img.apply_orientation(o);
+    }
+    let rgb = DynamicImage::ImageRgb8(flatten(&img));
+    let (width, height) = (rgb.width(), rgb.height());
+    let mut variants: Vec<(u32, Vec<u8>)> = Vec::new();
+    for &target in widths {
+        let target = target.min(width);
+        if variants.iter().any(|(s, _)| *s == target) {
+            continue;
+        }
+        let h = ((u64::from(height) * u64::from(target)) / u64::from(width)).max(1) as u32;
+        let scaled = rgb.resize_exact(target, h, FilterType::Lanczos3);
+        let mut out = Vec::new();
+        image::codecs::jpeg::JpegEncoder::new_with_quality(&mut out, JPEG_QUALITY)
+            .encode_image(&scaled.to_rgb8())
+            .map_err(|_| MediaError::Corrupt)?;
+        variants.push((target, out));
+    }
+    variants.sort_by_key(|v| v.0);
+    Ok(ProcessedWide {
+        width,
+        height,
+        variants,
+    })
+}
+
 fn classify(e: &image::ImageError) -> MediaError {
     match e {
         image::ImageError::Limits(_) => MediaError::TooLarge,

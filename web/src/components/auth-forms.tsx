@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { api, call } from "@/api/client";
 import { Link, useRouter } from "@/i18n/navigation";
+import { CaptchaWidget, useCaptcha } from "./captcha";
 import { Field, formValues, readFragmentToken, useSubmit } from "./form";
 import { LoadingState, ProblemAlert } from "./states";
 
@@ -53,10 +54,11 @@ export function SocialSignIn() {
 export function RegisterForm() {
   const t = useTranslations();
   const locale = useLocale();
+  const captcha = useCaptcha();
   const s = useSubmit((v: Record<string, string>) =>
     call(
       api.POST("/api/v1/auth/register", {
-        body: { email: v.email, display_name: v.display_name, password: v.password, locale },
+        body: { email: v.email, display_name: v.display_name, password: v.password, locale, captcha_token: captcha.take() },
       }),
     ),
   );
@@ -74,7 +76,8 @@ export function RegisterForm() {
         hint={t("hints.password", { min: PASSWORD_MIN })}
         fieldErrors={s.fieldErrors}
       />
-      <button className="button primary" type="submit" disabled={s.submitting} aria-busy={s.submitting}>
+      <CaptchaWidget captcha={captcha} fieldErrors={s.fieldErrors} />
+      <button className="button primary" type="submit" disabled={s.submitting || captcha.blocked} aria-busy={s.submitting}>
         {s.submitting ? t("common.submitting") : t("register.submit")}
       </button>
       <p>
@@ -87,8 +90,9 @@ export function RegisterForm() {
 export function LoginForm() {
   const t = useTranslations();
   const router = useRouter();
+  const captcha = useCaptcha();
   const s = useSubmit(async (v: Record<string, string>) => {
-    await call(api.POST("/api/v1/auth/login", { body: { email: v.email, password: v.password } }));
+    await call(api.POST("/api/v1/auth/login", { body: { email: v.email, password: v.password, captcha_token: captcha.take() } }));
     router.push("/account");
   });
   return (
@@ -97,7 +101,8 @@ export function LoginForm() {
       {s.error !== undefined && <ProblemAlert error={s.error} />}
       <Field name="email" type="email" autoComplete="email" dir="ltr" fieldErrors={s.fieldErrors} />
       <Field name="password" type="password" autoComplete="current-password" fieldErrors={s.fieldErrors} />
-      <button className="button primary" type="submit" disabled={s.submitting} aria-busy={s.submitting}>
+      <CaptchaWidget captcha={captcha} fieldErrors={s.fieldErrors} />
+      <button className="button primary" type="submit" disabled={s.submitting || captcha.blocked} aria-busy={s.submitting}>
         {s.submitting ? t("common.submitting") : t("login.submit")}
       </button>
       <p>
@@ -113,8 +118,9 @@ export function LoginForm() {
 export function ForgotPasswordForm() {
   const t = useTranslations();
   const locale = useLocale();
+  const captcha = useCaptcha();
   const s = useSubmit((v: Record<string, string>) =>
-    call(api.POST("/api/v1/auth/password-reset", { body: { email: v.email, locale } })),
+    call(api.POST("/api/v1/auth/password-reset", { body: { email: v.email, locale, captcha_token: captcha.take() } })),
   );
   if (s.state.status === "success") return <Success title={t("forgot.successTitle")}>{t("forgot.success")}</Success>;
   return (
@@ -122,7 +128,8 @@ export function ForgotPasswordForm() {
       <p>{t("forgot.intro")}</p>
       {s.error !== undefined && <ProblemAlert error={s.error} />}
       <Field name="email" type="email" autoComplete="email" dir="ltr" fieldErrors={s.fieldErrors} />
-      <button className="button primary" type="submit" disabled={s.submitting} aria-busy={s.submitting}>
+      <CaptchaWidget captcha={captcha} fieldErrors={s.fieldErrors} />
+      <button className="button primary" type="submit" disabled={s.submitting || captcha.blocked} aria-busy={s.submitting}>
         {s.submitting ? t("common.submitting") : t("forgot.submit")}
       </button>
     </form>

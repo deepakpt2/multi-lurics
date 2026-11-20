@@ -2,9 +2,11 @@
 //! rows in the same transaction as the change.
 
 pub mod admin;
+pub mod articles;
 pub mod auth;
 pub mod authz;
 pub mod browse;
+pub mod captcha;
 pub mod catalogue;
 pub mod community;
 pub mod comparison;
@@ -47,6 +49,8 @@ pub struct App {
     pub google: Option<Arc<dyn oauth::IdentityProvider>>,
     /// Where image files live; local disk by default, swappable (see `media::MediaStore`).
     pub media: Arc<dyn media::MediaStore>,
+    /// Bot check for public forms; `None` when no Turnstile keys are configured.
+    pub captcha: Option<Arc<dyn captcha::Verifier>>,
 }
 
 impl App {
@@ -54,13 +58,20 @@ impl App {
         let search = Arc::new(search::PgSearch::new(pool.clone()));
         let google = oauth::GoogleHttp::from_config(&config).map(|g| Arc::new(g) as Arc<dyn oauth::IdentityProvider>);
         let media = Arc::new(media::LocalStore::new(&config.media_dir));
+        let captcha = captcha::from_config(&config);
         Self {
             pool,
             config,
             search,
             google,
             media,
+            captcha,
         }
+    }
+
+    pub fn with_captcha(mut self, captcha: Arc<dyn captcha::Verifier>) -> Self {
+        self.captcha = Some(captcha);
+        self
     }
 
     pub fn with_google(mut self, google: Arc<dyn oauth::IdentityProvider>) -> Self {

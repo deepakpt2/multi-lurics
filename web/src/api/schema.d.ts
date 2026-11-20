@@ -264,6 +264,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["articles_list"];
+        put?: never;
+        post: operations["articles_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["articles_home"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["articles_read"];
+        put?: never;
+        post?: never;
+        delete: operations["articles_delete"];
+        options?: never;
+        head?: never;
+        patch: operations["articles_update"];
+        trace?: never;
+    };
+    "/api/v1/articles/{key}/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["articles_set_home"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles/{key}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["articles_images"];
+        put?: never;
+        post: operations["articles_upload_image"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles/{key}/images/{image_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["articles_delete_image"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/artists": {
         parameters: {
             query?: never;
@@ -487,6 +583,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["browse_suggest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/captcha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captcha_config"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1926,6 +2038,80 @@ export interface components {
             items: components["schemas"]["Appeal"][];
             next_cursor?: string | null;
         };
+        /** @description An article. `body_md` is empty in lists. */
+        Article: {
+            /** @description Markdown. Empty in lists; fetch the article for the text. */
+            body_md: string;
+            /**
+             * Format: uuid
+             * @description Show at `/api/v1/media/{cover_image_id}/{width}`.
+             */
+            cover_image_id?: string | null;
+            /** Format: date-time */
+            home_from?: string | null;
+            /** @description Whether the home page shows it right now. */
+            home_now: boolean;
+            /** Format: date-time */
+            home_until?: string | null;
+            /** Format: uuid */
+            id: string;
+            on_home: boolean;
+            /** Format: date-time */
+            published_at?: string | null;
+            slug: string;
+            /** @description `draft` (moderators only) or `published`. */
+            status: string;
+            summary?: string | null;
+            title: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int32 */
+            version: number;
+        };
+        ArticleCreate: {
+            /** @description Markdown. */
+            body_md: string;
+            /** @description Publish at once (default: save as a draft). */
+            publish?: boolean;
+            /** @description Address of the page; made from the title when left out. */
+            slug?: string | null;
+            summary?: string | null;
+            title: string;
+        };
+        ArticleImage: {
+            credit?: string | null;
+            /** Format: int32 */
+            height: number;
+            /** Format: uuid */
+            id: string;
+            /** @description Ready to paste into the article: `![](/api/v1/media/<id>/960)`. */
+            markdown: string;
+            /** Format: int32 */
+            width: number;
+        };
+        ArticleImageUpload: {
+            credit?: string | null;
+            /** Format: binary */
+            file: string;
+        };
+        ArticleImages: {
+            items: components["schemas"]["ArticleImage"][];
+        };
+        ArticleList: {
+            items: components["schemas"]["Article"][];
+        };
+        ArticleUpdate: {
+            body_md?: string | null;
+            /** Format: uuid */
+            cover_image_id?: string | null;
+            /** Format: int32 */
+            expected_version: number;
+            /** @description `true` publishes, `false` returns it to a draft (which also takes it off the home page). */
+            publish?: boolean | null;
+            slug?: string | null;
+            summary?: string | null;
+            title?: string | null;
+        };
         Artist: {
             /** Format: date-time */
             created_at: string;
@@ -2144,6 +2330,12 @@ export interface components {
         BrowseSuggestionKind: "song" | "artist" | "singer" | "lyricist" | "composer" | "album" | "raga" | "deity" | "religion" | "category" | "form" | "language" | "tag";
         /** @enum {string} */
         BrowseVia: "name" | "localization" | "transliteration" | "alias";
+        CaptchaConfig: {
+            /** @description Whether sign-up, sign-in, password reset and legal notices ask for a bot check. */
+            enabled: boolean;
+            /** @description Turnstile site key (public); the browser shows the challenge with it. */
+            site_key?: string | null;
+        };
         Comment: {
             /** Format: uuid */
             author_id: string;
@@ -2480,6 +2672,19 @@ export interface components {
             migration_version?: number | null;
             status: string;
         };
+        HomeBody: {
+            /**
+             * Format: date-time
+             * @description Show from this time (default: now).
+             */
+            home_from?: string | null;
+            /**
+             * Format: date-time
+             * @description Hide again at this time (default: until switched off).
+             */
+            home_until?: string | null;
+            on_home: boolean;
+        };
         HomeItem: {
             albums: components["schemas"]["BrowseRef"][];
             /** Format: int32 */
@@ -2793,6 +2998,8 @@ export interface components {
             name: string;
         };
         LoginRequest: {
+            /** @description Bot-check answer; required when `GET /api/v1/captcha` says it is enabled. */
+            captcha_token?: string | null;
             email?: string;
             password?: string;
         };
@@ -2978,6 +3185,8 @@ export interface components {
             status: string;
         };
         NoticeCreate: {
+            /** @description Bot-check answer; required when `GET /api/v1/captcha` says it is enabled. */
+            captcha_token?: string | null;
             contact_email: string;
             contact_name: string;
             /**
@@ -3080,6 +3289,8 @@ export interface components {
             token?: string;
         };
         PasswordResetRequest: {
+            /** @description Bot-check answer; required when `GET /api/v1/captcha` says it is enabled. */
+            captcha_token?: string | null;
             email?: string;
             locale?: string | null;
         };
@@ -3371,6 +3582,8 @@ export interface components {
             title: string;
         };
         RegisterRequest: {
+            /** @description Bot-check answer; required when `GET /api/v1/captcha` says it is enabled. */
+            captcha_token?: string | null;
             display_name?: string;
             email?: string;
             /** @description UI locale for emails. One of `en`, `ar`. Defaults to `en`. */
@@ -4839,6 +5052,350 @@ export interface operations {
             };
         };
     };
+    articles_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published articles, newest first (moderators also see drafts) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleList"];
+                };
+            };
+        };
+    };
+    articles_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticleCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Article"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `slug_taken` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    articles_home: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Articles whose home-page period is running now (at most three); empty most of the time */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleList"];
+                };
+            };
+        };
+    };
+    articles_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Article"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    articles_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    articles_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticleUpdate"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Article"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `slug_taken` or a stale version */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    articles_set_home: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HomeBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Article"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `not_published`, `in_the_past`, `must_be_after_start` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    articles_images: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleImages"];
+                };
+            };
+        };
+    };
+    articles_upload_image: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["ArticleImageUpload"];
+            };
+        };
+        responses: {
+            /** @description A picture of the article, public at once, in proportion (not cropped) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleImage"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `file`: `required`, `too_large`, `unsupported_type`, `corrupt`, `dimensions_too_small`, `dimensions_too_large` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    articles_delete_image: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+                image_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     list_artists: {
         parameters: {
             query?: {
@@ -5507,6 +6064,26 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    captcha_config: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Whether forms need a bot check, and the key to show it with */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptchaConfig"];
                 };
             };
         };

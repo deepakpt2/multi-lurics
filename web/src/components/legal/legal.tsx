@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { api, call } from "@/api/client";
 import type { components } from "@/api/schema";
 import { usePaged } from "../catalogue/common";
+import { CaptchaWidget, useCaptcha } from "../captcha";
 import { useFieldError, useSubmit } from "../form";
 import { EmptyState, LoadingState, ProblemAlert } from "../states";
 import { Link } from "@/i18n/navigation";
@@ -30,6 +31,7 @@ export function NoticeForm() {
   const initial = useSearchParams().get("contribution") ?? "";
   const [kind, setKind] = useState<(typeof KINDS)[number]>("copyright");
   const [receipt, setReceipt] = useState<S["NoticeReceipt"]>();
+  const captcha = useCaptcha();
   const { submit, error, fieldErrors, submitting } = useSubmit(async (fd: FormData) => {
     const s = (k: string) => String(fd.get(k) ?? "").trim();
     setReceipt(
@@ -42,6 +44,7 @@ export function NoticeForm() {
             contact_email: s("contact_email"),
             statement: s("statement"),
             good_faith: fd.get("good_faith") === "on",
+            captcha_token: captcha.take(),
           },
         }),
       ),
@@ -95,8 +98,9 @@ export function NoticeForm() {
         </label>
         <FieldMessage id={`${uid}-gf-err`} errors={fieldErrors} name="good_faith" />
       </div>
+      <CaptchaWidget captcha={captcha} fieldErrors={fieldErrors} />
       {error !== undefined && fieldErrors.length === 0 && <ProblemAlert error={error} />}
-      <button type="submit" className="button primary" disabled={submitting}>
+      <button type="submit" className="button primary" disabled={submitting || captcha.blocked}>
         {submitting ? t("sending") : t("send")}
       </button>
     </form>

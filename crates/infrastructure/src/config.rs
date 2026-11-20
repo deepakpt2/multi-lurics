@@ -30,6 +30,10 @@ pub struct Config {
     /// Google sign-in (OpenID Connect). Both or neither; the feature is off when unset.
     pub google_client_id: Option<String>,
     pub google_client_secret: Option<String>,
+    /// Cloudflare Turnstile. Both or neither; the check is off when unset. The site key is public
+    /// (the browser needs it); the secret key stays on the server.
+    pub turnstile_site_key: Option<String>,
+    pub turnstile_secret_key: Option<String>,
     /// Where uploaded images are stored (local disk). Must be on a persistent volume.
     pub media_dir: String,
     /// Largest accepted upload, in bytes.
@@ -185,6 +189,11 @@ impl Config {
         if google_client_id.is_some() != google_client_secret.is_some() {
             errs.push("LYRICS_GOOGLE_CLIENT_ID and LYRICS_GOOGLE_CLIENT_SECRET must be set together".into());
         }
+        let turnstile_site_key = get("LYRICS_TURNSTILE_SITE_KEY").filter(|v| !v.trim().is_empty());
+        let turnstile_secret_key = get("LYRICS_TURNSTILE_SECRET_KEY").filter(|v| !v.trim().is_empty());
+        if turnstile_site_key.is_some() != turnstile_secret_key.is_some() {
+            errs.push("LYRICS_TURNSTILE_SITE_KEY and LYRICS_TURNSTILE_SECRET_KEY must be set together".into());
+        }
 
         let media_dir = get("LYRICS_MEDIA_DIR").unwrap_or_else(|| "./media-data".into());
         let media_max_bytes: u64 = parse_or(
@@ -237,6 +246,8 @@ impl Config {
             admin_display_name,
             google_client_id,
             google_client_secret,
+            turnstile_site_key,
+            turnstile_secret_key,
             media_dir,
             media_max_bytes,
             media_max_side,
@@ -378,5 +389,22 @@ mod tests {
             .any(|e| e.contains("LYRICS_GOOGLE_CLIENT_ID and")));
         base.push(("LYRICS_GOOGLE_CLIENT_SECRET", "s"));
         assert!(cfg(&base).unwrap().google_client_id.is_some());
+    }
+
+    #[test]
+    fn turnstile_keys_must_be_a_pair() {
+        let mut base = vec![
+            ("LYRICS_DATABASE_URL", "postgres://u:p@localhost/lyrics_dev"),
+            ("LYRICS_APP_BASE_URL", "http://localhost:3000"),
+        ];
+        assert!(cfg(&base).unwrap().turnstile_site_key.is_none());
+        base.push(("LYRICS_TURNSTILE_SITE_KEY", "site"));
+        assert!(cfg(&base)
+            .unwrap_err()
+            .0
+            .iter()
+            .any(|e| e.contains("LYRICS_TURNSTILE_SITE_KEY and")));
+        base.push(("LYRICS_TURNSTILE_SECRET_KEY", "secret"));
+        assert!(cfg(&base).unwrap().turnstile_secret_key.is_some());
     }
 }

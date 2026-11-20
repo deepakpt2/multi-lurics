@@ -98,6 +98,7 @@ async fn people(
 }
 
 pub async fn song(app: &App, p: &Principal, meta: &RequestMeta, s: Submission) -> Result<Made, AppError> {
+    crate::community::throttle_member(app, p, "contribute").await?;
     let devotional = s.category.trim() == "devotional";
     let input = CompositionInput {
         title: Some(s.title.clone()),
@@ -292,6 +293,7 @@ pub async fn lyric_for_song(
     composition_id: Uuid,
     b: LyricBlock,
 ) -> Result<String, AppError> {
+    crate::community::throttle_member(app, p, "contribute").await?;
     let title: Option<String> = sqlx::query_scalar("SELECT title FROM compositions WHERE id = $1")
         .bind(composition_id)
         .fetch_optional(&app.pool)

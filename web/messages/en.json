@@ -34,7 +34,8 @@
     "import": "Bulk import",
     "siteNav": "Site navigation",
     "contribute": "Contribute",
-    "metadata": "Metadata values"
+    "metadata": "Metadata values",
+    "articles": "Articles"
   },
   "localeNames": {
     "en": "English",
@@ -214,7 +215,12 @@
     "must_confirm": "Please confirm you may share this photo.",
     "unknown_image": "This uploaded photo is no longer available. Upload it again.",
     "invalid_video_link": "That is not a YouTube video link.",
-    "possible_duplicate": "A song with this title is already on the album."
+    "possible_duplicate": "A song with this title is already on the album.",
+    "must_be_after_start": "The end must be after the start.",
+    "in_the_past": "This time has already passed.",
+    "not_published": "Publish the article first.",
+    "captcha_required": "Please complete the check before continuing.",
+    "captcha_failed": "The check was not accepted. Please try again."
   },
   "errors": {
     "title": "Something went wrong",
@@ -273,7 +279,9 @@
     "too_many_pending_images": "You have many photos waiting for review. Please wait until some are reviewed.",
     "decided_with_proposal": "This photo is decided together with its new-entry suggestion.",
     "payload_too_large": "That file is too large.",
-    "malformed_request": "The upload could not be read. Try a different file."
+    "malformed_request": "The upload could not be read. Try a different file.",
+    "slug_taken": "Another article already uses this address.",
+    "too_many_images": "This article has the most pictures it can hold."
   },
   "conflict": {
     "title": "Someone else changed this",
@@ -780,7 +788,8 @@
         "dark": "Dark"
       },
       "backToSong": "Back to the song",
-      "pageTitle": "{name}: lyrics"
+      "pageTitle": "{name}: lyrics",
+      "rateAndDiscuss": "Rate and discuss these lyrics"
     }
   },
   "compare": {
@@ -1347,5 +1356,63 @@
         "lyrics": "Please add the lyrics."
       }
     }
+  },
+  "articles": {
+    "title": "Articles",
+    "intro": "Stories and celebrations from the community.",
+    "none": "No articles yet.",
+    "new": "New article",
+    "edit": "Edit article",
+    "draft": "Draft",
+    "published": "Published",
+    "onHomeNow": "On the home page",
+    "homeLabel": "Featured",
+    "read": "Read",
+    "moderatorsOnly": "Only moderators can write articles.",
+    "manage": "Manage this article",
+    "publish": "Publish",
+    "unpublish": "Return to draft",
+    "homeStatus": "Home page: {status}",
+    "homeNow": "showing now",
+    "homeScheduled": "scheduled",
+    "homeEnded": "period ended, hidden",
+    "homeOff": "not shown",
+    "homeFrom": "Show from (optional, empty means now)",
+    "homeUntil": "Hide after (optional, empty means until switched off)",
+    "homeHint": "The home page shows nothing for articles when none is in its period.",
+    "homeOn": "Show on the home page",
+    "homeUpdate": "Update the period",
+    "homeTurnOff": "Remove from the home page",
+    "homeNeedsPublish": "Publish the article to show it on the home page.",
+    "fieldTitle": "Title",
+    "fieldSummary": "Short summary",
+    "summaryHint": "Shown in lists and on the home page.",
+    "fieldAddress": "Address",
+    "addressPlaceholder": "made from the title",
+    "addressHint": "Letters, digits and hyphens, for example onam-2026.",
+    "fieldBody": "Text (Markdown)",
+    "view": "View",
+    "write": "Write",
+    "preview": "Preview",
+    "loadFile": "Load a .md file",
+    "nothingToPreview": "Nothing to preview yet.",
+    "bodyHint": "Paste Markdown or load a file. A first line starting with # becomes the title, and a block of title:, summary: and slug: lines between --- lines at the top fills those fields. HTML in the text is not shown.",
+    "pictures": "Pictures",
+    "picturesAfterSave": "Save the article first, then add pictures here.",
+    "credit": "Credit (optional)",
+    "addPicture": "Add a picture",
+    "picturesHint": "Insert a picture where you want it in the text, or make one the cover shown on cards and at the top.",
+    "insert": "Insert in text",
+    "coverSet": "Use as cover",
+    "coverRemove": "Remove cover",
+    "deletePicture": "Delete this picture",
+    "saved": "Saved.",
+    "save": "Save",
+    "saveDraft": "Save draft",
+    "saveAndPublish": "Save and publish",
+    "viewArticle": "View article"
+  },
+  "captcha": {
+    "unavailable": "The check could not be loaded. Reload the page or try again later."
   }
 }

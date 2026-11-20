@@ -243,3 +243,20 @@ Visitors choose which sections show and in what order on the home page; that is 
   Maithili, Bhojpuri, Dogri, Meitei, Santali, Bodo, Tulu, Rajasthani, Chhattisgarhi, Awadhi, Braj, Pali) and more
   international ones, with their usual scripts. The site itself is offered in English and Malayalam
   (`web/messages/ml.json` is laid over English, so untranslated text shows in English); Arabic is built and not offered.
+
+## Articles (special occasions)
+
+Moderators write blog-style articles at `/articles/new`: paste Markdown made elsewhere or load a `.md` file (optional `title:`, `summary:`, `slug:` front matter, or a leading `# Heading`, fills the fields), add pictures (kept in proportion, public at once, up to 60 per article) and preview before saving as a draft or publishing. Raw HTML in the text is never shown; pictures may come only from this site or an `https` address.
+
+An article's page has the moderator controls: publish or return to draft, and **show on the home page** with an optional start and end time. The home page shows nothing for articles when none is inside its period (at most three are shown, newest first); a period that has ended hides the article by itself, with no job needed. Endpoints: `GET /api/v1/articles`, `GET /api/v1/articles/home`, `GET|PATCH|DELETE /api/v1/articles/{key}` (slug to read, id to change), `PUT /api/v1/articles/{key}/home`, `GET|POST /api/v1/articles/{key}/images`. Article pictures are served from `/api/v1/media/{id}/{width}` like other images (widths 480, 960, 1600).
+
+## Contributing and metadata
+
+`POST /api/v1/contribute/song` takes a whole song (details plus lyrics in several languages); `POST /api/v1/compositions/{id}/lyrics` adds one set of lyrics to an existing song. Admins create singers, albums, ragas, deities and tags ahead of time at `/admin/metadata` (`POST /api/v1/admin/metadata`) so contributors pick them from suggestions.
+
+## Abuse protection
+
+- **Per client address** (token bucket, in memory per API replica; relies on `CF-Connecting-IP` / `X-Forwarded-For` set by the proxy): typeahead and view counting (`LYRICS_SEARCH_RATE_PER_MIN`), sign-up, sign-in, password reset and legal notices (`LYRICS_AUTH_RATE_PER_MIN`).
+- **Per signed-in person** (counted in Postgres, so every replica agrees; admins edit them at `/admin/community-settings`): comments, ratings, reactions, bookmarks, reports, appeals, comparisons, and (new) `contribute` (30 per hour: whole songs and lyrics) and `upload` (20 per hour: images). Moderators and admins are exempt from the last two. Reputation thresholds and spam rules (links, repeats, blocked terms) apply to comments.
+- **Bot check (Cloudflare Turnstile)**: set both `LYRICS_TURNSTILE_SITE_KEY` and `LYRICS_TURNSTILE_SECRET_KEY` (setting only one stops start-up). Sign-up, sign-in, password reset and legal notices then need a solved challenge; `GET /api/v1/captcha` tells the web app whether to show it. If Cloudflare cannot be reached the form is refused rather than let through. With no keys the check is off and nothing else changes.
+- **Other**: CSRF header on every state-changing request, `HttpOnly` `SameSite=Lax` session cookie, request body limits on uploads and imports, uploaded images re-encoded, Markdown articles never insert raw HTML, `Strict-Transport-Security`, `X-Frame-Options: DENY` and `Permissions-Policy` headers. Not set: a Content-Security-Policy (it needs testing against the YouTube embed and Turnstile in a browser first).

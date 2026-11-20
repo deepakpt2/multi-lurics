@@ -1555,6 +1555,494 @@
         ]
       }
     },
+    "/api/v1/articles": {
+      "get": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_list",
+        "responses": {
+          "200": {
+            "description": "Published articles, newest first (moderators also see drafts)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`slug_taken`",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/articles/home": {
+      "get": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_home",
+        "responses": {
+          "200": {
+            "description": "Articles whose home-page period is running now (at most three); empty most of the time",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{key}": {
+      "get": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_read",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_delete",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_update",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`slug_taken` or a stale version",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/articles/{key}/home": {
+      "put": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_set_home",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HomeBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`not_published`, `in_the_past`, `must_be_after_start`",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/articles/{key}/images": {
+      "get": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_images",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleImages"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_upload_image",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleImageUpload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "A picture of the article, public at once, in proportion (not cropped)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleImage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`file`: `required`, `too_large`, `unsupported_type`, `corrupt`, `dimensions_too_small`, `dimensions_too_large`",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/v1/articles/{key}/images/{image_id}": {
+      "delete": {
+        "tags": [
+          "articles"
+        ],
+        "operationId": "articles_delete_image",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "image_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
     "/api/v1/artists": {
       "get": {
         "tags": [
@@ -2745,6 +3233,26 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/captcha": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "captcha_config",
+        "responses": {
+          "200": {
+            "description": "Whether forms need a bot check, and the key to show it with",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptchaConfig"
                 }
               }
             }
@@ -10022,6 +10530,253 @@
           }
         }
       },
+      "Article": {
+        "type": "object",
+        "description": "An article. `body_md` is empty in lists.",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "body_md",
+          "status",
+          "on_home",
+          "home_now",
+          "updated_at",
+          "version"
+        ],
+        "properties": {
+          "body_md": {
+            "type": "string",
+            "description": "Markdown. Empty in lists; fetch the article for the text."
+          },
+          "cover_image_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Show at `/api/v1/media/{cover_image_id}/{width}`."
+          },
+          "home_from": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "home_now": {
+            "type": "boolean",
+            "description": "Whether the home page shows it right now."
+          },
+          "home_until": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "on_home": {
+            "type": "boolean"
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "`draft` (moderators only) or `published`."
+          },
+          "summary": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ArticleCreate": {
+        "type": "object",
+        "required": [
+          "title",
+          "body_md"
+        ],
+        "properties": {
+          "body_md": {
+            "type": "string",
+            "description": "Markdown."
+          },
+          "publish": {
+            "type": "boolean",
+            "description": "Publish at once (default: save as a draft)."
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Address of the page; made from the title when left out."
+          },
+          "summary": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "ArticleImage": {
+        "type": "object",
+        "required": [
+          "id",
+          "width",
+          "height",
+          "markdown"
+        ],
+        "properties": {
+          "credit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "markdown": {
+            "type": "string",
+            "description": "Ready to paste into the article: `![](/api/v1/media/<id>/960)`."
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ArticleImageUpload": {
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "properties": {
+          "credit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "file": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      },
+      "ArticleImages": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArticleImage"
+            }
+          }
+        }
+      },
+      "ArticleList": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Article"
+            }
+          }
+        }
+      },
+      "ArticleUpdate": {
+        "type": "object",
+        "required": [
+          "expected_version"
+        ],
+        "properties": {
+          "body_md": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cover_image_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "expected_version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "publish": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "`true` publishes, `false` returns it to a draft (which also takes it off the home page)."
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
       "Artist": {
         "type": "object",
         "required": [
@@ -10749,6 +11504,25 @@
           "transliteration",
           "alias"
         ]
+      },
+      "CaptchaConfig": {
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether sign-up, sign-in, password reset and legal notices ask for a bot check."
+          },
+          "site_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Turnstile site key (public); the browser shows the challenge with it."
+          }
+        }
       },
       "Comment": {
         "type": "object",
@@ -11861,6 +12635,33 @@
           }
         }
       },
+      "HomeBody": {
+        "type": "object",
+        "required": [
+          "on_home"
+        ],
+        "properties": {
+          "home_from": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Show from this time (default: now)."
+          },
+          "home_until": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Hide again at this time (default: until switched off)."
+          },
+          "on_home": {
+            "type": "boolean"
+          }
+        }
+      },
       "HomeItem": {
         "type": "object",
         "required": [
@@ -12804,6 +13605,13 @@
       "LoginRequest": {
         "type": "object",
         "properties": {
+          "captcha_token": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Bot-check answer; required when `GET /api/v1/captcha` says it is enabled."
+          },
           "email": {
             "type": "string"
           },
@@ -13370,6 +14178,13 @@
           "good_faith"
         ],
         "properties": {
+          "captcha_token": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Bot-check answer; required when `GET /api/v1/captcha` says it is enabled."
+          },
           "contact_email": {
             "type": "string"
           },
@@ -13683,6 +14498,13 @@
       "PasswordResetRequest": {
         "type": "object",
         "properties": {
+          "captcha_token": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Bot-check answer; required when `GET /api/v1/captcha` says it is enabled."
+          },
           "email": {
             "type": "string"
           },
@@ -14616,6 +15438,13 @@
       "RegisterRequest": {
         "type": "object",
         "properties": {
+          "captcha_token": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Bot-check answer; required when `GET /api/v1/captcha` says it is enabled."
+          },
           "display_name": {
             "type": "string"
           },

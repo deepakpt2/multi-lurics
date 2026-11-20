@@ -44,6 +44,8 @@ pub fn app_with(pool: PgPool, tweak: impl FnOnce(&mut Config)) -> App {
         admin_display_name: "Administrator".into(),
         google_client_id: None,
         google_client_secret: None,
+        turnstile_site_key: None,
+        turnstile_secret_key: None,
         media_dir: std::env::temp_dir()
             .join(format!("lyrics-media-{}", Uuid::new_v4()))
             .to_string_lossy()

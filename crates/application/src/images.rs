@@ -51,6 +51,7 @@ pub fn limits(app: &App) -> Limits {
 }
 
 pub async fn upload(app: &App, p: &Principal, meta: &RequestMeta, i: UploadInput) -> Result<ImageRow, AppError> {
+    crate::community::throttle_member(app, p, "upload").await?;
     if !i.rights {
         return Err(invalid("rights", "must_confirm"));
     }
@@ -421,9 +422,14 @@ pub struct MediaFile {
 /// The stored file for `id` at the smallest generated size that is at least `width`.
 pub async fn file(app: &App, p: Option<&Principal>, id: Uuid, width: u32) -> Result<MediaFile, AppError> {
     let mut conn = app.pool.acquire().await?;
-    let row = repo::get(&mut conn, id, false)
-        .await?
-        .ok_or(AppError::NotFound { entity: "image" })?;
+    let Some(row) = repo::get(&mut conn, id, false).await? else {
+        drop(conn);
+        // Not an entity image: it may be a picture in an article (always public).
+        return match crate::articles::image_file(app, id, width).await? {
+            Some(bytes) => Ok(MediaFile { bytes, public: true }),
+            None => Err(AppError::NotFound { entity: "image" }),
+        };
+    };
     drop(conn);
     let public = row.status == "approved";
     if !public {

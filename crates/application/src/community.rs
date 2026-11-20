@@ -110,6 +110,18 @@ pub async fn throttle(
     Ok(())
 }
 
+/// The same limit for a member adding content (`contribute`, `upload`). Moderators and admins are exempt.
+pub async fn throttle_member(app: &App, p: &Principal, action: &str) -> Result<(), AppError> {
+    if p.has_role(Role::Moderator) {
+        return Ok(());
+    }
+    let mut tx = AppTx::begin(&app.pool).await?;
+    let s = load_settings(&mut tx).await?;
+    throttle(&mut tx, p, action, &s).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
 /// Writes an audit row on its own connection, so it survives the refusal that follows.
 pub(crate) async fn audit_outside(
     app: &App,

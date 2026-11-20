@@ -27,6 +27,8 @@ pub struct RegisterRequest {
     pub password: String,
     /// UI locale for emails. One of `en`, `ar`. Defaults to `en`.
     pub locale: Option<String>,
+    /// Bot-check answer; required when `GET /api/v1/captcha` says it is enabled.
+    pub captcha_token: Option<String>,
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -35,6 +37,8 @@ pub struct LoginRequest {
     pub email: String,
     #[serde(default)]
     pub password: String,
+    /// Bot-check answer; required when `GET /api/v1/captcha` says it is enabled.
+    pub captcha_token: Option<String>,
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -48,6 +52,8 @@ pub struct PasswordResetRequest {
     #[serde(default)]
     pub email: String,
     pub locale: Option<String>,
+    /// Bot-check answer; required when `GET /api/v1/captcha` says it is enabled.
+    pub captcha_token: Option<String>,
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -186,8 +192,10 @@ fn time_hours(h: i64) -> time::Duration {
 pub async fn register(
     State(app): State<App>,
     Meta(meta): Meta,
+    headers: axum::http::HeaderMap,
     ApiJson(b): ApiJson<RegisterRequest>,
 ) -> ApiResult<StatusCode> {
+    crate::captcha::check(&app, &headers, b.captcha_token.as_deref()).await?;
     auth::register(
         &app,
         &meta,
@@ -224,8 +232,10 @@ pub async fn login(
     State(app): State<App>,
     Meta(meta): Meta,
     jar: CookieJar,
+    headers: axum::http::HeaderMap,
     ApiJson(b): ApiJson<LoginRequest>,
 ) -> ApiResult<(CookieJar, Json<User>)> {
+    crate::captcha::check(&app, &headers, b.captcha_token.as_deref()).await?;
     let s = auth::login(
         &app,
         &meta,
@@ -259,8 +269,10 @@ pub async fn logout(
 pub async fn request_password_reset(
     State(app): State<App>,
     Meta(meta): Meta,
+    headers: axum::http::HeaderMap,
     ApiJson(b): ApiJson<PasswordResetRequest>,
 ) -> ApiResult<StatusCode> {
+    crate::captcha::check(&app, &headers, b.captcha_token.as_deref()).await?;
     auth::request_password_reset(&app, &meta, &b.email, b.locale.as_deref()).await?;
     Ok(StatusCode::ACCEPTED)
 }

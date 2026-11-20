@@ -26,6 +26,8 @@ pub struct NoticeCreate {
     pub statement: String,
     /// The filer states in good faith that the notice is accurate. Must be `true`.
     pub good_faith: bool,
+    /// Bot-check answer; required when `GET /api/v1/captcha` says it is enabled.
+    pub captcha_token: Option<String>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -43,8 +45,10 @@ pub struct NoticeReceipt {
 pub async fn file_legal_notice(
     State(app): State<App>,
     Meta(meta): Meta,
+    headers: axum::http::HeaderMap,
     ApiJson(b): ApiJson<NoticeCreate>,
 ) -> ApiResult<(StatusCode, Json<NoticeReceipt>)> {
+    crate::captcha::check(&app, &headers, b.captcha_token.as_deref()).await?;
     let r = uc::file_notice(
         &app,
         &meta,

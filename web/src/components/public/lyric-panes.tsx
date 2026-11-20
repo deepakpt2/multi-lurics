@@ -4,6 +4,7 @@ import { BookOpen, ExternalLink, Minus, Plus, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
+import { CommunitySection } from "../community/community";
 import { AddLyricsDialog } from "../contribute/add-lyrics";
 import {
   DEFAULT_READING,
@@ -53,6 +54,17 @@ function useNames() {
  * phone the columns are a row you swipe through. Each column can open on its own, full screen, and the
  * reading mode shows the same columns large and quiet.
  */
+/** Ratings, reactions and comments for one lyric; loaded only once it is opened. */
+function Feedback({ id, label }: { id: string; label: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details className="lyric-feedback" onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary>{label}</summary>
+      {open && <CommunitySection contributionId={id} />}
+    </details>
+  );
+}
+
 export function LyricPanes({
   lyrics,
   songPath,
@@ -206,9 +218,14 @@ export function LyricPanes({
                 </span>
               </header>
               {lyric ? (
-                <pre className="lyric-body" lang={lyric.language} dir={lyric.dir}>
-                  {lyric.body}
-                </pre>
+                <>
+                  <pre className="lyric-body" lang={lyric.language} dir={lyric.dir}>
+                    {lyric.body}
+                  </pre>
+                  {!reading && (
+                    <Feedback key={lyric.id} id={lyric.id} label={t("rateAndDiscuss")} />
+                  )}
+                </>
               ) : same.length === 0 ? (
                 <p className="muted lyric-pane-empty">
                   {t("none", { type: tl(`types.${p.type}`).toLowerCase() })}{" "}

@@ -1,5 +1,6 @@
 //! I/O adapters: configuration, Postgres (sqlx), audit log, outbox, crypto.
 
+pub mod articles;
 pub mod audit;
 pub mod browse;
 pub mod catalogue;

@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { Columns2, FileUp, Flower2, PenLine, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, NotebookPen, ShieldCheck, UserPlus, UserRound, Tags, Users } from "lucide-react";
+import { Columns2, FileUp, Flower2, PenLine, Library, ListMusic, LogIn, LogOut, MessageSquare, Mic2, Newspaper, NotebookPen, ShieldCheck, UserPlus, UserRound, Tags, Users } from "lucide-react";
 import { Menu as MenuIcon, X as CloseIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -65,6 +65,7 @@ export function SiteHeader() {
         <NavLink href="/browse" icon={Library} exact>{t("nav.browse")}</NavLink>
         <NavLink href="/browse/album" icon={ListMusic}>{t("nav.albums")}</NavLink>
         <NavLink href="/browse/artist" icon={Mic2}>{t("nav.artists")}</NavLink>
+        <NavLink href="/articles" icon={Newspaper}>{t("nav.articles")}</NavLink>
         <NavLink href="/compare" icon={Columns2}>{t("nav.compare")}</NavLink>
       </nav>
       {user === null && (
